@@ -9,14 +9,14 @@ All plugins are released under the GPLv2.
 
 ## Plugins
 
-- [check_meinberg_ntp](check_meinberg_ntp/README.md)
-- [check_moxa_6000](check_moxa_6000/README.md)
-- [check_snmp_ilo4](check_snmp_ilo4/README.md)
-- [check_snmp_large_storage](check_snmp_large_storage/README.md)
-- [check_snmp_port](check_snmp_port/README.md)
-- [check_nmp_raritan](check_nmp_raritan/README.md)
-- [check_snmp_service](check_snmp_service/README.md)
-- [check_snmp_time](check_snmp_time/README.md)
+- [check_meinberg_ntp](health_monitoring_plugins/check_meinberg_ntp/README.md)
+- [check_moxa_6000](health_monitoring_plugins/check_moxa_6000/README.md)
+- [check_snmp_ilo4](health_monitoring_plugins/check_snmp_ilo4/README.md)
+- [check_snmp_large_storage](health_monitoring_plugins/check_snmp_large_storage/README.md)
+- [check_snmp_port](health_monitoring_plugins/check_snmp_port/README.md)
+- [check_nmp_raritan](health_monitoring_plugins/check_nmp_raritan/README.md)
+- [check_snmp_service](health_monitoring_plugins/check_snmp_service/README.md)
+- [check_snmp_time](health_monitoring_plugins/check_snmp_time/README.md)
 
 A detailed description can be found in the README.md in folder of the corresponding plugin.
 
