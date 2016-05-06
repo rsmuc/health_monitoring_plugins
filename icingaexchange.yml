@@ -1,0 +1,7 @@
+name: health_monitoring_plugins
+description: "file:///README.md"
+url: "https://github.com/rsmuc/health_monitoring_plugins"
+tags: SNMP, Monitoring, Package
+target: Operating System, Environmental, Hardware, NTP, SNMP, Sensor, Time
+type: Plugin
+license: gplv2
