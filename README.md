@@ -126,6 +126,17 @@ Ensure that you installed the pynag package.
 
 ## Changelog
 
+###### Version 0.0.2
+
+* Added Unit Tests for some plugins
+* Cleaned up code
+
 ###### Version 0.0.1
 
 * The first testing release including all developed check plugins
+
+## TODO
+
+* get_data and walk_data should not defined several times
+* Implement SNMPv3 support for all plugins
+* Implement unittests for all plugins
