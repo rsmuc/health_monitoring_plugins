@@ -23,20 +23,6 @@
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
 import netsnmp
 
-# Create an instance of PluginHelper()
-helper = PluginHelper()
-
-# Add command line parameters
-helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address", default="localhost")
-helper.parser.add_option('-C', '--community', dest="community",  help='SNMP community of the SNMP service on target host.', default='public')
-helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
-helper.parser.add_option('-p', '--port', dest='port', help='The port you want to monitor (scan for scanning)', type='str', default='scan')
-helper.parser.add_option('-t', '--type', dest="type", help="TCP or UDP", default="udp")
-helper.parser.add_option('-w', dest="warning", help="warning values", default="synSent")
-helper.parser.add_option('-c', dest="critical", help="critical vales",default="closed")
-
-helper.parse_arguments()
-
 def get_data(host, version, community, oid):
     var = netsnmp.Varbind(oid)
     data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
@@ -48,34 +34,20 @@ def walk_data(host, version, community, oid):
     data = netsnmp.snmpwalk(var, Version=version, DestHost=host, Community=community)
     return data
 
-# get the options
-typ = helper.options.type.lower()
-port = helper.options.port
-host = helper.options.hostname
-version = helper.options.version
-community = helper.options.community
-warning_param = helper.options.warning
-critical_param = helper.options.critical
+def check_typ(helper, typ):
+    # check if typ parameter is TCP or UDP
+    if typ != "tcp" and typ != "udp":
+        helper.exit(summary="Type (-t) must be udp or tcp.", exit_code=unknown, perfdata='')
 
-# check if typ parameter is TCP or UDP
-if typ != "tcp" and typ != "udp":
-    helper.exit(summary="Type (-t) must be udp or tcp.", exit_code=unknown, perfdata='')
+def check_port(helper, port):
+    # check if the port parameter is really a port or "scan"
+    try:
+        int(port)
+    except ValueError:
+        if port != "scan":
+            helper.exit(summary="Port (-p) must be a integer value or 'scan'.", exit_code=unknown, perfdata='')
 
-# check if the port parameter is really a port or "scan"
-try:
-    int(port)
-except ValueError:
-    if port != "scan":
-        helper.exit(summary="Port (-p) must be a integer value or 'scan'.", exit_code=unknown, perfdata='')
-
-# The default return value should be always OK
-helper.status(ok)
-
-#############
-# Here we check a UDP port
-#############
-
-if typ == "udp":
+def check_udp(helper, host, version, community, port):
     oid = ".1.3.6.1.2.1.7.5.1.2" # the udpLocaLPort
     open_ports = walk_data(host, version, community, oid)
     
@@ -92,66 +64,107 @@ if typ == "udp":
         udp_status = "CLOSED"
         helper.status(critical)
     helper.add_summary("Current status for UDP port " + port + " is: " + udp_status)
+    return ("Current status for UDP port " + port + " is: " + udp_status)
 
-
-# ############
-# # here we now want to check TCP ports
-# ############
-
-tcp_translate = {
-    
-"1" :   "closed",
-"2" :   "listen",
-"3" :   "synSent",
-"4" :   "synReceived",
-"5" :   "established",
-"6" :   "finWait1",
-"7" :   "finWait2",
-"8" :   "closeWait",
-"9" :   "lastAck",
-"10":   "closing",
-"11":   "timeWait",
-"12":   "deleteTCB"
-
-}
-
-if typ == "tcp":
-    # collect all open local ports
-    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.3")
-    # collect all status information about the open ports
-    port_status = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.1")
-    # make a dict out of the two lists
-    port_and_status = dict(zip(open_ports, port_status))
-      
-    if port in open_ports:
-        # if the port is available in the list of open_ports, then extract the status
-        tcp_status = port_and_status[port]
-        # translate the status from the integer value to a human readable string
-        tcp_status = tcp_translate[tcp_status]
-                 
-        # now let's set the status according to the -w -c parameter        
-        if tcp_status in warning_param:
-            helper.status(warning)
-        elif tcp_status in critical_param:
-            helper.status(critical)
-        else:
-            helper.status(ok)
             
-    else:
-        # if there is no value in the list => the port is closed for sure
-        tcp_status = "CLOSED"
-        helper.status(critical)
+# Create an instance of PluginHelper()
+helper = PluginHelper()
 
-    helper.add_summary("Current status for TCP port " + port + " is: " + tcp_status)
+if __name__ == "__main__":
 
-    # here we show all open TCP ports and it's status
-    if port == "scan":
-        print "All open TCP ports: " + host
-        for port in open_ports:
+    # Add command line parameters
+    helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address", default="localhost")
+    helper.parser.add_option('-C', '--community', dest="community",  help='SNMP community of the SNMP service on target host.', default='public')
+    helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
+    helper.parser.add_option('-p', '--port', dest='port', help='The port you want to monitor (scan for scanning)', type='str', default='scan')
+    helper.parser.add_option('-t', '--type', dest="type", help="TCP or UDP", default="udp")
+    helper.parser.add_option('-w', dest="warning", help="warning values", default="synSent")
+    helper.parser.add_option('-c', dest="critical", help="critical vales",default="closed")
+
+    helper.parse_arguments()    
+
+    # get the options
+    typ = helper.options.type.lower()
+    port = helper.options.port
+    host = helper.options.hostname
+    version = helper.options.version
+    community = helper.options.community
+    warning_param = helper.options.warning
+    critical_param = helper.options.critical
+
+    check_typ(helper, typ) 
+
+    check_port(helper, port)
+
+    # The default return value should be always OK
+    helper.status(ok)
+
+    #############
+    # Check UDP
+    #############
+
+    if typ == "udp":
+        check_udp(helper, host, version, community, port)
+
+
+    # ############
+    # # here we now want to check TCP ports
+    # ############
+
+    tcp_translate = {
+    
+    "1" :   "closed",
+    "2" :   "listen",
+    "3" :   "synSent",
+    "4" :   "synReceived",
+    "5" :   "established",
+    "6" :   "finWait1",
+    "7" :   "finWait2",
+    "8" :   "closeWait",
+    "9" :   "lastAck",
+    "10":   "closing",
+    "11":   "timeWait",
+    "12":   "deleteTCB"
+
+    }
+
+    if typ == "tcp":
+        # collect all open local ports
+        open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.3")
+        # collect all status information about the open ports
+        port_status = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.1")
+        # make a dict out of the two lists
+        port_and_status = dict(zip(open_ports, port_status))
+      
+        if port in open_ports:
+            # if the port is available in the list of open_ports, then extract the status
             tcp_status = port_and_status[port]
+            # translate the status from the integer value to a human readable string
             tcp_status = tcp_translate[tcp_status]
-            print "TCP: \t" + port + "\t Status: \t" + tcp_status
-        quit()
+                 
+            # now let's set the status according to the -w -c parameter        
+            if tcp_status in warning_param:
+                helper.status(warning)
+            elif tcp_status in critical_param:
+                helper.status(critical)
+            else:
+                helper.status(ok)
+            
+        else:
+            # if there is no value in the list => the port is closed for sure
+            tcp_status = "CLOSED"
+            helper.status(critical)
 
-# Print out plugin information and exit nagios-style
-helper.exit()
+        helper.add_summary("Current status for TCP port " + port + " is: " + tcp_status)
+
+        # here we show all open TCP ports and it's status
+        if port == "scan":
+            print "All open TCP ports: " + host
+            for port in open_ports:
+                tcp_status = port_and_status[port]
+                tcp_status = tcp_translate[tcp_status]
+                print "TCP: \t" + port + "\t Status: \t" + tcp_status
+            quit()
+
+    # Print out plugin information and exit nagios-style
+    helper.exit()

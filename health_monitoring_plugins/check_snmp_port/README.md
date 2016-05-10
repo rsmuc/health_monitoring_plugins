@@ -86,6 +86,15 @@ TCP: 	39990	 Status: 	listen
 -  -p PORT               The port you want to monitor ('scan' for scanning)
 ```
 
+### Running the unit tests
+
+To run the unittests for check_snmp_port.py:
+
+    apt-get install python-pytest
+    py.test unittest.py -v --capture=sys
+
+It's required that SNMPv2 with read cmmunity public is enabled on the host, that runs the test
+
 ### TODO:
 * Implement SNMPv3
 * It should be possible to enter a list of ports that should be checked
