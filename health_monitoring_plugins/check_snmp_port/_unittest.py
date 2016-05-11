@@ -2,6 +2,15 @@
 from check_snmp_port import *
 import pytest
 import subprocess
+import testagent
+import os
+
+from types import MethodType
+
+# I don't know why configure only works here, if it is executed outside of unittest.TestCase
+os.environ['MIBDIRS'] = os.path.dirname(os.path.abspath(__file__))
+testagent.configure(agent_address = "localhost:1234",
+    rocommunity='public', rwcommunity='private')
 
 def get_system_uptime():
     with open('/proc/uptime', 'r') as f:
@@ -15,9 +24,12 @@ def test_get():
     assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0")[:-1] == get_system_uptime()[:-1]
 
 def test_walk_data():
+    # run a walk on a not existing host
     assert walk_data("1.2.3.4", 2, "public", ".1") == ()
+
     # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
     assert walk_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1")[0][:-1] == get_system_uptime()[:-1]
+    
 
 def test_check_typ(capsys):
     with pytest.raises(SystemExit):
@@ -46,14 +58,29 @@ def test_check_udp(capsys):
     out, err = capsys.readouterr()    
     assert "UDP" in out
     
+    # start the test agent    
+        
+    walk = '''iso.3.6.1.2.1.7.5.1.2.0.0.0.0.161 = INTEGER: 161
+            iso.3.6.1.2.1.7.5.1.2.0.0.0.0.5353 = INTEGER: 5353
+            iso.3.6.1.2.1.7.5.1.2.0.0.0.0.33352 = INTEGER: 33352
+            iso.3.6.1.2.1.7.5.1.2.0.0.0.0.43564 = INTEGER: 43564
+            iso.3.6.1.2.1.7.5.1.2.0.0.0.0.48744 = INTEGER: 48744
+            iso.3.6.1.2.1.7.5.1.2.0.0.0.0.52003 = INTEGER: 52003
+            '''
+        
+    testagent.register_snmpwalk_ouput(walk)
+    testagent.start_server()
+       
     # check "161" (open)
-    assert check_udp(helper, "127.0.0.1", 2, "public", "161") == "Current status for UDP port 161 is: OPEN"
+    assert check_udp(helper, "127.0.0.1:1234", 2, "public", "161") == "Current status for UDP port 161 is: OPEN"
     
     # check "164" (closed)
-    assert check_udp(helper, "127.0.0.1", 2, "public", "164") == "Current status for UDP port 164 is: CLOSED"
+    assert check_udp(helper, "127.0.0.1:1234", 2, "public", "164") == "Current status for UDP port 164 is: CLOSED"
 
     # check "test"
-    assert check_udp(helper, "127.0.0.1", 2, "public", "test") == "Current status for UDP port test is: CLOSED"
+    assert check_udp(helper, "127.0.0.1:1234", 2, "public", "test") == "Current status for UDP port test is: CLOSED"
+
+    
 
 def test_check_tcp(capsys):    
     # check "scan"
@@ -93,10 +120,14 @@ def test_system_call(capsys):
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py --type=UDP --port=161", shell=True, stdout=subprocess.PIPE)
     assert "OK - Current status for UDP port 161 is: OPEN" in p.stdout.read()
     
-    #with --type=UDP --port=123 (closed)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py --type=UDP --port=123", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - Current status for UDP port 123 is: CLOSED" in p.stdout.read()
+    #with --type=UDP --port=1235678 (closed)
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py --type=UDP --port=1235678", shell=True, stdout=subprocess.PIPE)
+    assert "Critical - Current status for UDP port 1235678 is: CLOSED" in p.stdout.read()
     
     #with --type=TCP --port=22 (open)
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py --type=TCP --port=22", shell=True, stdout=subprocess.PIPE)
     assert "OK - Current status for TCP port 22 is: established" in p.stdout.read()
+
+
+def test_end():
+    testagent.stop_server()
