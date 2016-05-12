@@ -175,7 +175,7 @@ def check_inlet(host, version, community):
         
         if inlet_state == "belowLowerCritical" or inlet_state == "aboveUpperCritical":
             # we don't want to use the thresholds. we rely on the state value of the device
-            helper.add_summary("%s is %s" % (inlet_value, inlet_unit, inlet_state))
+            helper.add_summary("%s %s is %s" % (inlet_value, inlet_unit, inlet_state))
             helper.status(critical)
         
         if inlet_state == "belowLowerWarning" or inlet_state == "aboveUpperWarning":
