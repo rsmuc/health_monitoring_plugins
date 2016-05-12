@@ -181,12 +181,124 @@ def check_inlet(host, version, community):
         if inlet_state == "belowLowerWarning" or inlet_state == "aboveUpperWarning":
             helper.add_summary("%s %s is %s" % (inlet_value, inlet_unit, inlet_state))
             helper.status(warning)
+        
+        # TODO: we should also care about the other values. everything is critical
+        # except normal
                 
         # we always want to see the values in the long output and in the perf data
         helper.add_summary("%s %s" % (inlet_value, inlet_unit))
         helper.add_long_output("%s %s: %s" % (inlet_value, inlet_unit, inlet_state))
         helper.add_metric("Sensor " + str(x), inlet_value, inlet_warning_lower + ":" + inlet_warning_upper, inlet_critical_lower + ":" + inlet_critical_upper, "", "", inlet_unit)
         
+
+def check_outlet(host, version, community):
+    # here we need the id
+    base_oid_outlet_name    = '.1.3.6.1.4.1.13742.6.3.5.3.1.3.1' 		# Name
+    base_oid_outlet_state   = '.1.3.6.1.4.1.13742.6.5.4.3.1.3.1' 		# Value
+    oid_outlet_name         = base_oid_outlet_name + "." + id           # here we add the id, to get the name
+    oid_outlet_state        = base_oid_outlet_state + "." + id + ".14"   # here we add the id, to get the state
+
+    # we just want to receive the status of one sensor
+    outlet_name                 = get_data(host, version, community, oid_outlet_name)
+    outlet_state                = get_data(host, version, community, oid_outlet_state)
+    outlet_real_state           = states[int(outlet_state)]
+    
+    # here we check if the outlet is powered on
+    # cleanup: don't use a string compare here to improve performance
+    if outlet_real_state != "on":
+        helper.status(critical)
+    
+        # print the status
+    helper.add_summary("Outlet %s - '%s' is: %s" % (id, outlet_name, outlet_real_state.upper()))
+    
+def check_sensor(host, version, community):
+    oid_sensor_name             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.4.1.'     + id    #Name
+    oid_sensor_state            =   '.1.3.6.1.4.1.13742.6.5.5.3.1.3.1.'     + id	#State
+    oid_sensor_unit             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.16.1.'    + id	#Unit
+    oid_sensor_value            =   '.1.3.6.1.4.1.13742.6.5.5.3.1.4.1.'     + id	#Value
+    oid_sensor_digit            =   '.1.3.6.1.4.1.13742.6.3.6.3.1.17.1.'    + id	#Digits
+    oid_sensor_type             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.2.1.'		+ id	#Type
+    oid_sensor_warning_upper    =   '.1.3.6.1.4.1.13742.6.3.6.3.1.34.1.'    + id    #Upper Warning Threshold
+    oid_sensor_critical_upper   =   '.1.3.6.1.4.1.13742.6.3.6.3.1.33.1.'    + id    #Upper Critical Threshold    
+    oid_sensor_warning_lower    =   '.1.3.6.1.4.1.13742.6.3.6.3.1.32.1.'    + id    #Lower Warning Threshold
+    oid_sensor_critical_lower   =   '.1.3.6.1.4.1.13742.6.3.6.3.1.31.1.'    + id    #Lower Critical Threshold    
+
+    sensor_name             = get_data(host, version, community, oid_sensor_name)
+    sensor_state            = get_data(host, version, community, oid_sensor_state)
+    sensor_state_string     = states[int(sensor_state)]
+    sensor_unit             = "" # if it's a onOff Sensor or something like that, we need an empty string for the summary
+    sensor_unit_string      = ""
+    sensor_value            = ""
+    sensor_digit            = ""
+    real_sensor_value       = ""
+    sensor_type             = get_data(host, version, community, oid_sensor_type)
+    sensor_warning_upper    = ""
+    sensor_critical_upper   = ""
+    sensor_warning_lower    = ""
+    sensor_critical_lower   = ""
+
+    if int(sensor_type) not in [14, 16, 17, 18, 19, 20]:
+        # for all sensors except these, we want to calculate the real value and show the metric.
+        # 14: onOff
+        # 16: vibration
+        # 17: waterDetection
+        # 18: smokeDetection
+        # 19: binary
+        # 20: contact
+        sensor_unit                 = int(get_data(host, version, community, oid_sensor_unit))
+        sensor_unit_string          = units[int(sensor_unit)]
+        sensor_digit                = get_data(host, version, community, oid_sensor_digit)
+        sensor_warning_upper        = get_data(host, version, community, oid_sensor_warning_upper)
+        sensor_critical_upper       = get_data(host, version, community, oid_sensor_critical_upper)
+        sensor_warning_lower        = get_data(host, version, community, oid_sensor_warning_lower)
+        sensor_critical_lower       = get_data(host, version, community, oid_sensor_critical_lower)
+        sensor_value                = int(get_data(host, version, community, oid_sensor_value))
+        real_sensor_value           = real_value(sensor_value, sensor_digit)
+        real_sensor_warning_upper   = real_value(sensor_warning_upper, sensor_digit)
+        real_sensor_critical_upper  = real_value(sensor_critical_upper, sensor_digit)
+        real_sensor_warning_lower   = real_value(sensor_warning_lower, sensor_digit)
+        real_sensor_critical_lower  = real_value(sensor_critical_lower, sensor_digit)
+        # metric are only possible for these sensors
+        helper.add_metric(sensor_name, real_sensor_value, real_sensor_warning_lower + ":" + real_sensor_warning_upper, real_sensor_critical_lower + ":" + real_sensor_critical_upper, "", "", sensor_unit_string)
+    
+    if int(sensor_state) in [1, 4, 7, 10, 12, 15, 18, 19, 20]:
+        # 1:    closed
+        # 4:    normal
+        # 7:    on
+        # 10:   not detected
+        # 12:   ok
+        # 15:   yes
+        # 18:   one
+        # 19:   two
+        # 20:   in sync
+        helper.status(ok)
+    elif int(sensor_state) in [0, 3, 5, 8, 13, 17]:
+        # 0:    open
+        # 3:    belowLowerWarning
+        # 5:    aboveUpperWarning
+        # 13:   marginal
+        # 17:   standby
+        helper.status(warning)
+    elif int(sensor_state) in [2, 6, 9, 8, 11, 14, 16, 21]:
+        # 2:    belowLowerCritical
+        # 6:    aboveUpperCritical
+        # 8:    off 
+        # 9:    detected
+        # 11:   alarmed
+        # 14:   fail
+        # 16:   no
+        # 21:   outofsync (that should be critical)
+        helper.status(critical)
+    elif int(sensor_state) in [-1]:
+        # -1:   unavailable
+        helper.status(unknown)
+    else:
+        # something went wrong
+        helper.exit(summary="Something went wrong", exit_code=unknown, perfdata='')
+
+    # summary is shown for all sensors
+    helper.add_summary("Sensor %s - '%s' %s%s is: %s" % (id, sensor_name, real_sensor_value, sensor_unit_string, sensor_state_string))
+    
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
@@ -226,119 +338,14 @@ if __name__ == "__main__":
     ######
     
     if typ.lower() == "outlet":
-        # here we need the id
-        base_oid_outlet_name    = '.1.3.6.1.4.1.13742.6.3.5.3.1.3.1' 		# Name
-        base_oid_outlet_state   = '.1.3.6.1.4.1.13742.6.5.4.3.1.3.1' 		# Value
-        oid_outlet_name         = base_oid_outlet_name + "." + id           # here we add the id, to get the name
-        oid_outlet_state        = base_oid_outlet_state + "." + id + ".14"   # here we add the id, to get the state
-    
-        # we just want to receive the status of one sensor
-        outlet_name                 = get_data(host, version, community, oid_outlet_name)
-        outlet_state                = get_data(host, version, community, oid_outlet_state)
-        outlet_real_state           = states[int(outlet_state)]
-        
-        # here we check if the outlet is powered on
-        # cleanup: don't use a string compare here to improve performance
-        if outlet_real_state != "on":
-            helper.status(critical)
-        
-            # print the status
-        helper.add_summary("Outlet %s - '%s' is: %s" % (id, outlet_name, outlet_real_state.upper()))
-    
+        check_outlet(host, version, community)
+
     #######
     # here we check the sensors
     #######
         
     if typ.lower() == "sensor":
-        
-        # we could return all sensors with one service, but I think we want to have one service per external sensor
-        
-        oid_sensor_name             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.4.1.'     + id    #Name
-        oid_sensor_state            =   '.1.3.6.1.4.1.13742.6.5.5.3.1.3.1.'     + id	#State
-        oid_sensor_unit             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.16.1.'    + id	#Unit
-        oid_sensor_value            =   '.1.3.6.1.4.1.13742.6.5.5.3.1.4.1.'     + id	#Value
-        oid_sensor_digit            =   '.1.3.6.1.4.1.13742.6.3.6.3.1.17.1.'    + id	#Digits
-        oid_sensor_type             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.2.1.'		+ id	#Type
-        oid_sensor_warning_upper    =   '.1.3.6.1.4.1.13742.6.3.6.3.1.34.1.'    + id    #Upper Warning Threshold
-        oid_sensor_critical_upper   =   '.1.3.6.1.4.1.13742.6.3.6.3.1.33.1.'    + id    #Upper Critical Threshold    
-        oid_sensor_warning_lower    =   '.1.3.6.1.4.1.13742.6.3.6.3.1.32.1.'    + id    #Lower Warning Threshold
-        oid_sensor_critical_lower   =   '.1.3.6.1.4.1.13742.6.3.6.3.1.31.1.'    + id    #Lower Critical Threshold    
-    
-        sensor_name             = get_data(host, version, community, oid_sensor_name)
-        sensor_state            = get_data(host, version, community, oid_sensor_state)
-        sensor_state_string     = states[int(sensor_state)]
-        sensor_unit             = "" # if it's a onOff Sensor or something like that, we need an empty string for the summary
-        sensor_unit_string      = ""
-        sensor_value            = ""
-        sensor_digit            = ""
-        real_sensor_value       = ""
-        sensor_type             = get_data(host, version, community, oid_sensor_type)
-        sensor_warning_upper    = ""
-        sensor_critical_upper   = ""
-        sensor_warning_lower    = ""
-        sensor_critical_lower   = ""
-    
-        if int(sensor_type) not in [14, 16, 17, 18, 19, 20]:
-            # for all sensors except these, we want to calculate the real value and show the metric.
-            # 14: onOff
-            # 16: vibration
-            # 17: waterDetection
-            # 18: smokeDetection
-            # 19: binary
-            # 20: contact
-            sensor_unit                 = int(get_data(host, version, community, oid_sensor_unit))
-            sensor_unit_string          = units[int(sensor_unit)]
-            sensor_digit                = get_data(host, version, community, oid_sensor_digit)
-            sensor_warning_upper        = get_data(host, version, community, oid_sensor_warning_upper)
-            sensor_critical_upper       = get_data(host, version, community, oid_sensor_critical_upper)
-            sensor_warning_lower        = get_data(host, version, community, oid_sensor_warning_lower)
-            sensor_critical_lower       = get_data(host, version, community, oid_sensor_critical_lower)
-            sensor_value                = int(get_data(host, version, community, oid_sensor_value))
-            real_sensor_value           = real_value(sensor_value, sensor_digit)
-            real_sensor_warning_upper   = real_value(sensor_warning_upper, sensor_digit)
-            real_sensor_critical_upper  = real_value(sensor_critical_upper, sensor_digit)
-            real_sensor_warning_lower   = real_value(sensor_warning_lower, sensor_digit)
-            real_sensor_critical_lower  = real_value(sensor_critical_lower, sensor_digit)
-            # metric are only possible for these sensors
-            helper.add_metric(sensor_name, real_sensor_value, real_sensor_warning_lower + ":" + real_sensor_warning_upper, real_sensor_critical_lower + ":" + real_sensor_critical_upper, "", "", sensor_unit_string)
-        
-        if int(sensor_state) in [1, 4, 7, 10, 12, 15, 18, 19, 20]:
-            # 1:    closed
-            # 4:    normal
-            # 7:    on
-            # 10:   not detected
-            # 12:   ok
-            # 15:   yes
-            # 18:   one
-            # 19:   two
-            # 20:   in sync
-            helper.status(ok)
-        elif int(sensor_state) in [0, 3, 5, 8, 13, 17]:
-            # 0:    open
-            # 3:    belowLowerWarning
-            # 5:    aboveUpperWarning
-            # 13:   marginal
-            # 17:   standby
-            helper.status(warning)
-        elif int(sensor_state) in [2, 6, 9, 8, 11, 14, 16, 21]:
-            # 2:    belowLowerCritical
-            # 6:    aboveUpperCritical
-            # 8:    off 
-            # 9:    detected
-            # 11:   alarmed
-            # 14:   fail
-            # 16:   no
-            # 21:   outofsync (that should be critical)
-            helper.status(critical)
-        elif int(sensor_state) in [-1]:
-            # -1:   unavailable
-            helper.status(unknown)
-        else:
-            # something went wrong
-            helper.exit(summary="Something went wrong", exit_code=unknown, perfdata='')
-    
-        # summary is shown for all sensors
-        helper.add_summary("Sensor %s - '%s' %s%s is: %s" % (id, sensor_name, real_sensor_value, sensor_unit_string, sensor_state_string))
+        check_sensor(host, version, community)
         
     ## Print out plugin information and exit nagios-style
     helper.exit()
