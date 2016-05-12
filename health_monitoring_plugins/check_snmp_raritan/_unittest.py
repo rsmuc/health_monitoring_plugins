@@ -14,55 +14,57 @@ configure(agent_address = "localhost:1234",
     rocommunity='public', rwcommunity='private')
 
 def test_start_raritan():
-    # start the testagent (port 22 (TCP) is esablished and 161 is open)    
-    walk =  '''iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.1 = Gauge32: 61
-                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.4 = Gauge32: 230
-                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.5 = Gauge32: 1357
-                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.6 = Gauge32: 1400
-                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.7 = Gauge32: 97
-                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.8 = Gauge32: 8574135
+    # start the testagent (Raritan walk)
+    # INTEGER are not working - So I replaced them by INTEGER
+    # some of the values are not from a walk - I modified them to have the return values I need (critical etc.)
+    walk =  '''iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.1 = INTEGER: 61
+                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.4 = INTEGER: 230
+                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.5 = INTEGER: 1357
+                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.6 = INTEGER: 1400
+                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.7 = INTEGER: 97
+                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.8 = INTEGER: 8574135
                 iso.3.6.1.4.1.13742.6.3.3.4.1.6.1.1.1 = INTEGER: 2
                 iso.3.6.1.4.1.13742.6.3.3.4.1.6.1.1.4 = INTEGER: 1
                 iso.3.6.1.4.1.13742.6.3.3.4.1.6.1.1.5 = INTEGER: 3
                 iso.3.6.1.4.1.13742.6.3.3.4.1.6.1.1.6 = INTEGER: 4
                 iso.3.6.1.4.1.13742.6.3.3.4.1.6.1.1.7 = INTEGER: -1
                 iso.3.6.1.4.1.13742.6.3.3.4.1.6.1.1.8 = INTEGER: 5
-                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.1 = Gauge32: 1
-                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.4 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.5 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.6 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.7 = Gauge32: 2
-                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.8 = Gauge32: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.1 = INTEGER: 1
+                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.4 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.5 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.6 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.7 = INTEGER: 2
+                iso.3.6.1.4.1.13742.6.3.3.4.1.7.1.1.8 = INTEGER: 0
                 iso.3.6.1.4.1.13742.6.5.2.3.1.3.1.1.1 = INTEGER: 4
                 iso.3.6.1.4.1.13742.6.5.2.3.1.3.1.1.4 = INTEGER: 4
                 iso.3.6.1.4.1.13742.6.5.2.3.1.3.1.1.5 = INTEGER: 4
                 iso.3.6.1.4.1.13742.6.5.2.3.1.3.1.1.6 = INTEGER: 4
                 iso.3.6.1.4.1.13742.6.5.2.3.1.3.1.1.7 = INTEGER: 4
                 iso.3.6.1.4.1.13742.6.5.2.3.1.3.1.1.8 = INTEGER: 4
-                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.1 = Gauge32: 104
-                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.4 = Gauge32: 247
-                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.5 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.6 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.7 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.8 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.1 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.4 = Gauge32: 188
-                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.5 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.6 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.7 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.8 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.1 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.4 = Gauge32: 194
-                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.5 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.6 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.7 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.8 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.1 = Gauge32: 128
-                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.4 = Gauge32: 254
-                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.5 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.6 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.7 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.8 = Gauge32: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.1 = INTEGER: 104
+                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.4 = INTEGER: 247
+                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.5 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.6 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.7 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.24.1.1.8 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.1 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.4 = INTEGER: 188
+                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.5 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.6 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.7 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.21.1.1.8 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.1 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.4 = INTEGER: 194
+                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.5 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.6 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.7 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.22.1.1.8 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.1 = INTEGER: 128
+                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.4 = INTEGER: 254
+                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.5 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.6 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.7 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.3.4.1.23.1.1.8 = INTEGER: 0
                 iso.3.6.1.4.1.13742.6.3.5.3.1.3.1.1 = STRING: "frei"
                 iso.3.6.1.4.1.13742.6.3.5.3.1.3.1.2 = STRING: "Switch"
                 iso.3.6.1.4.1.13742.6.3.5.3.1.3.1.3 = STRING: "frei"
@@ -122,8 +124,8 @@ def test_start_raritan():
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.3 = INTEGER: 4
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.4 = INTEGER: 11
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.5 = INTEGER: 4
-                iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.6 = INTEGER: 4
-                iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.7 = INTEGER: 4
+                iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.6 = INTEGER: 6
+                iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.7 = INTEGER: 3
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.8 = INTEGER: 4
                 iso.3.6.1.4.1.13742.6.3.6.3.1.16.1.2 = INTEGER: -1
                 iso.3.6.1.4.1.13742.6.3.6.3.1.16.1.3 = INTEGER: -1
@@ -139,13 +141,13 @@ def test_start_raritan():
                 iso.3.6.1.4.1.13742.6.5.5.3.1.4.1.6 = INTEGER: 45
                 iso.3.6.1.4.1.13742.6.5.5.3.1.4.1.7 = INTEGER: 221
                 iso.3.6.1.4.1.13742.6.5.5.3.1.4.1.8 = INTEGER: 1
-                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.2 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.3 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.4 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.5 = Gauge32: 1
-                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.6 = Gauge32: 0
-                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.7 = Gauge32: 1
-                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.8 = Gauge32: 1
+                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.2 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.3 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.4 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.5 = INTEGER: 1
+                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.6 = INTEGER: 0
+                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.7 = INTEGER: 1
+                iso.3.6.1.4.1.13742.6.3.6.3.1.17.1.8 = INTEGER: 1
                 iso.3.6.1.4.1.13742.6.3.6.3.1.2.1.2 = INTEGER: 14
                 iso.3.6.1.4.1.13742.6.3.6.3.1.2.1.3 = INTEGER: 14
                 iso.3.6.1.4.1.13742.6.3.6.3.1.2.1.4 = INTEGER: 14
@@ -180,13 +182,7 @@ def test_start_raritan():
                 iso.3.6.1.4.1.13742.6.3.6.3.1.34.1.5 = INTEGER: 270
                 iso.3.6.1.4.1.13742.6.3.6.3.1.34.1.6 = INTEGER: 70
                 iso.3.6.1.4.1.13742.6.3.6.3.1.34.1.7 = INTEGER: 280
-                iso.3.6.1.4.1.13742.6.3.6.3.1.34.1.8 = INTEGER: 800
-                iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.1 = Gauge32: 61
-iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.4 = Gauge32: 230
-iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.5 = Gauge32: 1357
-iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.6 = Gauge32: 1400
-iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.7 = Gauge32: 97
-iso.3.6.1.4.1.13742.6.5.2.3.1.4.1.1.8 = Gauge32: 8574135'''   
+                iso.3.6.1.4.1.13742.6.3.6.3.1.34.1.8 = INTEGER: 800'''   
     register_snmpwalk_ouput(walk)
     start_server()
 
@@ -242,8 +238,8 @@ def test_system_call_raritan(capsys):
     assert "Critical - Outlet 3 - 'frei' is: UNAVAILABLE" in p.stdout.read()
 
     # Inlet all OK
-    #p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t inlet", shell=True, stdout=subprocess.PIPE)
-    #assert "jij - Outlet 3 - 'frei' is: UNAVAILABLE" in p.stdout.read()
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t inlet", shell=True, stdout=subprocess.PIPE)
+    assert "OK - Inlet. 6.1 A. 230.0 V. 1357.0 W. 1400.0 VA. 0.97. 8574135.0 Wh | 'Sensor 0'=6.1A;0.0:10.4;0.0:12.8;;" in p.stdout.read()
     
     # Inlet in Warning state
         #TODO!!    
@@ -258,17 +254,17 @@ def test_system_call_raritan(capsys):
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 3", shell=True, stdout=subprocess.PIPE)
     assert "OK - Sensor 3 - 'External Sensor 3'  is: normal" in p.stdout.read()
     
-    # # Sensor 5 - Temperature - normal
-    # p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 6", shell=True, stdout=subprocess.PIPE)
-    # assert "OK - Sensor 5 - 'Temperature Rack 3'  is: normal" in p.stdout.read()
-    # 
-    # # Sensor 6 - Humidity - aboveupperWarning
-    # p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 6", shell=True, stdout=subprocess.PIPE)
-    # assert "OK - Sensor 3 - 'External Sensor 3'  is: normal" in p.stdout.read()
-    # 
-    # # Sensor 7 - Temperature - belowLowerCritical
-    # p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 7", shell=True, stdout=subprocess.PIPE)
-    # assert "OK - Sensor 3 - 'External Sensor 3'  is: normal" in p.stdout.read()
+    # Sensor 5 - Temperature - normal
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 5", shell=True, stdout=subprocess.PIPE)
+    assert "OK - Sensor 5 - 'Temperature Rack 3' 21.5C is: normal" in p.stdout.read()
+     
+    # Sensor 6 - Humidity - aboveupperCritical
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 6", shell=True, stdout=subprocess.PIPE)
+    assert "Critical - Sensor 6 - 'Humidity 1' 45.0% is: aboveUpperCritical | 'Humidity 1'=45.0%;15.0:70.0;10.0:80.0;;\n" in p.stdout.read()
+     
+    # Sensor 7 - Temperature - belowLowerCritical
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 7", shell=True, stdout=subprocess.PIPE)
+    assert "Warning - Sensor 7 - 'Temperature 2' 22.1C is: belowLowerWarning | 'Temperature 2'=22.1C;20.0:28.0;15.0:32.0;;\n" in p.stdout.read()
     
 def test_stop():
     # stop the testagent
