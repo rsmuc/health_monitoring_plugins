@@ -128,7 +128,8 @@ Ensure that you installed the pynag package.
 
 ###### Version 0.0.2
 
-* Added Unit Tests for some plugins
+* Added Unit Tests for all plugins
+* Fixed a bug in check_snmp_raritan Inlet check
 * Cleaned up code
 
 ###### Version 0.0.1
@@ -137,6 +138,12 @@ Ensure that you installed the pynag package.
 
 ## TODO
 
-* get_data and walk_data should not defined several times
+* get_data and walk_data should be harmonized
+* harmonized unittests for walk and get
+* harmonize snmp settings
 * Implement SNMPv3 support for all plugins
-* Implement unittests for all plugins
+* Unittests for check_snmp_ilo4 and check_snmp_time2
+* fix --scan at check_ilo
+* fix smart status for check_ilo
+* fix redundancy status for check_ilo
+* Code cleanup

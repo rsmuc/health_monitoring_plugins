@@ -1,2 +1,2 @@
 include README.md
-recursive-include *.md
+recursive-include health_monitoring_plugins README.md

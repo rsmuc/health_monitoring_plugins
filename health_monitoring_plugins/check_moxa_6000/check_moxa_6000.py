@@ -18,6 +18,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
 import argparse, collections, sys, netsnmp, pynag.Plugins
+from pynag.Plugins import PluginHelper, ok, warning, critical, unknown
 
 class CHECK_TYPE(enumerate):
     CTS = 0
@@ -53,9 +54,7 @@ def get_state(value, warning_threshold, critical_threshold):
     else:
         return ok
 
-
 if __name__ == '__main__':
-    from pynag.Plugins import PluginHelper, ok, warning, critical, unknown
     helper = PluginHelper()
     helper.parser.add_option('-H', '--hostname', dest='hostname', help='Host name or IP Adress of hte MOXA device.')
     helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')

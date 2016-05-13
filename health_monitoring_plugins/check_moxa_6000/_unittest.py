@@ -33,6 +33,14 @@ def test_start():
     register_snmpwalk_ouput(walk)
     start_server()
 
+def test_get_state():
+    """
+    get_state(value, warning_threshold, critical_threshold):
+    """    
+    assert get_state(10, 50, 100) == ok
+    assert get_state(60, 50, 100) == warning
+    assert get_state(200, 50, 100) == critical
+
 # integration test
 def test_system_test_moxa(capsys):
     # without options
