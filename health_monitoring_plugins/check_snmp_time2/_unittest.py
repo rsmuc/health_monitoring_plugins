@@ -1,10 +1,13 @@
 #!/usr/bin/python
  
-from check_snmp_service import *
+from check_snmp_time2 import *
 import pytest
 import subprocess
-from ..testagent import *
+#from ..testagent import *
 import os
+import sys
+sys.path.insert(0, os.path.abspath('..'))
+from testagent import *
 
 from types import MethodType
 

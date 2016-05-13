@@ -99,8 +99,14 @@ def test_system_test_ilo4(capsys):
 
     # NEEDS TO BE FIXED
     ## with -H 1.2.3.4 --scan (unknown host)
-    #p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H 1.2.3.4 --scan", shell=True, stdout=subprocess.PIPE)
-    #assert "Unknown - snmpget failed - no data for OID- maybe wrong MIB version selected or snmp is disabled" in p.stdout.read()
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H 1.2.3.4 --scan", shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpget failed - no data for OID- maybe wrong MIB version selected or snmp is disabled" in p.stdout.read()
+
+    # NEEDS TO BE FIXED
+    ## with -H 127.0.0.1:1234 --scan (known host)
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H 127.0.0.1:1234 --scan", shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpget failed - no data for OID- maybe wrong MIB version selected or snmp is disabled" in p.stdout.read()
+
 
     # with --help
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py --help", shell=True, stdout=subprocess.PIPE)
@@ -183,7 +189,6 @@ def test_all_global_status_broken():
 
 
 def test_temp_high():
-    
     unregister_all()
     
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
@@ -232,6 +237,7 @@ def test_temp_high():
     assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Physical drive temperature 1 above threshold (75 / 60). Temperature at sensor 1 above threshold (55 / 42)" in p.stdout.read()
 
 def test_smart_broken():
+    # NEEDS TO BE FIXED
     
     unregister_all()
     
@@ -380,6 +386,8 @@ def test_logical_drive_broken():
 
 def test_redundancy_broken():
     
+    # NEEDS TO BE FIXED
+
     unregister_all()
     
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name

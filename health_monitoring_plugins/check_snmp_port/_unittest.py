@@ -124,30 +124,36 @@ def test_system_call(capsys):
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py --help", shell=True, stdout=subprocess.PIPE)
     assert "Options:" in p.stdout.read()
 
+def test_tcp(capsys):
     # with --type=TCP
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py -H localhost:1234 --type=TCP", shell=True, stdout=subprocess.PIPE)
     assert "TCP:" in p.stdout.read()
-    
+
+def test_tcp_port161(capsys):
     # with --type=TCP --port=161 (closed)
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py -H localhost:1234 --type=TCP --port=161", shell=True, stdout=subprocess.PIPE)
     assert "Critical - Current status for TCP port 161 is: CLOSED" in p.stdout.read()
-    
-    # with --type=UDP --port=161 (open)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py -H localhost:1234 --type=UDP --port=161", shell=True, stdout=subprocess.PIPE)
-    assert "OK - Current status for UDP port 161 is: OPEN" in p.stdout.read()
-    
-    #with --type=UDP --port=1235678 (closed)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py -H localhost:1234 --type=UDP --port=1235678", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - Current status for UDP port 1235678 is: CLOSED" in p.stdout.read()
-    
+
+def test_tcp_port22(capsys):
     #with --type=TCP --port=22 (open)
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py -H localhost:1234 --type=TCP --port=22", shell=True, stdout=subprocess.PIPE)
     assert "OK - Current status for TCP port 22 is: listen" in p.stdout.read()
 
+def test_tcp_port22_warning(capsys):
     #with --type=TCP --port=22 (open) --warning listen
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py -H localhost:1234 --type=TCP --port=22 -w listen", shell=True, stdout=subprocess.PIPE)
     assert "Warning - Current status for TCP port 22 is: listen" in p.stdout.read()
 
+def test_udp_open(capsys):
+    # with --type=UDP --port=161 (open)
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py -H localhost:1234 --type=UDP --port=161", shell=True, stdout=subprocess.PIPE)
+    assert "OK - Current status for UDP port 161 is: OPEN" in p.stdout.read()
+
+def test_udp_closed(capsys):    
+    #with --type=UDP --port=1235678 (closed)
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py -H localhost:1234 --type=UDP --port=1235678", shell=True, stdout=subprocess.PIPE)
+    assert "Critical - Current status for UDP port 1235678 is: CLOSED" in p.stdout.read()
+    
 def test_stop():
     # stop the testagent
     stop_server()
