@@ -1,11 +1,13 @@
 #!/usr/bin/python
+import os
+import sys
+sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_time2'))
  
-from check_snmp_service import *
+from check_snmp_time2 import *
+
 import pytest
 import subprocess
-from ..testagent import *
-import os
-
+from testagent import *
 from types import MethodType
 
 # configuration of the testagent
@@ -80,7 +82,6 @@ def test_service_available():
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_service/check_snmp_service.py -H 127.0.0.1:1234 -s 'Test'", shell=True, stdout=subprocess.PIPE)
     assert "Critical - Status of Service 'Test' is: NOT RUNNING\n" in p.stdout.read()
   
-
 def test_stop():
     # stop the testagent
     stop_server()

@@ -123,6 +123,11 @@ You can download the source package from [PyPI](https://pypi.python.org/pypi/hea
 You can copy each single check script in your plugins folder to install the plugins.
 Ensure that you installed the pynag package.
 
+## Run the unittests
+
+To run the unittests just:
+
+    python setup.py test
 
 ## Changelog
 

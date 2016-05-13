@@ -1,11 +1,13 @@
 #!/usr/bin/python
+import os
+import sys
+sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_large_storage'))
  
 from check_snmp_large_storage import *
+
 import pytest
 import subprocess
-from ..testagent import *
-import os
-
+from testagent import *
 from types import MethodType
 
 # configuration of the testagent

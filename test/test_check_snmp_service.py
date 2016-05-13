@@ -1,15 +1,15 @@
 #!/usr/bin/python
- 
-from check_snmp_time2 import *
-import pytest
-import subprocess
-#from ..testagent import *
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
-from testagent import *
+sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_service'))
+ 
+from check_snmp_service import *
 
+import pytest
+import subprocess
+from testagent import *
 from types import MethodType
+
 
 # configuration of the testagent
 os.environ['MIBDIRS'] = os.path.dirname(os.path.abspath(__file__))
