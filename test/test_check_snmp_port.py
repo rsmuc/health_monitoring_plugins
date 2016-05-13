@@ -39,7 +39,7 @@ def test_get():
     # try to get data from a not existing host
     assert get_data("1.2.3.4", 2, "public", ".1") == None
     # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0")[:-1] == get_system_uptime()[:-1]
+    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0")[:-3] == get_system_uptime()[:-3]
 
 def test_walk_data():
     """
@@ -49,7 +49,7 @@ def test_walk_data():
     assert walk_data("1.2.3.4", 2, "public", ".1") == ()
 
     # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert walk_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1")[0][:-1] == get_system_uptime()[:-1]
+    assert walk_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1")[0][:-3] == get_system_uptime()[:-3]
     
 
 def test_check_typ(capsys):
