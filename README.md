@@ -151,4 +151,6 @@ To run the unittests just:
 * fix --scan at check_ilo
 * fix smart status for check_ilo
 * fix redundancy status for check_ilo
+* add a default threshold to check_snmp_time2
+* check_snmp_time2: add leading 0 at the time
 * Code cleanup

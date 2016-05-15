@@ -31,9 +31,9 @@ def get_data(host, version, community, oid):
         data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
         value = data[0]
     except:
-        helper.exit(summary="\n SNMP connection to device failed " + oid, exit_code=unknown, perfdata='')
+        helper.exit(summary="SNMP connection to device failed " + oid, exit_code=unknown, perfdata='')
     if not value:
-        helper.exit(summary="\n SNMP connection to device failed " + oid, exit_code=unknown, perfdata='')
+        helper.exit(summary="SNMP connection to device failed " + oid, exit_code=unknown, perfdata='')
     return value
 
 #Create an instance of PluginHelper()
