@@ -1,2 +1,3 @@
 include README.md
-recursive-include *.md
+include run_unittest.sh
+recursive-include doc README.md

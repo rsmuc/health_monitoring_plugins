@@ -1,6 +1,9 @@
 # Compiled python modules.
 *.pyc
 
+# bak files
+*.bak
+
 # Setuptools distribution folder.
 /dist/
 

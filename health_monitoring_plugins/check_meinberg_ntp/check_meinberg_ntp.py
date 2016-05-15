@@ -26,17 +26,6 @@ import netsnmp
 # Create an instance of PluginHelper()
 helper = PluginHelper()
 
-# Optionally, let helper handle command-line arguments for us for example --threshold
-# Note: If your plugin needs any commandline arguments on its own (like --hostname) you should add them
-# before this step with helper.parser.add_option()
-
-helper.parser.add_option('-H', help="Hostname or ip address", dest="hostname", default="localhost")
-helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')
-helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
-helper.parser.add_option('-m', help="Version of the MIB (NG = MBG-LANTIME-NG-MIB.mib)", dest="mib")
-
-helper.parse_arguments()
-
 def get_data(host, version, community, oid):
     # make an snmp get, if it fails exit the plugin
     try:
@@ -49,152 +38,167 @@ def get_data(host, version, community, oid):
         helper.exit(summary="snmpget failed - exception", exit_code=unknown, perfdata='')
     return value
 
-# get the arguments
-mib = helper.options.mib
-host = helper.options.hostname
-version = helper.options.version
-community = helper.options.community
+# Optionally, let helper handle command-line arguments for us for example --threshold
+# Note: If your plugin needs any commandline arguments on its own (like --hostname) you should add them
+# before this step with helper.parser.add_option()
+if __name__ == "__main__":
+    helper.parser.add_option('-H', help="Hostname or ip address", dest="hostname")
+    helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')
+    helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
+    helper.parser.add_option('-m', help="Version of the MIB (NG = MBG-LANTIME-NG-MIB.mib)", dest="mib")
 
-# use the correct oids depending on the version of the firmware / MIB
-if mib == "NG":
-    # OIDs from MBG-LANTIME-NG-MIB.mib    
-    ntp_current_state_int = ".1.3.6.1.4.1.5597.30.0.2.1.0"
-    gps_position = ".1.3.6.1.4.1.5597.30.0.1.5.0"    
-    gps_satellites_good = ".1.3.6.1.4.1.5597.30.0.1.2.1.6.1"
-    gps_mode_int = ".1.3.6.1.4.1.5597.30.0.1.2.1.5.1"
+    helper.parse_arguments()
+
+    # get the arguments
+    mib = helper.options.mib
+    host = helper.options.hostname
+    version = helper.options.version
+    community = helper.options.community
+
+    # verify that a hostname is set
+    if host == "" or host == None:
+        helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
+
+    # use the correct oids depending on the version of the firmware / MIB
+    if mib == "NG":
+        # OIDs from MBG-LANTIME-NG-MIB.mib    
+        ntp_current_state_int = ".1.3.6.1.4.1.5597.30.0.2.1.0"
+        gps_position = ".1.3.6.1.4.1.5597.30.0.1.5.0"    
+        gps_satellites_good = ".1.3.6.1.4.1.5597.30.0.1.2.1.6.1"
+        gps_mode_int = ".1.3.6.1.4.1.5597.30.0.1.2.1.5.1"
     
-    ntp_status = {
-        "0" : "notAvailable",
-        "1" : "notSynchronized",
-        "2" : "synchronized"
-        }
+        ntp_status = {
+            "0" : "notAvailable",
+            "1" : "notSynchronized",
+            "2" : "synchronized"
+            }
     
-    gps_mode = {
-        "-1" : "mrsRefNone",
-        "0" : "notAvailable",
-        "1" : "gpsSync",
-        "2" : "gpsTracking",
-        "3" : "gpsAntennaDisconnected",
-        "4" : "gpsWarmBoot",
-        "5" : "gpsColdBoot",
-        "6" : "gpsAntennaShortCircuit",
-        "50" : "lwNeverSync",
-        "51" : "lwNotSync",
-        "52" : "lwSync",
-        "100" : "tcrNotSync",
-        "101" : "tcrSync",
-        "150" : "mrsGpsSync",
-        "151" : "mrs10MhzSync",
-        "152" : "mrsPpsInSync",
-        "153" : "mrs10MhzPpsInSync",
-        "154" : "mrsIrigSync",
-        "155" : "mrsNtpSync",
-        "156" : "mrsPtpIeee1588Sync",
-        "150" : "mrsGpsSync",
-        "151" : "mrs10MhzSync",
-        "152" : "mrsPpsInSync",
-        "157" : "mrsPtpOverE1Sync",
-        "158" : "mrsFixedFreqInSync",
-        "159" : "mrsPpsStringSync",
-        "160" : "mrsVarFreqGpioSync",
-        "161" : "mrsReserved",
-        "162" : "mrsDcf77PzfSync",
-        "163" : "mrsLongwaveSync",
-        "164" : "mrsGlonassGpsSync",
-        "165" : "mrsHavequickSync",
-        "166" : "mrsExtOscSync",
-        "167" : "mrsIntOscSync"
-        }
+        gps_mode = {
+            "-1" : "mrsRefNone",
+            "0" : "notAvailable",
+            "1" : "gpsSync",
+            "2" : "gpsTracking",
+            "3" : "gpsAntennaDisconnected",
+            "4" : "gpsWarmBoot",
+            "5" : "gpsColdBoot",
+            "6" : "gpsAntennaShortCircuit",
+            "50" : "lwNeverSync",
+            "51" : "lwNotSync",
+            "52" : "lwSync",
+            "100" : "tcrNotSync",
+            "101" : "tcrSync",
+            "150" : "mrsGpsSync",
+            "151" : "mrs10MhzSync",
+            "152" : "mrsPpsInSync",
+            "153" : "mrs10MhzPpsInSync",
+            "154" : "mrsIrigSync",
+            "155" : "mrsNtpSync",
+            "156" : "mrsPtpIeee1588Sync",
+            "150" : "mrsGpsSync",
+            "151" : "mrs10MhzSync",
+            "152" : "mrsPpsInSync",
+            "157" : "mrsPtpOverE1Sync",
+            "158" : "mrsFixedFreqInSync",
+            "159" : "mrsPpsStringSync",
+            "160" : "mrsVarFreqGpioSync",
+            "161" : "mrsReserved",
+            "162" : "mrsDcf77PzfSync",
+            "163" : "mrsLongwaveSync",
+            "164" : "mrsGlonassGpsSync",
+            "165" : "mrsHavequickSync",
+            "166" : "mrsExtOscSync",
+            "167" : "mrsIntOscSync"
+            }
     
-else:
-    # OIDs from MBG-LANTIME-MIB.mib
-    ntp_current_state_int = ".1.3.6.1.4.1.5597.3.1.2.0"
-    gps_position = ".1.3.6.1.4.1.5597.3.2.7.0"
-    gps_satellites_good = ".1.3.6.1.4.1.5597.3.2.9.0"
-    gps_mode_int = ".1.3.6.1.4.1.5597.3.2.16.0" 
+    else:
+        # OIDs from MBG-LANTIME-MIB.mib
+        ntp_current_state_int = ".1.3.6.1.4.1.5597.3.1.2.0"
+        gps_position = ".1.3.6.1.4.1.5597.3.2.7.0"
+        gps_satellites_good = ".1.3.6.1.4.1.5597.3.2.9.0"
+        gps_mode_int = ".1.3.6.1.4.1.5597.3.2.16.0" 
  
-    ntp_status = {
-        "0" : "notSynchronized",
-        "1" : "noGoodRefclock",
-        "2" : "syncToExtRefclock",
-        "3" : "syncToSerialRefclock",
-        "4" : "normalOperationPPS",
-        "5" : "normalOperationRefclock",
-        "99" : "unkown"
-        }
+        ntp_status = {
+            "0" : "notSynchronized",
+            "1" : "noGoodRefclock",
+            "2" : "syncToExtRefclock",
+            "3" : "syncToSerialRefclock",
+            "4" : "normalOperationPPS",
+            "5" : "normalOperationRefclock",
+            "99" : "unkown"
+            }
     
-    gps_mode = {
-        "0" : "notavailable",
-        "1" : "normalOperation",
-        "2" : "trackingSearching",
-        "3" : "antennaFaulty",
-        "4" : "warmBoot",
-        "5" : "coldBoot",
-        "6" : "antennaShortcircuit"
-        }
+        gps_mode = {
+            "0" : "notavailable",
+            "1" : "normalOperation",
+            "2" : "trackingSearching",
+            "3" : "antennaFaulty",
+            "4" : "warmBoot",
+            "5" : "coldBoot",
+            "6" : "antennaShortcircuit"
+            }
  
-# The default return value should be always OK
-helper.status(ok)
+    # The default return value should be always OK
+    helper.status(ok)
 
-#############
-# here we just want to print the current GPS position
-#############
+    #############
+    # here we just want to print the current GPS position
+    #############
 
-# clenaup: don't know if we really want to show the position in the summary or if we should move it to the long output
+    # clenaup: don't know if we really want to show the position in the summary or if we should move it to the long output
 
-gps_position = get_data(host, version, community, gps_position)
-helper.add_summary(gps_position)
+    gps_position = get_data(host, version, community, gps_position)
+    helper.add_summary(gps_position)
 
 
-############
-# here we check the ntp state for the new Meinbergs
-############
-ntp_status_int = get_data(host, version, community, ntp_current_state_int)
+    ############
+    # here we check the ntp state for the new Meinbergs
+    ############
+    ntp_status_int = get_data(host, version, community, ntp_current_state_int)
 
-# convert the ntp_status integer value in a human readable value
-try:
-    ntp_status_string = ntp_status[ntp_status_int]
-except KeyError:
-    # if we receive an value, that is not in the dict
-    helper.exit(summary="received an undefined value from device: " + ntp_status_int, exit_code=unknown, perfdata='')
+    # convert the ntp_status integer value in a human readable value
+    try:
+        ntp_status_string = ntp_status[ntp_status_int]
+    except KeyError:
+        # if we receive an value, that is not in the dict
+        helper.exit(summary="received an undefined value from device: " + ntp_status_int, exit_code=unknown, perfdata='')
 
      
-# the ntp status should be synchronized (new MIB) or normalOperation (old mib)
-if ntp_status_string != "synchronized" and ntp_status_string != "normalOperationPPS":
+    # the ntp status should be synchronized (new MIB) or normalOperation (old mib)
+    if ntp_status_string != "synchronized" and ntp_status_string != "normalOperationPPS":
     
-    # that is a critical condition, because the time reference will not be reliable anymore
-    helper.status(critical)
-    helper.add_summary("NTP status: " + ntp_status_string)
+        # that is a critical condition, because the time reference will not be reliable anymore
+        helper.status(critical)
+        helper.add_summary("NTP status: " + ntp_status_string)
 
-##########
-# here we check the status of the GPS
-#########
+    ##########
+    # here we check the status of the GPS
+    #########
 
-gps_status_int = get_data(host, version, community, gps_mode_int)
+    gps_status_int = get_data(host, version, community, gps_mode_int)
 
-try:
-    gps_mode_string = gps_mode[gps_status_int]
-except KeyError:
-    # if we receive an value, that is not in the dict
-    helper.exit(summary="received an undefined value from device: " + gps_status_int, exit_code=unknown, perfdata='')
+    try:
+        gps_mode_string = gps_mode[gps_status_int]
+    except KeyError:
+        # if we receive an value, that is not in the dict
+        helper.exit(summary="received an undefined value from device: " + gps_status_int, exit_code=unknown, perfdata='')
 
-if gps_mode_string != "normalOperation" and gps_mode_string != "gpsSync" :
-    # that is a warning condition, NTP could still work without the GPS antenna
-    helper.status(warning)
-    helper.add_summary("GPS status: " + gps_mode_string)
+    if gps_mode_string != "normalOperation" and gps_mode_string != "gpsSync" :
+        # that is a warning condition, NTP could still work without the GPS antenna
+        helper.status(warning)
+        helper.add_summary("GPS status: " + gps_mode_string)
 
-#############
-# check the amount of good satellites
-#############
+    #############
+    # check the amount of good satellites
+    #############
 
-# here we get the value for the satellites
-good_satellites = get_data(host, version, community, gps_satellites_good)
+    # here we get the value for the satellites
+    good_satellites = get_data(host, version, community, gps_satellites_good)
 
-# Show the summary and add the metric and afterwards check the metric
-helper.add_summary("Good satellites: %s" % good_satellites)
-helper.add_metric(label='satellites',value=good_satellites) 
+    # Show the summary and add the metric and afterwards check the metric
+    helper.add_summary("Good satellites: %s" % good_satellites)
+    helper.add_metric(label='satellites',value=good_satellites) 
 
-helper.check_all_metrics()
+    helper.check_all_metrics()
 
-# Print out plugin information and exit nagios-style
-helper.exit()
+    # Print out plugin information and exit nagios-style
+    helper.exit()
