@@ -33,7 +33,7 @@ helper.parser.add_option('-i', help="The id of the outlet / sensor you want to m
 helper.parse_arguments()
 
 # get the options
-id = helper.options.id
+number = helper.options.id
 typ = helper.options.typ
 host = helper.options.hostname
 version = helper.options.version
@@ -112,22 +112,22 @@ oid_inlet_warning_lower      = '.1.3.6.1.4.1.13742.6.3.3.4.1.22' # warning_lower
 oid_inlet_critical_lower     = '.1.3.6.1.4.1.13742.6.3.3.4.1.21' # critical_lower_threshold (must be divided by the digit)
     
 #OIDs for the Sensors from PDU2-MIB    
-oid_sensor_name             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.4.1.'     + id    #Name
-oid_sensor_state            =   '.1.3.6.1.4.1.13742.6.5.5.3.1.3.1.'     + id	#State
-oid_sensor_unit             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.16.1.'    + id	#Unit
-oid_sensor_value            =   '.1.3.6.1.4.1.13742.6.5.5.3.1.4.1.'     + id	#Value
-oid_sensor_digit            =   '.1.3.6.1.4.1.13742.6.3.6.3.1.17.1.'    + id	#Digits
-oid_sensor_type             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.2.1.'		+ id	#Type
-oid_sensor_warning_upper    =   '.1.3.6.1.4.1.13742.6.3.6.3.1.34.1.'    + id    #Upper Warning Threshold
-oid_sensor_critical_upper   =   '.1.3.6.1.4.1.13742.6.3.6.3.1.33.1.'    + id    #Upper Critical Threshold    
-oid_sensor_warning_lower    =   '.1.3.6.1.4.1.13742.6.3.6.3.1.32.1.'    + id    #Lower Warning Threshold
-oid_sensor_critical_lower   =   '.1.3.6.1.4.1.13742.6.3.6.3.1.31.1.'    + id    #Lower Critical Threshold    
+oid_sensor_name             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.4.1.'     + number    #Name
+oid_sensor_state            =   '.1.3.6.1.4.1.13742.6.5.5.3.1.3.1.'     + number	#State
+oid_sensor_unit             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.16.1.'    + number	#Unit
+oid_sensor_value            =   '.1.3.6.1.4.1.13742.6.5.5.3.1.4.1.'     + number	#Value
+oid_sensor_digit            =   '.1.3.6.1.4.1.13742.6.3.6.3.1.17.1.'    + number	#Digits
+oid_sensor_type             =   '.1.3.6.1.4.1.13742.6.3.6.3.1.2.1.'		+ number	#Type
+oid_sensor_warning_upper    =   '.1.3.6.1.4.1.13742.6.3.6.3.1.34.1.'    + number    #Upper Warning Threshold
+oid_sensor_critical_upper   =   '.1.3.6.1.4.1.13742.6.3.6.3.1.33.1.'    + number    #Upper Critical Threshold    
+oid_sensor_warning_lower    =   '.1.3.6.1.4.1.13742.6.3.6.3.1.32.1.'    + number    #Lower Warning Threshold
+oid_sensor_critical_lower   =   '.1.3.6.1.4.1.13742.6.3.6.3.1.31.1.'    + number    #Lower Critical Threshold    
 
 # OIDs for the Outlets from PDU2-MIB
 base_oid_outlet_name    = '.1.3.6.1.4.1.13742.6.3.5.3.1.3.1' 		# Name
 base_oid_outlet_state   = '.1.3.6.1.4.1.13742.6.5.4.3.1.3.1' 		# Value
-oid_outlet_name         = base_oid_outlet_name + "." + id           # here we add the id, to get the name
-oid_outlet_state        = base_oid_outlet_state + "." + id + ".14"   # here we add the id, to get the state
+oid_outlet_name         = base_oid_outlet_name + "." + number           # here we add the id, to get the name
+oid_outlet_state        = base_oid_outlet_state + "." + number + ".14"   # here we add the id, to get the state
 
 
 def get_data(host, version, community, oid):
@@ -188,7 +188,6 @@ def check_inlet(host, version, community):
     # all list must have the same length, if not something went wrong. that makes it easier and we need less loops    
     # translate the data in human readable units with help of the dicts
     for x in range(len(inlet_values)):   
-        inlet_sensor            = "" # sensors[int(inlet_sensors[x])]
         inlet_unit              = units[int(inlet_units[x])]
         inlet_digit             = inlet_digits[x]
         inlet_state             = states[int(inlet_states[x])]
@@ -206,9 +205,10 @@ def check_inlet(host, version, community):
         # we always want to see the values in the long output and in the perf data
         helper.add_summary("%s %s" % (inlet_value, inlet_unit))
         helper.add_long_output("%s %s: %s" % (inlet_value, inlet_unit, inlet_state))
-        helper.add_metric("Sensor " + str(x), inlet_value, inlet_warning_lower + ":" + inlet_warning_upper, inlet_critical_lower + ":" + inlet_critical_upper, "", "", inlet_unit)
+        helper.add_metric("Sensor " + str(x), inlet_value, inlet_warning_lower +\
+                          ":" + inlet_warning_upper, inlet_critical_lower + ":" +\
+                          inlet_critical_upper, "", "", inlet_unit)
         
-
 def check_outlet(host, version, community):
     """
     check the status of the specified outlet
@@ -222,7 +222,7 @@ def check_outlet(host, version, community):
         helper.status(critical)
     
     # print the status
-    helper.add_summary("Outlet %s - '%s' is: %s" % (id, outlet_name, outlet_real_state.upper()))
+    helper.add_summary("Outlet %s - '%s' is: %s" % (number, outlet_name, outlet_real_state.upper()))
     
 def check_sensor(host, version, community):
     """
@@ -288,13 +288,13 @@ def check_sensor(host, version, community):
         helper.exit(summary="Something went wrong - received undefined state", exit_code=unknown, perfdata='')
 
     # summary is shown for all sensors
-    helper.add_summary("Sensor %s - '%s' %s%s is: %s" % (id, sensor_name, real_sensor_value, sensor_unit_string, sensor_state_string))
+    helper.add_summary("Sensor %s - '%s' %s%s is: %s" % (number, sensor_name, real_sensor_value, sensor_unit_string, sensor_state_string))
     
 
 if __name__ == "__main__":
        
     # verify that a hostname is set
-    if host == "" or host == None:
+    if host == "" or host is None:
         helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
 
     # The default return value should be always OK

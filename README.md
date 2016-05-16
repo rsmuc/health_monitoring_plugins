@@ -6,6 +6,8 @@ In every single plugin folder, you will find a readme file, that describes the d
 
 All plugins are released under the GPLv2.
 
+[![CircleCI](https://circleci.com/gh/rsmuc/health_monitoring_plugins.svg?style=svg)](https://circleci.com/gh/rsmuc/health_monitoring_plugins)
+[![Code Health](https://landscape.io/github/rsmuc/health_monitoring_plugins/master/landscape.svg?style=flat)](https://landscape.io/github/rsmuc/health_monitoring_plugins/master)
 [![Code Climate](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/gpa.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
 [![Issue Count](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/issue_count.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
 [![PyPI version](https://badge.fury.io/py/health_monitoring_plugins.svg)](https://badge.fury.io/py/health_monitoring_plugins)
