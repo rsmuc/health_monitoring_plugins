@@ -162,5 +162,6 @@ The unittests require pytest.
 * fix redundancy status for check_ilo
 * add a default threshold to check_snmp_time2
 * check_snmp_time2: add leading 0 at the time
+* check_snmp_raritan: It should be possible to monitor all outlets / sensors in one service
 * Add examples for commands.cfg and service configuration
 * Code cleanup

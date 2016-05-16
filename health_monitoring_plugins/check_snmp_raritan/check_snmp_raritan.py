@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# check_snmp_raritan.py - Check a Raritan Dominition PX PDU (Power Distribution Unit), the outlets and the connected sensors
+# check_snmp_raritan.py - Check a Raritan Dominition PX PDU (Power Distribution Unit), the inlets, outlets and the connected sensors
 
 # Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>
 # 
@@ -20,7 +20,6 @@
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
 import netsnmp
 import math
-
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
