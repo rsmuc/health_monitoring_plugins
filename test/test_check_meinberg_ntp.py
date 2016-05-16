@@ -54,7 +54,7 @@ def test_system_test_meinberg(capsys):
 
     # without -H 1.2.3.4 (unknown host)
     p=subprocess.Popen("health_monitoring_plugins/check_meinberg_ntp/check_meinberg_ntp.py -H 1.2.3.4", shell=True, stdout=subprocess.PIPE)
-    assert "Unknown - snmpget failed - no data for OID- maybe wrong Firmware version selected or snmp is disabled at target device:" in p.stdout.read()
+    assert "Unknown - snmpget failed - no data" in p.stdout.read()
 
     # with --help
     p=subprocess.Popen("health_monitoring_plugins/check_meinberg_ntp/check_meinberg_ntp.py --help", shell=True, stdout=subprocess.PIPE)

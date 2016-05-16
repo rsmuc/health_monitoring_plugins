@@ -265,7 +265,9 @@ def check_sensor(host, version, community):
         real_sensor_warning_lower   = real_value(sensor_warning_lower, sensor_digit)
         real_sensor_critical_lower  = real_value(sensor_critical_lower, sensor_digit)
         # metrics are only possible for these sensors
-        helper.add_metric(sensor_name, real_sensor_value, real_sensor_warning_lower + ":" + real_sensor_warning_upper, real_sensor_critical_lower + ":" + real_sensor_critical_upper, "", "", sensor_unit_string)
+        helper.add_metric(sensor_name, real_sensor_value, real_sensor_warning_lower +\
+                          ":" + real_sensor_warning_upper, real_sensor_critical_lower +\
+                          ":" + real_sensor_critical_upper, "", "", sensor_unit_string)
     
     # "OK" state
     if sensor_state_string in ["closed", "normal", "on", "notDetected", "ok", "yes", "one", "two", "inSync"]:
