@@ -232,6 +232,11 @@ def test_outlet1_on():
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t outlet -i 1", shell=True, stdout=subprocess.PIPE)
     assert "OK - Outlet 1 - 'frei' is: ON" in p.stdout.read()
 
+def test_outlet1_without_ID():
+    # Outlet Check without ID option
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t outlet", shell=True, stdout=subprocess.PIPE)
+    assert "OK - Outlet 1 - 'frei' is: ON" in p.stdout.read()
+
 def test_outlet2_off():
     # Outlet 2 OFF
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t outlet -i 2", shell=True, stdout=subprocess.PIPE)
