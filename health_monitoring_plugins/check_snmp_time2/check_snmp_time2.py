@@ -137,6 +137,6 @@ if __name__ == "__main__":
         helper.exit(summary = 'remote device does not return a time value', exit_code = unknown, perfdata = '')
       
     #Print out plugin information and exit nagios-style
-    helper.add_summary('%s: %s:%s:%s' % (time_type, remote_time_hours, remote_time_minutes, remote_time_seconds))
+    helper.add_summary('%s: %s:%s:%s' % (time_type, str(remote_time_hours).zfill(2) , str(remote_time_minutes).zfill(2) , str(remote_time_seconds).zfill(2)))
     helper.add_summary('Offset = %d s' % offset)
     helper.exit()
