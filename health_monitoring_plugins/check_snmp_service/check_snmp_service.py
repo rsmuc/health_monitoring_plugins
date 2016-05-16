@@ -53,11 +53,12 @@ def walk_data(host, version, community, oid):
 if __name__ == "__main__":
 
     # Add command line parameters
-    helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address", default="localhost")
+    helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address")
     helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')
     helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
-    helper.parser.add_option('-s', help="The name of the service you want to monitor (-s scan for scanning)", dest="service", default="scan")
-    
+    helper.parser.add_option('-s', '--service', help="The name of the service you want to monitor (-s scan for scanning)", dest="service", default='')
+    helper.parser.add_option('-S', '--scan',   dest  = 'scan_flag', default   = False,    action = "store_true", help      = 'Show all available services')
+
     helper.parse_arguments()
     
     # get the options
@@ -65,15 +66,23 @@ if __name__ == "__main__":
     community = helper.options.community
     host = helper.options.hostname
     service = helper.options.service
+    scan = helper.options.scan_flag
     
     # The default return value should be always OK
     helper.status(ok)
     
+    # verify that a hostname is set
+    if host == "" or host is None:
+        helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
+
+    # if no partition / disk is set, we will do a scan
+    if service == "" or service is None:
+        scan = True
     
     ##########
     # Here we do a scan
     ##########
-    if service == "scan":
+    if scan:
         try:
             services = walk_data(host, version, community, base_oid)
         except:

@@ -62,7 +62,7 @@ def test_oid_conversion():
 def test_without_options(capsys):
     # without options
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_service/check_snmp_service.py", shell=True, stdout=subprocess.PIPE)
-    assert "Running services at host 'localhost':" in p.stdout.read()
+    assert "Unknown - Hostname must be specified\n" in p.stdout.read()
 
 def test_help():
     # with --help
@@ -71,7 +71,7 @@ def test_help():
 
 def test_scan():    
     # with service scan
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_service/check_snmp_service.py -H 127.0.0.1:1234 -s scan", shell=True, stdout=subprocess.PIPE)
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_service/check_snmp_service.py -H 127.0.0.1:1234 -S", shell=True, stdout=subprocess.PIPE)
     assert "Running services at host '127.0.0.1:1234':\n\nPower\nServer\nThemes\nIP Helper\n" in p.stdout.read()
 
 def test_service_available():    

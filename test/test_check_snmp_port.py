@@ -75,18 +75,12 @@ def test_check_port(capsys):
         # "test" is an invalid argument
         check_port(helper, "test")
     out, err = capsys.readouterr()    
-    assert out == "Unknown - Port (-p) must be a integer value or 'scan'.\n"
+    assert out == "Unknown - Port (-p) must be a integer value.\n"
         
     assert check_port(helper, "22") == None
-    assert check_port(helper, "scan") == None
 
 def test_check_udp(capsys):
     """ test the check_udp function """
-    # check "scan"
-    with pytest.raises(SystemExit):
-        check_udp(helper, "127.0.0.1", 2, "public", "scan")
-    out, err = capsys.readouterr()    
-    assert "UDP" in out
        
     # check udp port "161" (open)
     assert check_udp(helper, "127.0.0.1:1234", 2, "public", "161") == "Current status for UDP port 161 is: OPEN"
@@ -97,13 +91,7 @@ def test_check_udp(capsys):
     # check udp port "test"
     assert check_udp(helper, "127.0.0.1:1234", 2, "public", "test") == "Current status for UDP port test is: CLOSED"
         
-def test_check_tcp(capsys):    
-    # check "scan"
-    with pytest.raises(SystemExit):
-        check_tcp(helper, "127.0.0.1", 2, "public", "scan", "closed", "closed")
-    out, err = capsys.readouterr()    
-    assert "TCP:" in out
-      
+def test_check_tcp(capsys):     
     # check "22" (listen)
     assert check_tcp(helper, "127.0.0.1:1234", 2, "public", "22", "closed", "closed") == "Current status for TCP port 22 is: listen"
     

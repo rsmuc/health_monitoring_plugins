@@ -20,6 +20,31 @@
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
 import netsnmp
 
+# Create an instance of PluginHelper()
+helper = PluginHelper()
+
+# Add command line parameters
+helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address", default="localhost")
+helper.parser.add_option('-C', '--community', dest="community",  help='SNMP community of the SNMP service on target host.', default='public')
+helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
+helper.parser.add_option('-p', '--port', dest='port', help='The port you want to monitor', type='str', default='')
+helper.parser.add_option('-s', '--scan',   dest  = 'scan_flag', default   = False,    action = "store_true", help      = 'Show all open ports')
+helper.parser.add_option('-t', '--type', dest="type", help="TCP or UDP", default="udp")
+helper.parser.add_option('-w', dest="warning", help="warning values", default="synSent")
+helper.parser.add_option('-c', dest="critical", help="critical vales",default="closed")
+helper.parse_arguments()    
+
+# get the options
+typ = helper.options.type.lower()
+port = helper.options.port
+scan = helper.options.scan_flag
+host = helper.options.hostname
+version = helper.options.version
+community = helper.options.community
+warning_param = helper.options.warning
+critical_param = helper.options.critical
+
+
 def get_data(host, version, community, oid):
     """
     function for snmp get
@@ -51,8 +76,7 @@ def check_port(helper, port):
     try:
         int(port)
     except ValueError:
-        if port != "scan":
-            helper.exit(summary="Port (-p) must be a integer value or 'scan'.", exit_code=unknown, perfdata='')
+        helper.exit(summary="Port (-p) must be a integer value.", exit_code=unknown, perfdata='')
 
 def check_udp(helper, host, version, community, port):
     """
@@ -61,7 +85,7 @@ def check_udp(helper, host, version, community, port):
     open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.7.5.1.2") # the udpLocaLPort from UDP-MIB.mib (deprecated)
     
     # here we show all open UDP ports
-    if port == "scan":
+    if scan:
         print "All open UDP ports at host " + host
         for port in open_ports:
             print "UDP: \t" + port
@@ -105,7 +129,7 @@ def check_tcp(helper, host, version, community, port, warning_param, critical_pa
     port_and_status = dict(zip(open_ports, port_status))
     
     # here we show all open TCP ports and it's status
-    if port == "scan":
+    if scan:
         print "All open TCP ports: " + host
         for port in open_ports:
             tcp_status = port_and_status[port]
@@ -134,33 +158,19 @@ def check_tcp(helper, host, version, community, port, warning_param, critical_pa
         
     return ("Current status for TCP port " + port + " is: " + tcp_status)
             
-# Create an instance of PluginHelper()
-helper = PluginHelper()
-
 if __name__ == "__main__":
-    # Add command line parameters
-    helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address", default="localhost")
-    helper.parser.add_option('-C', '--community', dest="community",  help='SNMP community of the SNMP service on target host.', default='public')
-    helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
-    helper.parser.add_option('-p', '--port', dest='port', help='The port you want to monitor (scan for scanning)', type='str', default='scan')
-    helper.parser.add_option('-t', '--type', dest="type", help="TCP or UDP", default="udp")
-    helper.parser.add_option('-w', dest="warning", help="warning values", default="synSent")
-    helper.parser.add_option('-c', dest="critical", help="critical vales",default="closed")
 
-    helper.parse_arguments()    
+    # verify that a hostname is set
+    if host == "" or host is None:
+        helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
 
-    # get the options
-    typ = helper.options.type.lower()
-    port = helper.options.port
-    host = helper.options.hostname
-    version = helper.options.version
-    community = helper.options.community
-    warning_param = helper.options.warning
-    critical_param = helper.options.critical
+    # if no port is set, we will do a scan
+    if port == "" or port is None:
+        scan = True
+    else:
+        check_port(helper, port)
 
     check_typ(helper, typ) 
-
-    check_port(helper, port)
 
     # The default return value should be always OK
     helper.status(ok)
@@ -173,7 +183,7 @@ if __name__ == "__main__":
         helper.add_summary(check_udp(helper, host, version, community, port))
 
     # ############
-    # # here we now want to check TCP ports
+    # Check TCP
     # ############
    
     if typ == "tcp":
