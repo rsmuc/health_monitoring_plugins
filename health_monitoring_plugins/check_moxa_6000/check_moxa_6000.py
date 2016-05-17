@@ -17,7 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
-import argparse, collections, sys, netsnmp, pynag.Plugins
+import sys, netsnmp
 from pynag.Plugins import PluginHelper, ok, warning, critical, unknown
 
 class CHECK_TYPE(enumerate):
@@ -61,9 +61,11 @@ if __name__ == '__main__':
     helper.parser.add_option('-V', '--snmpversion', dest='snmpversion', help='SNMP version.', default=2, type='int')
     helper.parser.add_option('-p', '--port', dest='port', help='Moxa RS232 port number.', type='str')
     helper.parser.add_option('-t', '--type', dest='type', help= """Available check types: CTS, DSR, DTR, ErrorCount. Example: -t CTS_ErrorCount. 
-                                                                CTS (Clear To Send): DCE (Data Communication Equipment) is ready to accept data from the DTE (Data Terminal Equipment). 
+                                                                CTS (Clear To Send): DCE (Data Communication Equipment) is ready to accept 
+                                                                data from the DTE (Data Terminal Equipment). 
                                                                 DSR (Data Set Ready): DCE (Data Communication Equipment) is ready to receive commands or data. 
-                                                                DTR (Data Terminal Ready): DTE (Data Terminal Equipment) is ready to receive, initiate, or continue a call. 
+                                                                DTR (Data Terminal Ready): DTE (Data Terminal Equipment) is ready to 
+                                                                receive, initiate, or continue a call. 
                                                                 ErrorCount = Show error counts of Frame, Break, Overrun and Parity.""" , type='str')
     helper.parser.add_option('-c', '--critical', dest='critical', help='Return CRITICAL if any ErrorCount >= this parameter.', default=sys.maxint, type='int')
     helper.parser.add_option('-w', '--warning', dest='warning', help='Return WARNING if any ErrorCount >= this parameter.', default=1, type='int')
@@ -115,9 +117,13 @@ if __name__ == '__main__':
         error_overrun = moxa_oid_results[CHECK_TYPE.ErrorCountOverrun]
         error_parity =  moxa_oid_results[CHECK_TYPE.ErrorCountParity]
      
-        append_output(helper, get_state(int(error_frame),   warning_threshold, critical_threshold), 'ErrorCountFrame=' + error_frame, 'Error Count Frame = ' + error_frame)
-        append_output(helper, get_state(int(error_break),   warning_threshold, critical_threshold), 'ErrorCountBreak=' + error_break, 'Error Count Break = ' + error_break)
-        append_output(helper, get_state(int(error_overrun), warning_threshold, critical_threshold), 'ErrorCountOverrun=' + error_overrun, 'Error Count Overrun = ' + error_overrun)
-        append_output(helper, get_state(int(error_parity),  warning_threshold, critical_threshold), 'ErrorCountParity=' + error_parity, 'Error Count Parity = ' + error_parity)
+        append_output(helper, get_state(int(error_frame),   warning_threshold, critical_threshold), 
+                      'ErrorCountFrame=' + error_frame, 'Error Count Frame = ' + error_frame)
+        append_output(helper, get_state(int(error_break),   warning_threshold, critical_threshold), 
+                      'ErrorCountBreak=' + error_break, 'Error Count Break = ' + error_break)
+        append_output(helper, get_state(int(error_overrun), warning_threshold, critical_threshold), 
+                      'ErrorCountOverrun=' + error_overrun, 'Error Count Overrun = ' + error_overrun)
+        append_output(helper, get_state(int(error_parity),  warning_threshold, critical_threshold), 
+                      'ErrorCountParity=' + error_parity, 'Error Count Parity = ' + error_parity)
 
     helper.exit()

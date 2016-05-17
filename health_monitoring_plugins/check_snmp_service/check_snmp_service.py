@@ -17,7 +17,7 @@
 # along with check_snmp_service.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
+from pynag.Plugins import PluginHelper,ok,critical,unknown
 import netsnmp
 
 # Create an instance of PluginHelper()

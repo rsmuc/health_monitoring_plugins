@@ -20,7 +20,7 @@ import time
 import netsnmp
 import datetime
 import struct
-from pynag.Plugins import PluginHelper,ok,critical,unknown
+from pynag.Plugins import PluginHelper,ok,unknown
 
 # function for snmpget
 def get_data(host, version, community, oid):
