@@ -3,9 +3,7 @@ import sys
 import os
 
 if sys.argv[-1] == 'test':
-    test_requirements = [
-        'pytest',
-    ]
+    test_requirements = ['pytest',]
     try:
         modules = map(__import__, test_requirements)
     except ImportError as e:
@@ -17,12 +15,11 @@ if sys.argv[-1] == 'test':
     os.system('./run_unittest.sh')
     sys.exit()
 
-def readme():
-    with open('README.md') as f:
-        return f.read()
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='health_monitoring_plugins',
-      version='0.0.2',
+      version='0.0.3',
       description='Health monitoring plugins for icinga/nagios',
       url='https://github.com/rsmuc/health_monitoring_plugins',
       author='rsmuc',
@@ -33,6 +30,7 @@ setup(name='health_monitoring_plugins',
         "Development Status :: 3 - Alpha"],
       packages= find_packages(),
       package_data = {'': ['*.md']},
+      long_description=read('README.md'),
       install_requires=['pynag',],
       scripts=['health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py',
                'health_monitoring_plugins/check_meinberg_ntp/check_meinberg_ntp.py',
