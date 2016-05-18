@@ -17,16 +17,16 @@
 # along with check_snmp_large_storage.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
+import netsnmp, sys, os
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+from snmpSessionBaseClass import *
 from pynag.Plugins import PluginHelper,ok,unknown
-import netsnmp
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
 
 # Add command line parameters
-helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address", default="localhost")
-helper.parser.add_option('-C', '--community', dest="community",  help='SNMP community of the SNMP service on target host.', default='public')
-helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
+add_common_options(helper)
 helper.parser.add_option('-p', '--partition',
                          dest='partition',
                          help='The disk / partition you want to monitor',
@@ -39,9 +39,7 @@ helper.parse_arguments()
 disk = helper.options.partition
 scan = helper.options.scan_flag
 targetunit = helper.options.targetunit
-host = helper.options.hostname
-version = helper.options.version
-community = helper.options.community
+host, version, community = get_common_options(helper)
 
 # The OIDs we need from HOST-RESOURCES-MIB
 oid_hrStorageIndex              = ".1.3.6.1.2.1.25.2.3.1.1"
@@ -49,20 +47,6 @@ oid_hrStorageDescr              = ".1.3.6.1.2.1.25.2.3.1.3"
 oid_hrStorageAllocationUnits    = ".1.3.6.1.2.1.25.2.3.1.4"
 oid_hrStorageUsed               = ".1.3.6.1.2.1.25.2.3.1.6"
 oid_hrStorageSize               = ".1.3.6.1.2.1.25.2.3.1.5"
-
-
-def get_data(host, version, community, oid):
-    var = netsnmp.Varbind(oid)
-    data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
-    value = data[0]
-    return value
-
-def walk_data(host, version, community, oid):
-    var = netsnmp.Varbind(oid)
-    data = netsnmp.snmpwalk(var, Version=version, DestHost=host, Community=community)
-    if len(data) == 0:
-        helper.exit(summary="SNMP walk not possible", exit_code=unknown, perfdata='')
-    return data
 
 def calculate_real_size(value):
     # check if we have a 32 bit counter overrun
@@ -106,7 +90,7 @@ def run_scan():
     """
     show all available partitions
     """
-    all_disks = walk_data(host, version, community, oid_hrStorageDescr)
+    all_disks = walk_data(host, version, community, oid_hrStorageDescr, helper)
         
     print "All available disks at: " + host
     for disk in all_disks:        
@@ -136,8 +120,8 @@ def check_partition():
     check the defined partition
     """
     
-    all_index           = walk_data(host, version, community, oid_hrStorageIndex)
-    all_descriptions    = walk_data(host, version, community, oid_hrStorageDescr)
+    all_index           = walk_data(host, version, community, oid_hrStorageIndex, helper)
+    all_descriptions    = walk_data(host, version, community, oid_hrStorageDescr, helper)
     # we need the sucess flag for the error handling (partition found or not found)
     sucess              = False
 
@@ -154,9 +138,9 @@ def check_partition():
             sucess = True
 
             # receive all values we need
-            unit    =   float(get_data(host, version, community, oid_hrStorageAllocationUnits + "." + index))
-            size    =   float(get_data(host, version, community, oid_hrStorageSize + "." + index))
-            used    =   float(get_data(host, version, community, oid_hrStorageUsed + "." + index))
+            unit    =   float(get_data(host, version, community, oid_hrStorageAllocationUnits + "." + index, helper))
+            size    =   float(get_data(host, version, community, oid_hrStorageSize + "." + index, helper))
+            used    =   float(get_data(host, version, community, oid_hrStorageUsed + "." + index, helper))
 
             if size == 0 or used == 0:
                 # if the host return "0" as used or size, then we have a problem with the calculation (devision by zero)
@@ -194,8 +178,7 @@ helper.status(ok)
 if __name__ == "__main__":
     
     # verify that a hostname is set
-    if host == "" or host is None:
-        helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
+    verify_host(host, helper)
 
     # if no partition / disk is set, we will do a scan
     if disk == "" or disk is None:

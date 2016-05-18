@@ -16,33 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with check_snmp_time2.py.  If not, see <http://www.gnu.org/licenses/>.
 
+import netsnmp, sys, os
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+from snmpSessionBaseClass import *
 import time
-import netsnmp
 import datetime
 import struct
 from pynag.Plugins import PluginHelper,ok,unknown
-
-# function for snmpget
-def get_data(host, version, community, oid):
-    try:
-        var = netsnmp.Varbind(oid)
-        data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
-        value = data[0]
-    except:
-        helper.exit(summary="SNMP connection to device failed " + oid, exit_code=unknown, perfdata='')
-    if not value:
-        helper.exit(summary="SNMP connection to device failed " + oid, exit_code=unknown, perfdata='')
-    return value
 
 #Create an instance of PluginHelper()
 helper = PluginHelper()
 
 #Define the command line options
-helper.parser.add_option('-H', dest  = 'hostname', help = 'Hostname or ip address')
-helper.parser.add_option('-C', '--community', dest  = 'community',
-                         default = 'public', help  = 'SNMP community of the SNMP service on target host.')
-helper.parser.add_option('-V', '--snmpversion', dest  = 'version',
-                         default = 2, type = 'int', help = 'SNMP version. (1 or 2)')
+add_common_options(helper)
 helper.parser.add_option('-o', '--tzoffset', dest  = 'tzoffset',
                          default = 0, type   = 'int',
                          help = 'the local systems utc offset to the servers utc, in minutes (use only if your remote device is in a different timezone)')
@@ -52,26 +38,22 @@ helper.parser.add_option('-l', '--localtime', dest  = 'time_flag',
 helper.parse_arguments()
 
 #Get the options
-host                        = helper.options.hostname
-version                     = helper.options.version
-community                   = helper.options.community
+host, version, community = get_common_options(helper)
 o_tzoff                     = helper.options.tzoffset
 use_local                   = helper.options.time_flag
 
 if __name__ == "__main__":
     
-    #Verify that there is a hostname set
-    if host == '' or host  is None:
-        helper.exit(summary = 'Hostname must be specified', exit_code = unknown, perfdata  = '')
-    
+    # verify that a hostname is set
+    verify_host(host, helper)    
     
     #The default return value should be always OK
     helper.status(ok)
     
     # get the remote time
-    remote_time                 = get_data(host, version, community, '.1.3.6.1.2.1.25.1.2.0')
+    remote_time                 = get_data(host, version, community, '.1.3.6.1.2.1.25.1.2.0', helper)
     # get the description (operating system)
-    descr                       = get_data(host, version, community, '.1.3.6.1.2.1.1.1.0')
+    descr                       = get_data(host, version, community, '.1.3.6.1.2.1.1.1.0', helper)
     
     # check if we are on a windows system
     windows = False

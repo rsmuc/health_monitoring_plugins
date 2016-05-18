@@ -40,11 +40,11 @@ def get_system_uptime():
 
 def test_get(capsys):
     with pytest.raises(SystemExit):
-        get_data("1.2.3.4", 2, "public", ".1")
+        get_data("1.2.3.4", 2, "public", ".1", helper)
     out, err = capsys.readouterr()    
-    assert "Unknown - snmpget failed - no data for OID" in out
+    assert "Unknown - snmpget failed - no data for host" in out
     # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0")[:-2] == get_system_uptime()[:-2]
+    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0", helper)[:-2] == get_system_uptime()[:-2]
 
 # integration test
 def test_system_test_meinberg(capsys):

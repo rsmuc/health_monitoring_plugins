@@ -17,25 +17,24 @@
 # along with check_meinberg_ntp.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
+import netsnmp, sys, os
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+from snmpSessionBaseClass import *
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
-import netsnmp
+
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
 
-# define the command line options
-helper.parser.add_option('-H', help="Hostname or ip address", dest="hostname")
-helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')
-helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
+# add the common command line options
+add_common_options(helper)
+# define the specific command line options
 helper.parser.add_option('-m', help="Version of the Firmware (v5 or NG) (NG = MBG-LANTIME-NG-MIB.mib used in Firmware 6 and newer)", dest="mib")
 helper.parse_arguments()
 
 # get the options
 mib = helper.options.mib
-host = helper.options.hostname
-version = helper.options.version
-community = helper.options.community
-
+host, version, community = get_common_options(helper)
 
 # use the correct oids depending on the version of the firmware / MIB
 if mib == "NG":
@@ -112,32 +111,18 @@ else:
         "6" : "antennaShortcircuit"
         }
 
-def get_data(host, version, community, oid):
-    # make an snmp get, if it fails exit the plugin
-    try:
-        var = netsnmp.Varbind(oid)
-        data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
-        value = data[0]
-        if not value:
-            helper.exit(summary="snmpget failed - no data for OID- \
-                        maybe wrong Firmware version selected or snmp \
-                        is disabled at target device: " + host + " OID: " +oid, exit_code=unknown, perfdata='')
-    except:
-        helper.exit(summary="snmpget failed - exception", exit_code=unknown, perfdata='')
-    return value
-
 def check_gps_position():
     """
     just print the curret GPS position
     """
-    gps_position = get_data(host, version, community, oid_gps_position)
+    gps_position = get_data(host, version, community, oid_gps_position, helper)
     helper.add_summary(gps_position)
 
 def check_ntp_status():
     """
     check and show the current NTP status
     """
-    ntp_status_int = get_data(host, version, community, oid_ntp_current_state_int)
+    ntp_status_int = get_data(host, version, community, oid_ntp_current_state_int, helper)
 
     # convert the ntp_status integer value in a human readable value
     try:
@@ -156,7 +141,7 @@ def check_gps_status():
     """
     check and show the current GPS status
     """
-    gps_status_int = get_data(host, version, community, oid_gps_mode_int)
+    gps_status_int = get_data(host, version, community, oid_gps_mode_int, helper)
 
     try:
         gps_mode_string = gps_mode[gps_status_int]
@@ -174,16 +159,16 @@ def check_satellites():
     check and show the good satellites
     """
     # here we get the value for the satellites
-    good_satellites = get_data(host, version, community, oid_gps_satellites_good)
+    good_satellites = get_data(host, version, community, oid_gps_satellites_good, helper)
 
     # Show the summary and add the metric and afterwards check the metric
     helper.add_summary("Good satellites: %s" % good_satellites)
     helper.add_metric(label='satellites',value=good_satellites) 
 
 if __name__ == "__main__":
+
     # verify that a hostname is set
-    if host == "" or host is None:
-        helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
+    verify_host(host, helper)
 
     # The default return value should be always OK
     helper.status(ok)

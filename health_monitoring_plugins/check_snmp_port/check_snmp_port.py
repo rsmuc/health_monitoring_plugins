@@ -17,16 +17,17 @@
 # along with check_snmp_port.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
+import netsnmp, sys, os
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+from snmpSessionBaseClass import *
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
-import netsnmp
+
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
 
 # Add command line parameters
-helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address", default="localhost")
-helper.parser.add_option('-C', '--community', dest="community",  help='SNMP community of the SNMP service on target host.', default='public')
-helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
+add_common_options(helper)
 helper.parser.add_option('-p', '--port', dest='port', help='The port you want to monitor', type='str', default='')
 helper.parser.add_option('-s', '--scan',   dest  = 'scan_flag', default   = False,    action = "store_true", help      = 'Show all open ports')
 helper.parser.add_option('-t', '--type', dest="type", help="TCP or UDP", default="udp")
@@ -38,29 +39,9 @@ helper.parse_arguments()
 typ = helper.options.type.lower()
 port = helper.options.port
 scan = helper.options.scan_flag
-host = helper.options.hostname
-version = helper.options.version
-community = helper.options.community
+host, version, community = get_common_options(helper)
 warning_param = helper.options.warning
 critical_param = helper.options.critical
-
-
-def get_data(host, version, community, oid):
-    """
-    function for snmp get
-    """
-    var = netsnmp.Varbind(oid)
-    data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
-    value = data[0]
-    return value
-
-def walk_data(host, version, community, oid):
-    """
-    function for snmp walk
-    """
-    var = netsnmp.Varbind(oid)
-    data = netsnmp.snmpwalk(var, Version=version, DestHost=host, Community=community)
-    return data
 
 def check_typ(helper, typ):
     """
@@ -82,7 +63,7 @@ def check_udp(helper, host, version, community, port):
     """
     the check logic for UDP ports
     """
-    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.7.5.1.2") # the udpLocaLPort from UDP-MIB.mib (deprecated)
+    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.7.5.1.2", helper) # the udpLocaLPort from UDP-MIB.mib (deprecated)
     
     # here we show all open UDP ports
     if scan:
@@ -122,9 +103,9 @@ def check_tcp(helper, host, version, community, port, warning_param, critical_pa
     }
 
     # collect all open local ports
-    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.3") #tcpConnLocalPort from TCP-MIB (deprecated)
+    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.3", helper) #tcpConnLocalPort from TCP-MIB (deprecated)
     # collect all status information about the open ports
-    port_status = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.1") #tcpConnState from TCP-MIB (deprecated)
+    port_status = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.1", helper) #tcpConnState from TCP-MIB (deprecated)
     # make a dict out of the two lists
     port_and_status = dict(zip(open_ports, port_status))
     
@@ -161,8 +142,7 @@ def check_tcp(helper, host, version, community, port, warning_param, critical_pa
 if __name__ == "__main__":
 
     # verify that a hostname is set
-    if host == "" or host is None:
-        helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
+    verify_host(host, helper)
 
     # if no port is set, we will do a scan
     if port == "" or port is None:
