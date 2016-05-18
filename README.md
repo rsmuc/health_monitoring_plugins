@@ -19,7 +19,7 @@ All plugins are released under the GPLv2.
 - [check_snmp_ilo4](doc/check_snmp_ilo4/README.md)
 - [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
 - [check_snmp_port](doc/check_snmp_port/README.md)
-- [check_nmp_raritan](doc/check_nmp_raritan/README.md)
+- [check_snmp_raritan](doc/check_snmp_raritan/README.md)
 - [check_snmp_service](doc/check_snmp_service/README.md)
 - [check_snmp_time](doc/check_snmp_time/README.md)
 
