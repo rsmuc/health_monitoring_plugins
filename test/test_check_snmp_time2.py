@@ -53,12 +53,12 @@ def test_help():
 def test_linux_no_threshold():    
     # high offset, but no threshold is set
      p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H 127.0.0.1:1234", shell=True, stdout=subprocess.PIPE)
-     assert "OK - Remote UTC: 17:02:29. Offset = " in p.stdout.read()
+     assert "OK - Remote (UTC): 17:02:29. Offset =" in p.stdout.read()
 
 def test_linux_with_threshold():    
      # high offset, but threshold => critical
      p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H 127.0.0.1:1234 --th metric=offset,warning=-5:5,critical=-15:15", shell=True, stdout=subprocess.PIPE)
-     assert "Critical - Critical on offset. Remote UTC: 17:02:29. Offset =" in p.stdout.read()
+     assert "Critical - Critical on offset. Remote (UTC): 17:02:29. Offset =" in p.stdout.read()
 
 def test_linux_with_threshold_localhost():    
      # no offset, set threshold => OK
@@ -73,9 +73,8 @@ def test_windows():
             '''   
     register_snmpwalk_ouput(walk)
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H 127.0.0.1:1234 --th metric=offset,warning=-5:5,critical=-15:15", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - Critical on offset. Local-Remote Time: 19:04:29. Offset = " in p.stdout.read()
-
-
+    assert "Critical - Critical on offset. Remote (Local): 19:04:29. Offset =" in p.stdout.read()
+    
 def test_stop():
     # stop the testagent
     stop_server()

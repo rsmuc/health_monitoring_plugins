@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_ilo4'))
- 
+
 from check_snmp_ilo4 import *
 
 import pytest
@@ -12,15 +12,10 @@ from types import MethodType
 
 # configuration of the testagent
 os.environ['MIBDIRS'] = os.path.dirname(os.path.abspath(__file__))
-configure(agent_address = "localhost:1234",
-    rocommunity='public', rwcommunity='private')
-
-#####################################
-# run the test for the old firmware #
-#####################################
+configure(agent_address = "localhost:1234", rocommunity='public', rwcommunity='private')
 
 def test_start():
-    # start the testagent
+ # start the testagent
     # Gauge32 are not working - So I replaced them by INTEGER
     # HP DL380 Gen 9 iLo 4 
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
@@ -67,77 +62,76 @@ def test_start():
 
     start_server()
 
-def get_system_uptime():
-    with open('/proc/uptime', 'r') as f:
-        uptime_seconds = str(f.readline().split()[0])
-        uptime_seconds = uptime_seconds.replace(".", "")
-        return str(uptime_seconds)
-
-def test_get(capsys):
-    with pytest.raises(SystemExit):
-        get_data("1.2.3.4", 2, "public", ".1")
-    out, err = capsys.readouterr()    
-    assert "Unknown - \n SNMP connection to device failed" in out
-    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0")[:-2] == get_system_uptime()[:-2]
-
-
-def test_walk_data():
-    """
-    test of the walk_data function
-    """
-    # run a walk on a not existing host
-    #assert walk_data("1.2.3.4", 2, "public", ".1") == ()
-
-    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert walk_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1")[0][:-3] == get_system_uptime()[:-3]
-
-
-# integration test
-def test_system_test_ilo4(capsys):
+def test_system_test_ilo4():
     # without options
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py", shell=True, stdout=subprocess.PIPE)
-    assert "Unknown - Hostname must be specified" in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py', shell=True, stdout=subprocess.PIPE)
+    assert 'Unknown - Hostname must be specified' in p.stdout.read()
 
-    # NEEDS TO BE FIXED
     ## with -H 1.2.3.4 --scan (unknown host)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H 1.2.3.4 --scan", shell=True, stdout=subprocess.PIPE)
-    assert "Unknown - snmpget failed - no data for OID- maybe wrong MIB version selected or snmp is disabled" in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H 1.2.3.4 --scan', shell=True, stdout=subprocess.PIPE)
+    #snmpget failed - no data for OID- maybe wrong MIB version selected or snmp is disabled
+    assert 'Unknown - \n SNMP connection to device failed or data retrieved from OID' in p.stdout.read()
 
-    # NEEDS TO BE FIXED
     ## with -H 127.0.0.1:1234 --scan (known host)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H 127.0.0.1:1234 --scan", shell=True, stdout=subprocess.PIPE)
-    assert "Unknown - snmpget failed - no data for OID- maybe wrong MIB version selected or snmp is disabled" in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H 127.0.0.1:1234 --scan', shell=True, stdout=subprocess.PIPE)
+    assert 'This is not a health status!' in p.stdout.read()
 
+    ## with -H 127.0.0.1:1234 --scan (check scan priority)
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1 --scan', shell=True, stdout=subprocess.PIPE)
+    assert 'This is not a health status!' in p.stdout.read()
 
     # with --help
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py --help", shell=True, stdout=subprocess.PIPE)
-    assert "Options:" in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py --help', shell=True, stdout=subprocess.PIPE)
+    assert 'Options:\n  -h, --help' in p.stdout.read()
 
 def test_with_host_ok():
     # everything ok (2 drives, 1 power supply running, 1 fan running)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567\nGlobal storage status: ok \n\nGlobal system status: ok \n\nGloba" in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
+    assert 'OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567\nGlobal storage status: ok \n\nGlobal system status: ok \n\nGloba' in p.stdout.read()
+
+def test_with_everything_disabled():
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=0 --fan=0 --noStorage --noSystem --noPowerSupply --noPowerState --noTemp --noTempSens --noDriveTemp --noFan --noMemory --noController', shell=True, stdout=subprocess.PIPE)
+    assert 'OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567\nTemperature 0:' in p.stdout.read()
+
+def test_with_no_input():
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    assert 'Amount of physical drives must be specified (--drives). Amount of power supplies must be specified (--ps). Amount of fans must be specified (--fan). If you do not know what is in the server, you can check it with "--scan".' in p.stdout.read()
+
+def test_state_summary_ok():
+    summary_output, long_output = state_summary(2, 'summary output', normal_state)
+    assert 'status: ok' in long_output
+    assert (None, summary_output)
+
+def test_state_summary_failed():
+    summary_output, long_output = state_summary(4, 'summary output', normal_state)
+    assert 'status: failed' in long_output
+    assert 'status: failed' in summary_output
 
 def test_with_less_fans():
     # 2 fans configured (2 drives, 1 power supply running, 1 fan running)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=2", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. 2 fan(s) expected - 3 fan(s) slot(s) detected - 1 fan" in p.stdout.read()
+    summary_output, long_output = check_fan(["127.0.0.1:1234", 2, "public", helper], 2)
+    assert '2 fan(s) expected - 3 fan(s) slot(s) detected - 1 fan(s) ok' in summary_output
+    assert 'Fan 0: other.\nFan 1: other.' in long_output
+
+def test_with_one_ok_fan():
+    summary_output, long_output = check_fan(["127.0.0.1:1234", 2, "public", helper], 3)
+    assert '3 fan(s) expected - 3 fan(s) slot(s) detected - 1 fan(s) ok.' in summary_output
+    assert 'Fan 0: other.\nFan 1: other.' in long_output
 
 def test_with_less_ps():
     # 2 power supplies configured (2 drives, 1 power supply running, 1 fan running)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=2 --drives=2 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. 2 power supply/supplies expected - 2 power supply/supplies" in p.stdout.read()
-
+    summary_output, long_output = check_ps(["127.0.0.1:1234", 2, "public", helper], 2)
+    assert '2 power supply/supplies expected - 2 power supply/supplies' in summary_output
+   
 def test_with_less_drives():
     # 4 drives configured (2 drives, 1 power supply running, 1 fan running)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=4 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. 4 physical drive(s) expected - 2 physical drive(s) in ok" in p.stdout.read()
+    summary_output, long_output = check_phy_drv(["127.0.0.1:1234", 2, "public", helper], 1, 4)
+    assert '4 physical drive(s) expected - 2 physical drive(s) in ok' in summary_output
 
 def test_with_drives_disabled():
     # no drives configured (2 drives, 1 power supply running, 1 fan running)
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=0 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567\nGlobal storage status: ok \n\nGlobal system status: ok" in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=0 --fan=1', shell=True, stdout=subprocess.PIPE)
+    assert 'OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567\nGlobal storage status: ok \n\nGlobal system status: ok' in p.stdout.read()
 
 def test_all_global_status_broken():
     
@@ -185,10 +179,8 @@ def test_all_global_status_broken():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 2''')
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 2''') # power supply redundancy
 
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Global storage status: other. Global system status: other. Global power supply status: other. Server power status: unknown. Overall thermal environment status: other. Temperature sensors status: other. Fan(s) status: other. Memory status: other." in p.stdout.read()
-
-
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Global storage status: other. Global system status: other. Global power supply status: other. Overall thermal environment status: other. Temperature sensors status: other. Fan(s) status: other. Memory status: other. Server power status: unknown.' in p.stdout.read()
 
 def test_temp_high():
     unregister_all()
@@ -235,11 +227,10 @@ def test_temp_high():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 2''')
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 2''') # power supply redundancy
 
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Physical drive temperature 1 above threshold (75 / 60). Temperature at sensor 1 above threshold (55 / 42)" in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Physical drive 1 temperature above threshold (75 / 60). Temperature at sensor 0 above threshold (55 / 42)' in p.stdout.read()
 
 def test_smart_broken():
-    # NEEDS TO BE FIXED
     
     unregister_all()
     
@@ -285,8 +276,8 @@ def test_smart_broken():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 2''')
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 2''') # power supply redundancy
 
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567." in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567' in p.stdout.read()
 
 def test_drive_status_broken():
     
@@ -334,8 +325,8 @@ def test_drive_status_broken():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 2''')
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 2''') # power supply redundancy
 
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567." in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567' in p.stdout.read()
 
 def test_logical_drive_broken():
     
@@ -383,12 +374,10 @@ def test_logical_drive_broken():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 2''')
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 2''') # power supply redundancy
 
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567." in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567' in p.stdout.read()
 
 def test_redundancy_broken():
-    
-    # NEEDS TO BE FIXED
 
     unregister_all()
     
@@ -434,8 +423,8 @@ def test_redundancy_broken():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 3''')
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 3''') # power supply redundancy
 
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567." in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=2 --drives=0 --fan=0', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567' in p.stdout.read()
 
 def test_ps_broken():
     
@@ -483,8 +472,27 @@ def test_ps_broken():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 3''')
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 3''') # power supply redundancy
 
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567." in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567' in p.stdout.read()
+
+def test_zero_phy_drv():
+    unregister_all()
+
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.2.1.0 = STRING: "CZJ1234567"''') # serial number
+    
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.1 = INTEGER: 1''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.2 = INTEGER: 1''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.3 = INTEGER: 2''') # fan status
+    
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.1 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.2 = INTEGER: 1''') # power supply status
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --scan', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    assert 'no physical drives detected' in cmd_output
+    assert 'Does not retrieve data from OID' in cmd_output
+    assert 'This is not a health status!' in cmd_output
 
 def test_stop():
     # stop the testagent

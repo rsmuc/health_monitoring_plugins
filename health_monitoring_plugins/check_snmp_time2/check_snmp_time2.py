@@ -103,11 +103,11 @@ if __name__ == "__main__":
         # Force this this if '-l' or '--localtime' is set in commandline
         if windows or use_local :
             local_timestamp     = datetime.datetime.now()
-            time_type = 'Local-Remote Time'
+            time_type = 'Remote (Local)'
         else:
             # usually the we need the UTC time
             local_timestamp     = datetime.datetime.utcnow()
-            time_type = 'Remote UTC'
+            time_type = 'Remote (UTC)'
     
         #Calculate the offset between local and remote time
         offset = time.mktime(local_timestamp.timetuple()) - time.mktime(remote_timestamp.timetuple()) + 60 * o_tzoff 

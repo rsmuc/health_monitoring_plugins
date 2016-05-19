@@ -157,12 +157,11 @@ The unittests require pytest.
 
 * get_data and walk_data should be harmonized
 * harmonized unittests for walk and get
-* harmonize snmp settings
 * Implement SNMPv3 support for all plugins
-* fix --scan at check_ilo
-* fix smart status for check_ilo
-* fix redundancy status for check_ilo
+* Code cleanup
+
+Maybe:
+
 * add a default threshold to check_snmp_time2
 * check_snmp_raritan: It should be possible to monitor all outlets / sensors in one service
 * check_snmp_large_stroage: Check a list of storages
-* Code cleanup

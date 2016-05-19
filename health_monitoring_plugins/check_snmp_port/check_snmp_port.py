@@ -19,7 +19,7 @@
 # Import PluginHelper and some utility constants from the Plugins module
 import netsnmp, sys, os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
-from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, walk_data
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
 
 

@@ -17,10 +17,6 @@
 
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
 import netsnmp
-'''
-This is the base class for all snmp classes.
-It is not used itself, it only used for Inheritance.
-'''
 
 def add_common_options(helper):
     # Define the common command line parameters
@@ -55,19 +51,28 @@ def walk_data(host, version, community, oid, helper):
         helper.exit(summary="snmpwalk failed - no data for host " + host + " OID: " +oid, exit_code=unknown, perfdata='')
     return data
 
-class snmpSessionBaseClass:
 
-    def __init__(self, parameter_list, oid):
+class snmpSessionBaseClass:
+    '''
+    This is the base class for all snmp classes.
+    It is should only be used to verify that there is a hostname set.
+    '''
+    def __init__(self, parameter_list, oid = None):
         self._Host = parameter_list[0]
         self._Version = parameter_list[1]
         self._Community = parameter_list[2]
         self._Helper = parameter_list[3]
         self._Oid = oid
+        self.verify_host()
+    # Verify that there is a hostname set
+    def verify_host(self):
+        if self._Host == '' or self._Host == None:
+            self._Helper.exit(summary='Hostname must be specified', exit_code=unknown, perfdata='')
 
-'''
-
-'''
 class snmp_walk_data_class(snmpSessionBaseClass):
+    '''
+    class for the snmpwalk command to retrieve data from a remote host. snmpwalk is a sequence of chained GETNEXT requests.
+    '''
 
     def __init__(self, parameter_list ,oid):
         snmpSessionBaseClass.__init__(self, parameter_list, oid)
@@ -76,13 +81,11 @@ class snmp_walk_data_class(snmpSessionBaseClass):
 
     def walk_data(self):
         var = netsnmp.Varbind(self._Oid)
-        try:
-            self._Data = netsnmp.snmpwalk(var, Version=self._Version, DestHost=self._Host, Community=self._Community)
-        except:
-            self._Helper.exit(summary="\n SNMP connection to device failed " + self._Oid, exit_code=unknown, perfdata='')
-        #
+        self._Data = netsnmp.snmpwalk(var, Version=self._Version, DestHost=self._Host, Community=self._Community)
+        # if we do not retrieve a value, either the connection to the device failed or the retrieved data is empty
         if not self._Data:
-            self._Helper.exit(summary="\n SNMP connection to device failed " + self._Oid, exit_code=unknown, perfdata='')
+            self._Helper.exit(summary="\n SNMP connection to device failed or data retrieved from OID %s is empty" % self._Oid, exit_code=unknown, perfdata='')
+        # function returns list of retrieved data
         return self._Data
     # get the amount of variables which _Data contains
     def get_len(self):
@@ -91,49 +94,47 @@ class snmp_walk_data_class(snmpSessionBaseClass):
     def valueAt(self,x):
         return self._Data[x]
 
-'''
 
-'''
 class snmp_get_data_class(snmpSessionBaseClass):
+    '''
+    class for the snmpget command to retrieve data from a remote host.
+    '''
 
     def __init__(self, parameter_list, oid):
         snmpSessionBaseClass.__init__(self, parameter_list, oid)
         self.get_data()
 
     def get_data(self):
-        try:
-            var = netsnmp.Varbind(self._Oid)
-            data = netsnmp.snmpget(var, Version=self._Version, DestHost=self._Host, Community=self._Community)
-            value = data[0]
-        except:
-            self._Helper.exit(summary="\n SNMP connection to device failed " + self._Oid, exit_code=unknown, perfdata='')
+        var = netsnmp.Varbind(self._Oid)
+        data = netsnmp.snmpget(var, Version=self._Version, DestHost=self._Host, Community=self._Community)
+        value = data[0]
+        # if we do not retrieve a value, either the connection to the device failed or the retrieved data is empty
         if not value:
-            self._Helper.exit(summary="\n SNMP connection to device failed " + self._Oid, exit_code=unknown, perfdata='')
+            self._Helper.exit(summary="\n SNMP connection to device failed or data retrieved from OID %s is empty" % self._Oid, exit_code=unknown, perfdata='')
         return value
 
-'''
-With this class you can check an OID and see if it contains some data.
-Does not exit plugin helper or pynag, if the OID is not reachable or it contains nothing.
-'''
+
 class snmp_try_walk_data_class(snmpSessionBaseClass):
+    '''
+    With this class you can check an OID, to see if it contains data.
+    Does not exit plugin helper, even when the OID/host is not reachable or it contains nothing!
+    '''
 
     def __init__(self, parameter_list, oid, error_text = None):
         snmpSessionBaseClass.__init__(self, parameter_list, oid)
         self._Error_text = error_text
         self._Data = []
-
-    def try_walk_data(self):
-        output = ''
         if not self._Error_text:
             self._Error_text = ''
+
+    def try_walk_data(self):
+        err_msg = ''
         var = netsnmp.Varbind(self._Oid)
-        try:
-            self._Data = netsnmp.snmpwalk(var, Version=self._Version, DestHost=self._Host, Community=self._Community)
-        except:
-            self._Helper.exit(summary="\n SNMP connection to device failed " + self._Oid, exit_code=unknown, perfdata='')
+        self._Data = netsnmp.snmpwalk(var, Version=self._Version, DestHost=self._Host, Community=self._Community)
+        # generate output if retrieved data is empty. Does not exit the helper.
         if not self._Data:
-            output = 'Does not retrieve data from OID %d. %s' % (self._Oid, self._Error_text)
-        return self._Data, output
+            err_msg = 'Does not retrieve data from OID %s. %s' % (self._Oid, self._Error_text)
+        return self._Data, err_msg
     # get the amount of variables which _Data contains
     def get_len(self):
         return len(self._Data)
