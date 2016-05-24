@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (C) 2016
+# Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with check_snmp_ilo.py.  If not, see <http://www.gnu.org/licenses/>.
+# along with check_snmp_ilo4.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
@@ -21,7 +21,151 @@ import netsnmp
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from snmpSessionBaseClass import snmpSessionBaseClass, snmp_walk_data_class, snmp_get_data_class, snmp_try_walk_data_class
+from snmpSessionBaseClass import snmpSessionBaseClass, snmp_walk_data_class, snmp_get_data_class, snmp_try_walk_data_class, add_common_options, get_common_options, verify_host
+
+# Create an instance of PluginHelper()
+helper = PluginHelper()
+
+# Define the command line options
+add_common_options(helper)
+helper.parser.add_option('--drives', help='Amount of physical drives', dest='amount_drvs')
+helper.parser.add_option('--ps', help='Amount of connected power supplies', dest='amount_pwr_sply')
+helper.parser.add_option('--fan', help='Amount of fans', dest='amount_fans')
+helper.parser.add_option('--scan', help='Scan the server if you do not know what is build in (does not return a health status)', default=False, action='store_true', dest='scan_server')
+helper.parser.add_option('--noStorage', help='Do not check global storage condition', default=True, action='store_false', dest='no_storage')
+helper.parser.add_option('--noSystem', help='Do not check global system state', default=True, action='store_false', dest='no_system')
+helper.parser.add_option('--noPowerSupply', help='Do not check global power supply condition', default=True, action='store_false', dest='no_power_supply')
+helper.parser.add_option('--noPowerState', help='Do not check power state', default=True, action='store_false', dest='no_power_state')
+helper.parser.add_option('--noTemp', help='Do not check Overall thermal environment condition', default=True, action='store_false', dest='no_temp')
+helper.parser.add_option('--noTempSens', help='Do not check temperature sensor condition', default=True, action='store_false', dest='no_temp_sens')
+helper.parser.add_option('--noDriveTemp', help='Do not check temperature sensor of the hard drives', default=True, action='store_false', dest='no_drive_sens')
+helper.parser.add_option('--noFan', help='Do not check global fan condition', default=True, action='store_false', dest='no_fan')
+helper.parser.add_option('--noMemory', help='Do not check memory condition', default=True, action='store_false', dest='no_mem')
+helper.parser.add_option('--noController', help='Do not check controller condition', default=True, action='store_false', dest='no_ctrl')
+helper.parser.add_option('--noPowerRedundancy', help='Do not check powersupply redundancy', default=True, action='store_false', dest='no_pwr_redund')
+helper.parse_arguments()
+
+# Get the options
+host, version, community = get_common_options(helper)
+input_phy_drv = helper.options.amount_drvs
+input_pwr_sply = helper.options.amount_pwr_sply
+input_fan = helper.options.amount_fans
+scan = helper.options.scan_server
+storage_flag = helper.options.no_storage
+system_flag = helper.options.no_system
+power_supply_flag = helper.options.no_power_supply
+power_state_flag = helper.options.no_power_state
+temp_flag = helper.options.no_temp
+temp_sens_flag = helper.options.no_temp_sens
+temp_drive_flag = helper.options.no_drive_sens
+fan_flag = helper.options.no_fan
+mem_flag = helper.options.no_mem
+ctrl_flag = helper.options.no_ctrl
+power_redundancy_flag = helper.options.no_pwr_redund
+
+# States definitions
+normal_state = {
+              1 : 'other',
+              2 : 'ok',
+              3 : 'degraded',
+              4 : 'failed'
+              }
+
+server_power_state = {
+              1 : 'unknown',
+              2 : 'poweredOff',
+              3 : 'poweredOn',
+              4 : 'insufficientPowerOrPowerOnDenied'
+              }
+
+log_drv_state = {
+              1 : 'other',
+              2 : 'ok',
+              3 : 'failed',
+              4 : 'unconfigured',
+              5 : 'recovering',
+              6 : 'readyForRebuild',
+              7 : 'rebuilding',
+              8 : 'wrongDrive',
+              9 : 'badConnect',
+              10: 'overheating',
+              11: 'shutdown',
+              12: 'expanding',
+              13: 'notAvailable',
+              14: 'queuedForExpansion',
+              15: 'multipathAccessDegraded',
+              16: 'erasing',
+              17: 'predictiveSpareRebuildReady',
+              18: 'rapidParityInitInProgress',
+              19: 'rapidParityInitPending',
+              20: 'noAccessEncryptedNoCntlrKey',
+              21: 'unencryptedToEncryptedInProgress',
+              22: 'newLogDrvKeyRekeyInProgress',
+              23: 'noAccessEncryptedCntlrEncryptnNotEnbld',
+              24: 'unencryptedToEncryptedNotStarted',
+              25: 'newLogDrvKeyRekeyRequestReceived'
+              }
+
+phy_drv_state = {
+              1 : 'other',
+              2 : 'ok',
+              3 : 'failed',
+              4 : 'predictiveFailure',
+              5 : 'erasing',
+              6 : 'eraseDone',
+              7 : 'eraseQueued',
+              8 : 'ssdWearOut',
+              9 : 'notAuthenticated'
+              }
+
+phy_drv_smrt_state = {
+              1 : 'other',
+              2 : 'ok',
+              3 : 'replaceDrive',
+              4 : 'replaceDriveSSDWearOut'
+              }
+
+ps_redundant_state = {
+              1 : 'other',
+              2 : 'notRedundant',
+              3 : 'redundant'
+              }
+
+### from CPQIDA-MIB
+oid_product_name = '.1.3.6.1.4.1.232.2.2.4.2'
+oid_serial_numb = '.1.3.6.1.4.1.232.2.2.2.1'
+
+# for global state
+oid_storage = '.1.3.6.1.4.1.232.3.1.3.0'
+oid_system = '.1.3.6.1.4.1.232.6.1.3.0'
+oid_glob_power_supply = '.1.3.6.1.4.1.232.6.2.9.1.0'
+oid_power_state = '.1.3.6.1.4.1.232.9.2.2.32.0'
+oid_glob_temp = '.1.3.6.1.4.1.232.6.2.6.1.0'
+oid_glob_temp_sens = '.1.3.6.1.4.1.232.6.2.6.3.0'
+oid_glob_fan = '.1.3.6.1.4.1.232.6.2.6.4.0'
+oid_mem = '.1.3.6.1.4.1.232.6.2.14.4.0'
+oid_ctrl = '.1.3.6.1.4.1.232.3.2.2.1.1.6'
+
+# for physical drive(s)
+oid_phy_drv_status = '.1.3.6.1.4.1.232.3.2.5.1.1.6'
+oid_phy_drv_smrt = '.1.3.6.1.4.1.232.3.2.5.1.1.57'
+oid_phy_drv_temp = '.1.3.6.1.4.1.232.3.2.5.1.1.70'
+oid_phy_drv_temp_thres = '.1.3.6.1.4.1.232.3.2.5.1.1.71'
+
+# for logical drive(s)
+oid_log_drv = '.1.3.6.1.4.1.232.3.2.3.1.1.4'
+
+# for environment temperature
+oid_env_temp = '.1.3.6.1.4.1.232.6.2.6.8.1.4'
+oid_env_temp_thres = '.1.3.6.1.4.1.232.6.2.6.8.1.5'
+
+# for fan(s)
+oid_fan = '.1.3.6.1.4.1.232.6.2.6.7.1.9'
+
+# for power supply
+oid_ps = '.1.3.6.1.4.1.232.6.2.9.3.1.4'
+oid_ps_redundant = '.1.3.6.1.4.1.232.6.2.9.3.1.9'
+
 
 # scan function. terminates programm at the end
 def scan_ilo():
@@ -47,9 +191,15 @@ def scan_ilo():
     helper.add_summary('This is not a health status!')
     helper.exit(exit_code=unknown, perfdata='')
 
-# function with flag
-def check_data_flag(flag, name, oid):
+
+def check_global_status(flag, name, oid):
+    """
+    check a global status
+    check_global_status(True, "Global Storage", '.1.3.6.1.4.1.232.3.1.3.0')
+    """
+    # only check the status, if the "no" flag is not set
     if flag:
+        # get the data via snmp
         myData = snmp_get_data_class(parameter_list, oid)
         data_summary_output, data_long_output = state_summary(myData.get_data(), name, normal_state)
         add_output(data_summary_output, data_long_output)
@@ -111,7 +261,7 @@ def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
         if temp_drive_flag:
             # only evaluate the temperatures if temp_drive_flag is not set (--noDriveTemp). We need that for our 15k SAS drives.            
             if int(physical_drive_temp.valueAt(x)) != -1:
-                # OID returns 0 or -1 if the drive temperature (threshold) cannot be calculated or if the controller does not support reporting drive temperature threshold
+                # OID returns -1 if the drive temperature (threshold) cannot be calculated or if the controller does not support reporting drive temperature threshold
                 if int(physical_drive_temp_thres.valueAt(x)) != -1:
                     if int(physical_drive_temp.valueAt(x)) > int(physical_drive_temp_thres.valueAt(x)):
                         summary_output += ('Physical drive %d temperature above threshold (%s / %s) ' % (x+1, physical_drive_temp.valueAt(x), physical_drive_temp_thres.valueAt(x)))
@@ -135,34 +285,49 @@ def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
     return (summary_output, long_output)
 
 # Check power supply
-def check_ps(parameter_list, input_pwr_sply):
+def check_ps(parameter_list, input_pwr_sply, check_redundant_flag):
     ps = snmp_walk_data_class(parameter_list, oid_ps)
-    count_ps = 0
+    count_ps_ok = 0
     ps_redundant = snmp_walk_data_class(parameter_list, oid_ps_redundant)
-    redundant_flag = False
+    count_ps_redundant_ok = 0
+    redundant_state_ok = ''
     summary_output = ''
     long_output = ''
 
+    # If we should have 1 power supply running, its state should be 'notRedundant'
+    if int(input_pwr_sply) == 1:
+        redundant_state_ok = 'notRedundant'
+    # If we should have more than 1, its state should be 'redundant'
+    else:
+        redundant_state_ok = 'redundant'
+
     for x in range(ps.get_len()):
         if normal_state[int(ps.valueAt(x))] == 'ok':
-            count_ps += 1
-        if ps_redundant_state[int(ps_redundant.valueAt(x))] != 'notRedundant':
-            redundant_flag = True
-
-    if (int(count_ps) != int(input_pwr_sply)) or redundant_flag:
-        summary_output += ('%s power supply/supplies expected - %s power supply/supplies detected - %s power supply/supplies ok ' % (input_pwr_sply, ps.get_len(), count_ps))
+            count_ps_ok += 1
+        if ps_redundant_state[int(ps_redundant.valueAt(x))] == redundant_state_ok:
+            count_ps_redundant_ok += 1
+            
+    # Here we check, if as many power supply in 'ok'-state as given from the input and if their redundant_state is ok
+    if (int(count_ps_ok) != int(input_pwr_sply)) or (int(count_ps_redundant_ok) < int(input_pwr_sply)):
+        summary_output += ('%s power supply/supplies expected - %s power supply/supplies detected - %s power supply/supplies ok ' % (input_pwr_sply, ps.get_len(), count_ps_ok))
         helper.status(critical)
 
         for x in range(ps.get_len()):
             if normal_state[int(ps.valueAt(x))] != 'ok':
                 summary_output += ('Power supply %d: %s ' % (x, normal_state[int(ps.valueAt(x))]))
-            if ps_redundant_state[int(ps_redundant.valueAt(x))] != 'notRedundant':
-                summary_output += ('Power supply %d is %s ' % (x, ps_redundant_state[int(ps_redundant.valueAt(x))]))
-            long_output += ('Power supply %d: %s\n' % (x, normal_state[int(ps.valueAt(x))]))
+            long_output += 'Power supply %d: %s' % (x, normal_state[int(ps.valueAt(x))])
+            if check_redundant_flag:
+                if ps_redundant_state[int(ps_redundant.valueAt(x))] != redundant_state_ok:
+                    summary_output += ('Power supply %d is %s' % (x, ps_redundant_state[int(ps_redundant.valueAt(x))]))
+                long_output += ' is %s' % (ps_redundant_state[int(ps_redundant.valueAt(x))])
+            long_output += '\n'
+    
     else:
         for x in range(ps.get_len()):
-            if normal_state[int(ps.valueAt(x))] == 'ok':
-                long_output += ('Power supply %d: %s\n' % (x, normal_state[int(ps.valueAt(x))]))
+            if check_redundant_flag:
+                long_output += ('Power supply %d: %s is %s\n' % (x, normal_state[int(ps.valueAt(x))], ps_redundant_state[int(ps_redundant.valueAt(x))]))
+            else:
+                long_output += ('Power supply %d: %s' % (x, normal_state[int(ps.valueAt(x))]))
     return (summary_output, long_output)
 
 # Check fan
@@ -190,196 +355,41 @@ def check_fan(parameter_list, input_fan):
                 long_output += 'Fan %d: %s.\n' % (x, normal_state[int(fan.valueAt(x))])
     return (summary_output, long_output)
 
-# Create an instance of PluginHelper()
-helper = PluginHelper()
-
-### SNMP OIDs
-# 
-oid_product_name = '.1.3.6.1.4.1.232.2.2.4.2'
-oid_serial_numb = '.1.3.6.1.4.1.232.2.2.2.1'
-
-# for global state
-oid_storage = '.1.3.6.1.4.1.232.3.1.3.0'
-oid_system = '.1.3.6.1.4.1.232.6.1.3.0'
-oid_glob_power_supply = '.1.3.6.1.4.1.232.6.2.9.1.0'
-oid_power_state = '.1.3.6.1.4.1.232.9.2.2.32.0'
-oid_glob_temp = '.1.3.6.1.4.1.232.6.2.6.1.0'
-oid_glob_temp_sens = '.1.3.6.1.4.1.232.6.2.6.3.0'
-oid_glob_fan = '.1.3.6.1.4.1.232.6.2.6.4.0'
-oid_mem = '.1.3.6.1.4.1.232.6.2.14.4.0'
-oid_ctrl = '.1.3.6.1.4.1.232.3.2.2.1.1.6'
-
-# for physical drive(s)
-oid_phy_drv_status = '.1.3.6.1.4.1.232.3.2.5.1.1.6'
-oid_phy_drv_smrt = '.1.3.6.1.4.1.232.3.2.5.1.1.57'
-oid_phy_drv_temp = '.1.3.6.1.4.1.232.3.2.5.1.1.70'
-oid_phy_drv_temp_thres = '.1.3.6.1.4.1.232.3.2.5.1.1.71'
-
-# for logical drive(s)
-oid_log_drv = '.1.3.6.1.4.1.232.3.2.3.1.1.4'
-
-# for environment temperature
-oid_env_temp = '.1.3.6.1.4.1.232.6.2.6.8.1.4'
-oid_env_temp_thres = '.1.3.6.1.4.1.232.6.2.6.8.1.5'
-
-# for fan(s)
-oid_fan = '.1.3.6.1.4.1.232.6.2.6.7.1.9'
-
-# for power supply
-oid_ps = '.1.3.6.1.4.1.232.6.2.9.3.1.4'
-oid_ps_redundant = '.1.3.6.1.4.1.232.6.2.9.3.1.9'
-
-
-# States definitions
-normal_state = {
-              1 : 'other',
-              2 : 'ok',
-              3 : 'degraded',
-              4 : 'failed'
-}
-
-server_power_state = {
-              1 : 'unknown',
-              2 : 'poweredOff',
-              3 : 'poweredOn',
-              4 : 'insufficientPowerOrPowerOnDenied'
-}
-
-log_drv_state = {
-              1 : 'other',
-              2 : 'ok',
-              3 : 'failed',
-              4 : 'unconfigured',
-              5 : 'recovering',
-              6 : 'readyForRebuild',
-              7 : 'rebuilding',
-              8 : 'wrongDrive',
-              9 : 'badConnect',
-              10: 'overheating',
-              11: 'shutdown',
-              12: 'expanding',
-              13: 'notAvailable',
-              14: 'queuedForExpansion',
-              15: 'multipathAccessDegraded',
-              16: 'erasing',
-              17: 'predictiveSpareRebuildReady',
-              18: 'rapidParityInitInProgress',
-              19: 'rapidParityInitPending',
-              20: 'noAccessEncryptedNoCntlrKey',
-              21: 'unencryptedToEncryptedInProgress',
-              22: 'newLogDrvKeyRekeyInProgress',
-              23: 'noAccessEncryptedCntlrEncryptnNotEnbld',
-              24: 'unencryptedToEncryptedNotStarted',
-              25: 'newLogDrvKeyRekeyRequestReceived'
-}
-
-phy_drv_state = {
-              1 : 'other',
-              2 : 'ok',
-              3 : 'failed',
-              4 : 'predictiveFailure',
-              5 : 'erasing',
-              6 : 'eraseDone',
-              7 : 'eraseQueued',
-              8 : 'ssdWearOut',
-              9 : 'notAuthenticated'
-}
-
-phy_drv_smrt_state = {
-              1 : 'other',
-              2 : 'ok',
-              3 : 'replaceDrive',
-              4 : 'replaceDriveSSDWearOut'
-}
-
-ps_redundant_state = {
-              1 : 'other',
-              2 : 'notRedundant',
-              3 : 'redundant'
-}
-
-if __name__ == '__main__':
-    # Define the command line options
-    helper.parser.add_option('-H', dest='hostname', help='Hostname or ip address')
-    helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')
-    helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
-    helper.parser.add_option('--drives', dest='amount_drvs', help='Amount of physical drives')
-    helper.parser.add_option('--ps', dest='amount_pwr_sply', help='Amount of connected power supplies')
-    helper.parser.add_option('--fan', dest='amount_fans', help='Amount of fans')
-    helper.parser.add_option('--scan', dest='scan_server', help='Scan the server if you do not know what is build in (does not return a health status)', default=False, action='store_true')
-    helper.parser.add_option('--noStorage', dest='no_storage', help='Do not check global storage condition', default=True, action='store_false')
-    helper.parser.add_option('--noSystem', dest='no_system', help='Do not check global system state', default=True, action='store_false')
-    helper.parser.add_option('--noPowerSupply', dest='no_power_supply', help='Do not check global power supply condition', default=True, action='store_false')
-    helper.parser.add_option('--noPowerState', dest='no_power_state', help='Do not check power state', default=True, action='store_false')
-    helper.parser.add_option('--noTemp', dest='no_temp', help='Do not check Overall thermal environment condition', default=True, action='store_false')
-    helper.parser.add_option('--noTempSens', dest='no_temp_sens', help='Do not check temperature sensor condition', default=True, action='store_false')
-    helper.parser.add_option('--noDriveTemp', dest='no_drive_sens', help='Do not check temperature sensor of the hard drives', default=True, action='store_false')
-    helper.parser.add_option('--noFan', dest='no_fan', help='Do not check global fan condition', default=True, action='store_false')
-    helper.parser.add_option('--noMemory', dest='no_mem', help='Do not check memory condition', default=True, action='store_false')
-    helper.parser.add_option('--noController', dest='no_ctrl', help='Do not check controller condition', default=True, action='store_false')
-    helper.parse_arguments()
-    
-    # Get the options
-    host = helper.options.hostname
-    version = helper.options.version
-    community = helper.options.community
-    input_phy_drv = helper.options.amount_drvs
-    input_pwr_sply = helper.options.amount_pwr_sply
-    input_fan = helper.options.amount_fans
-    scan = helper.options.scan_server
-    storage_flag = helper.options.no_storage
-    system_flag = helper.options.no_system
-    power_supply_flag = helper.options.no_power_supply
-    power_state_flag = helper.options.no_power_state
-    temp_flag = helper.options.no_temp
-    temp_sens_flag = helper.options.no_temp_sens
-    temp_drive_flag = helper.options.no_drive_sens
-    fan_flag = helper.options.no_fan
-    mem_flag = helper.options.no_mem
-    ctrl_flag = helper.options.no_ctrl
-    
+if __name__ == '__main__':    
     # Create default parameter list for snmp classes
     parameter_list = [host, version, community, helper]
     
     # The default return value should be always OK
     helper.status(ok)
 
-    # Verify that there is a hostname set
-    check_host = snmpSessionBaseClass(parameter_list)
-
-    # Information about the server
-    product_name = snmp_walk_data_class(parameter_list, oid_product_name)
-    serial_number = snmp_walk_data_class(parameter_list, oid_serial_numb)
+    # verify that a hostname is set
+    verify_host(host, helper)
     
-    helper.add_summary('%s - Serial number:%s' % (product_name.valueAt(0), serial_number.valueAt(0)))
-    
-    # Should only be used for operations on the commandline. Does not return a health status and ends programm.
+    # If the --scan option is set, we show all components and end the script
     if scan:
         scan_ilo()
     
-    # Verify that there is an input for the amount of components
-    exit_count = 0
-    if input_phy_drv == '' or input_phy_drv == None:
-        helper.add_summary('Amount of physical drives must be specified (--drives)')
-        exit_count += 1
-    if input_pwr_sply == '' or input_pwr_sply == None:
-        helper.add_summary('Amount of power supplies must be specified (--ps)')
-        exit_count += 1
-    if input_fan == '' or input_fan == None:
-        helper.add_summary('Amount of fans must be specified (--fan)')
-        exit_count += 1
-    if int(exit_count) != 0:
-        if int(exit_count) == 3:
-            helper.add_summary('If you do not know what is in the server, you can check it with "--scan".')
-        helper.exit(exit_code=unknown, perfdata='')
+    # Show always the product name and the serial number in the summary
+    product_name = snmp_walk_data_class(parameter_list, oid_product_name)
+    serial_number = snmp_walk_data_class(parameter_list, oid_serial_numb)    
+    helper.add_summary('%s - Serial number:%s' % (product_name.valueAt(0), serial_number.valueAt(0)))
     
-    check_data_flag(storage_flag, 'Global storage', oid_storage)
-    check_data_flag(system_flag,'Global system',oid_system)
-    check_data_flag(power_supply_flag,'Global power supply',oid_glob_power_supply)
-    check_data_flag(temp_flag,'Overall thermal environment',oid_glob_temp)
-    check_data_flag(temp_sens_flag,'Temperature sensors',oid_glob_temp_sens)
-    check_data_flag(fan_flag,'Fan(s)',oid_glob_fan)
-    check_data_flag(mem_flag,'Memory',oid_mem)
+    # Verify that there is an input for the amount of components
+    if input_phy_drv == '' or input_phy_drv is None:
+        helper.exit(summary="Amount of physical drives must be specified (--drives)", exit_code=unknown, perfdata='')
+    if input_pwr_sply == '' or input_pwr_sply is None:
+        helper.exit(summary="Amount of power supplies must be specified (--ps)", exit_code=unknown, perfdata='')
+    if input_fan == '' or input_fan is None:
+        helper.exit(summary="Amount of fans must be specified (--fan)", exit_code=unknown, perfdata='')
+
+    # Check the global status
+    check_global_status(storage_flag, 'Global storage', oid_storage)
+    check_global_status(system_flag,'Global system',oid_system)
+    check_global_status(power_supply_flag,'Global power supply',oid_glob_power_supply)
+    check_global_status(temp_flag,'Overall thermal environment',oid_glob_temp)
+    check_global_status(temp_sens_flag,'Temperature sensors',oid_glob_temp_sens)
+    check_global_status(fan_flag,'Fan(s)',oid_glob_fan)
+    check_global_status(mem_flag,'Memory',oid_mem)
     
     if power_state_flag:
         power_state = snmp_get_data_class(parameter_list, oid_power_state)
@@ -399,7 +409,7 @@ if __name__ == '__main__':
             
     # Power supply check
     if int(input_pwr_sply) != 0:
-        ps_summary_output, ps_long_output = check_ps(parameter_list, input_pwr_sply)
+        ps_summary_output, ps_long_output = check_ps(parameter_list, input_pwr_sply, power_redundancy_flag)
         add_output(ps_summary_output, ps_long_output)
     
     # Fan check

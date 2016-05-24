@@ -95,12 +95,11 @@ def test_with_everything_disabled():
 
 def test_with_no_input():
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
-    assert 'Amount of physical drives must be specified (--drives). Amount of power supplies must be specified (--ps). Amount of fans must be specified (--fan). If you do not know what is in the server, you can check it with "--scan".' in p.stdout.read()
+    assert 'Amount of physical drives must be specified (--drives)' in p.stdout.read()
 
 def test_state_summary_ok():
     summary_output, long_output = state_summary(2, 'summary output', normal_state)
     assert 'status: ok' in long_output
-    assert (None, summary_output)
 
 def test_state_summary_failed():
     summary_output, long_output = state_summary(4, 'summary output', normal_state)
@@ -119,9 +118,9 @@ def test_with_one_ok_fan():
     assert 'Fan 0: other.\nFan 1: other.' in long_output
 
 def test_with_less_ps():
-    # 2 power supplies configured (2 drives, 1 power supply running, 1 fan running)
-    summary_output, long_output = check_ps(["127.0.0.1:1234", 2, "public", helper], 2)
-    assert '2 power supply/supplies expected - 2 power supply/supplies' in summary_output
+    # 4 power supplies configured (2 drives, 2 power supply running, 1 fan running)
+    summary_output, long_output = check_ps(["127.0.0.1:1234", 2, "public", helper], 4, True)
+    assert '4 power supply/supplies expected - 2 power supply/supplies detected - 1 power supply/supplies ok Power supply 0 is notRedundantPower supply 1: other Power supply 1 is notRedundant' in summary_output
    
 def test_with_less_drives():
     # 4 drives configured (2 drives, 1 power supply running, 1 fan running)
