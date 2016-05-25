@@ -133,7 +133,7 @@ class snmp_try_walk_data_class(snmpSessionBaseClass):
         self._Data = netsnmp.snmpwalk(var, Version=self._Version, DestHost=self._Host, Community=self._Community)
         # generate output if retrieved data is empty. Does not exit the helper.
         if not self._Data:
-            err_msg = 'Does not retrieve data from OID %s. %s' % (self._Oid, self._Error_text)
+            err_msg = 'Did not receive data from OID %s. %s' % (self._Oid, self._Error_text)
         return self._Data, err_msg
     # get the amount of variables which _Data contains
     def get_len(self):

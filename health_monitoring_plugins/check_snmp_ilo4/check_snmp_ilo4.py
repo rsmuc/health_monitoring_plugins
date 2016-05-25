@@ -167,29 +167,64 @@ oid_ps = '.1.3.6.1.4.1.232.6.2.9.3.1.4'
 oid_ps_redundant = '.1.3.6.1.4.1.232.6.2.9.3.1.9'
 
 
-# scan function. terminates programm at the end
-def scan_ilo():
+def state_summary(value, name, state_list, info = None, ok_value = 'ok'):
+    """
+    Always add the status to the long output, and if the status is not ok (or ok_value), 
+    we show it in the summary and set the status to critical
+    """
+    # translate the value (integer) we receive to a human readable value (e.g. ok, critical etc.) with the given state_list
+    state_value = state_list[int(value)]    
+    summary_output = ''
+    long_output = ''
+    if not info:
+        info = ''
+    if state_value != ok_value:
+        summary_output += ('%s status: %s %s ' % (name, state_value, info))
+        helper.status(critical)
+    long_output += ('%s status: %s %s\n' % (name, state_value, info))
+    return (summary_output, long_output)
+
+
+def add_output(summary_output, long_output):
+    """
+    if the summary output is empty, we don't add it as summary, otherwise we would have empty spaces (e.g.: '. . . . .') in our summary report
+    """
+    if summary_output != '':
+        helper.add_summary(summary_output)
+    helper.add_long_output(long_output)
+
+
+# scan function. Show all Power supplies, fans and pyhsical drives
+def scan_ilo():    
     ps = snmp_walk_data_class(parameter_list, oid_ps)
     fan = snmp_walk_data_class(parameter_list, oid_fan)
-    phy_drv_status = snmp_try_walk_data_class(parameter_list, oid_phy_drv_status, 'If the connection did not fail, then there were no physical drives detected!')
 
+    # we don't receive a result, if no physical drives are available.
+    phy_drv_status = snmp_try_walk_data_class(parameter_list, oid_phy_drv_status, 'No physical drives detected!')
     data, err_msg = phy_drv_status.try_walk_data()
+
+    helper.add_long_output('Available devices:')
+    helper.add_long_output('')
+
+    # show the physical drives
     if data:
         for x in range(phy_drv_status.get_len()):
-            helper.add_long_output('Physical drive %d: %s' % (x, phy_drv_state[int(phy_drv_status.valueAt(x))]))
-        helper.add_long_output('')
+            helper.add_long_output('Physical drive %d: %s' % (x, phy_drv_state[int(phy_drv_status.valueAt(x))]))        
     else:
         helper.add_long_output(err_msg)
-        helper.add_long_output('')
+    # add a empty line after the pyhsical drives
+    helper.add_long_output('')
 
+    # show the power supplies
     for x in range(ps.get_len()):
         helper.add_long_output('Power supply %d: %s'  % (x, normal_state[int(ps.valueAt(x))]))
     helper.add_long_output('')
 
+    # show the fans
     for x in range(fan.get_len()):
         helper.add_long_output('Fan %d: %s'  % (x, normal_state[int(fan.valueAt(x))]))
-    helper.add_summary('This is not a health status!')
-    helper.exit(exit_code=unknown, perfdata='')
+    
+    helper.exit(exit_code=ok, perfdata='')
 
 
 def check_global_status(flag, name, oid):
@@ -204,35 +239,54 @@ def check_global_status(flag, name, oid):
         data_summary_output, data_long_output = state_summary(myData.get_data(), name, normal_state)
         add_output(data_summary_output, data_long_output)
 
-# Function for summary
-def state_summary(value, name, state_list, info = None):
-    summary_output = ''
-    long_output = ''
-    if not info:
-        info = ''
-    state_value = state_list[int(value)]
-    if state_value != 'ok':
-        summary_output += ('%s status: %s %s ' % (name, state_value, info))
-        helper.status(critical)
-    long_output += ('%s status: %s %s\n' % (name, state_value, info))
-    return (summary_output, long_output)
+def check_server_power():
+    """
+    Check if the server is powered on
+    Skip this check, if the --noPowerState is set
+    """
+    if power_state_flag:
+        power_state = snmp_get_data_class(parameter_list, oid_power_state)
+        power_state_summary_output, power_state_long_output = state_summary(power_state.get_data(), 'Server power', server_power_state, None, server_power_state[3])
+        add_output(power_state_summary_output, power_state_long_output)
+
+def check_storage_controllers():
+    """
+    Check the status of the storage controllers
+    Skip this check, if --noController is set
+    """
+    if ctrl_flag:
+        ctrl = snmp_walk_data_class(parameter_list, oid_ctrl)
+        for x in range(ctrl.get_len()):
+            ctrl_summary_output, ctrl_long_output = state_summary(ctrl.valueAt(x), 'Controller %d' % x, normal_state)
+            add_output(ctrl_summary_output, ctrl_long_output)
 
 
-def special_state_summary(value, name, state_list, ok_value):
-    state_value = state_list[int(value)]
-    summary_output = ''
-    long_output = ''
-    if state_value != ok_value:
-        summary_output += ('%s status: %s ' % (name, state_value))
-        helper.status(critical)
-    long_output += ('%s status: %s\n' % (name, state_value))
-    return (summary_output, long_output)
+def check_temperature_sensors():
+    """
+    Check all temperature sensors of the server
+    All sensors with the value or threshold is -99 or 0 are ignored
+    """    
+    # walk all temperature sensor values and thresholds
+    env_temp = snmp_walk_data_class(parameter_list, oid_env_temp)
+    env_temp_thres = snmp_walk_data_class(parameter_list, oid_env_temp_thres)
+        
+    env_temp_data = env_temp.walk_data()
+    env_temp_tresh_data = env_temp_thres.walk_data()
+    env_temp_zipped = zip(env_temp_data, env_temp_tresh_data)
 
-# check if summary is empty, otherwise we would have empty spaces (e.g.: '. . . . .') in our summary report
-def add_output(summary_output, long_output):
-    if summary_output != '':
-        helper.add_summary(summary_output)
-    helper.add_long_output(long_output)
+    for x, data in enumerate(env_temp_zipped, 1):
+        # skip the check if -99 or 0 is in the value or threshold, because these data we can not use
+        if not '-99' in data and not '0' in data:
+            #check if the value is over the treshold
+            if int(data[0]) > int(data[1]):
+                helper.add_summary('Temperature at sensor %d above threshold (%s / %s)' % (x, data[0], data[1]))
+                helper.status(critical)
+            # always add the sensor to the output
+            helper.add_long_output('Temperature %d: %s Celsius (threshold: %s Celsius)' % (x, data[0], data[1]))
+            # for the first sensor (envirnoment temperature, we add performance data)
+            if x == 1:
+                helper.add_metric("Environment Temperature", data[0], '', ":" + data[1], "", "", "Celsius")
+            
 
 # physical drive check
 def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
@@ -285,74 +339,82 @@ def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
     return (summary_output, long_output)
 
 # Check power supply
-def check_ps(parameter_list, input_pwr_sply, check_redundant_flag):
-    ps = snmp_walk_data_class(parameter_list, oid_ps)
-    count_ps_ok = 0
-    ps_redundant = snmp_walk_data_class(parameter_list, oid_ps_redundant)
-    count_ps_redundant_ok = 0
-    redundant_state_ok = ''
-    summary_output = ''
-    long_output = ''
-
-    # If we should have 1 power supply running, its state should be 'notRedundant'
-    if int(input_pwr_sply) == 1:
-        redundant_state_ok = 'notRedundant'
-    # If we should have more than 1, its state should be 'redundant'
-    else:
-        redundant_state_ok = 'redundant'
-
-    for x in range(ps.get_len()):
-        if normal_state[int(ps.valueAt(x))] == 'ok':
-            count_ps_ok += 1
-        if ps_redundant_state[int(ps_redundant.valueAt(x))] == redundant_state_ok:
-            count_ps_redundant_ok += 1
-            
-    # Here we check, if as many power supply in 'ok'-state as given from the input and if their redundant_state is ok
-    if (int(count_ps_ok) != int(input_pwr_sply)) or (int(count_ps_redundant_ok) < int(input_pwr_sply)):
-        summary_output += ('%s power supply/supplies expected - %s power supply/supplies detected - %s power supply/supplies ok ' % (input_pwr_sply, ps.get_len(), count_ps_ok))
-        helper.status(critical)
-
-        for x in range(ps.get_len()):
-            if normal_state[int(ps.valueAt(x))] != 'ok':
-                summary_output += ('Power supply %d: %s ' % (x, normal_state[int(ps.valueAt(x))]))
-            long_output += 'Power supply %d: %s' % (x, normal_state[int(ps.valueAt(x))])
-            if check_redundant_flag:
-                if ps_redundant_state[int(ps_redundant.valueAt(x))] != redundant_state_ok:
-                    summary_output += ('Power supply %d is %s' % (x, ps_redundant_state[int(ps_redundant.valueAt(x))]))
-                long_output += ' is %s' % (ps_redundant_state[int(ps_redundant.valueAt(x))])
-            long_output += '\n'
-    
-    else:
-        for x in range(ps.get_len()):
-            if check_redundant_flag:
-                long_output += ('Power supply %d: %s is %s\n' % (x, normal_state[int(ps.valueAt(x))], ps_redundant_state[int(ps_redundant.valueAt(x))]))
+def check_ps():    
+    """
+    Check if the power supplies are ok, and we have the configured amount
+    The check is skipped if --ps=0
+    """
+    if int(input_pwr_sply) != 0:
+        ps = snmp_walk_data_class(parameter_list, oid_ps)
+        ps_data = ps.walk_data()
+        ps_ok_count = 0
+        
+        for x, state in enumerate(ps_data, 1):
+            # human readable status
+            hr_status = normal_state[int(state)]
+            if  hr_status != "ok":
+                # if the power supply is ok, we will set a critical status and add it to the summary
+                helper.add_summary('Power supply status %s: %s' % (x, hr_status))
+                helper.status(critical)
             else:
-                long_output += ('Power supply %d: %s' % (x, normal_state[int(ps.valueAt(x))]))
-    return (summary_output, long_output)
+                # if everything is ok, we increase the ps_ok_count
+                ps_ok_count += 1
+            
+            # we always want to see the status in the long output
+            helper.add_long_output('Power supply status %s: %s' % (x, hr_status))
+        helper.add_long_output('')
 
-# Check fan
+        if int(input_pwr_sply) != ps_ok_count:
+            # if the confiugred power supplies and power supplies in ok state are different
+            helper.add_summary('%s power supplies expected - %s power supplies ok ' % (input_pwr_sply, ps_ok_count))
+            helper.status(critical)                
+
+def check_power_redundancy():
+    """
+    Check if the power supplies are redundant
+    The check is skipped if --noPowerRedundancy is set
+    """
+    # skip the check if --noPowerRedundancy is set
+    if power_redundancy_flag:
+        # walk the data
+        ps_redundant = snmp_walk_data_class(parameter_list, oid_ps_redundant)
+        ps_redundant_data = ps_redundant.walk_data()        
+        
+        for x, state in enumerate(ps_redundant_data, 1):
+            # human readable status
+            hr_status = ps_redundant_state[int(state)]
+            if  hr_status != "redundant":
+                # if the power supply is not redundant, we will set a critical status and add it to the summary
+                helper.add_summary('Power supply %s: %s' % (x, hr_status))
+                helper.status(critical)
+            # we always want to see the redundancy status in the long output
+            helper.add_long_output('Power supply %s: %s' % (x, hr_status))
+        helper.add_long_output('')
+
 def check_fan(parameter_list, input_fan):
-    fan = snmp_walk_data_class(parameter_list, oid_fan)
+    """
+    check the fans
+    """
+    # get a list of all fans
+    fan_obj = snmp_walk_data_class(parameter_list, oid_fan)    
+    fan_data = fan_obj.walk_data()
+    
     fan_count = 0
     summary_output = ''
     long_output = ''
 
-    for x in range(fan.get_len()):
-        if normal_state[int(fan.valueAt(x))] == 'ok':
+    for x, fan in enumerate(fan_data, 1):
+        fan = int(fan)
+        if normal_state[fan] == 'ok':
+            # if the fan is ok, we increase the fan_count varaible
             fan_count += 1
-
+        # we always want to the the status in the long output
+        long_output += 'Fan %d: %s.\n' % (x, normal_state[fan])
+    
+    # check we have the correct amount ok fans in OK state, otherwise set status to critical and print the fan in the summary
     if int(fan_count) != int(input_fan):
-        summary_output += '%s fan(s) expected - %s fan(s) slot(s) detected - %s fan(s) ok. ' % (input_fan, fan.get_len(), fan_count)
+        summary_output += '%s fan(s) expected - %s fan(s) ok. ' % (input_fan, fan_count)
         helper.status(critical)
-
-        for x in range(fan.get_len()):
-            if normal_state[int(fan.valueAt(x))] != 'ok':
-                summary_output += 'Fan %d: %s. ' % (x, normal_state[int(fan.valueAt(x))])
-            long_output += 'Fan %d: %s.\n' % (x, normal_state[int(fan.valueAt(x))])
-    else:
-        for x in range(fan.get_len()):
-            if normal_state[int(fan.valueAt(x))] == 'ok':
-                long_output += 'Fan %d: %s.\n' % (x, normal_state[int(fan.valueAt(x))])
     return (summary_output, long_output)
 
 if __name__ == '__main__':    
@@ -391,16 +453,11 @@ if __name__ == '__main__':
     check_global_status(fan_flag,'Fan(s)',oid_glob_fan)
     check_global_status(mem_flag,'Memory',oid_mem)
     
-    if power_state_flag:
-        power_state = snmp_get_data_class(parameter_list, oid_power_state)
-        power_state_summary_output, power_state_long_output = special_state_summary(power_state.get_data(), 'Server power', server_power_state, server_power_state[3])
-        add_output(power_state_summary_output, power_state_long_output)
-    
-    if ctrl_flag:
-        ctrl = snmp_walk_data_class(parameter_list, oid_ctrl)
-        for x in range(ctrl.get_len()):
-            ctrl_summary_output, ctrl_long_output = state_summary(ctrl.valueAt(x), 'Controller %d' % x, normal_state)
-            add_output(ctrl_summary_output, ctrl_long_output)
+    # check if the server is powered on
+    check_server_power()
+       
+    # check the status of the storage controllers
+    check_storage_controllers()    
     
     # Physical drive check
     if int(input_phy_drv) != 0:
@@ -408,32 +465,17 @@ if __name__ == '__main__':
         add_output(phy_drv_summary_output, phy_drv_long_output)
             
     # Power supply check
-    if int(input_pwr_sply) != 0:
-        ps_summary_output, ps_long_output = check_ps(parameter_list, input_pwr_sply, power_redundancy_flag)
-        add_output(ps_summary_output, ps_long_output)
+    check_ps()
     
+    # Check Power Supply Reduandancy    
+    check_power_redundancy()
+            
     # Fan check
     if int(input_fan) != 0:
         fan_summary_output, fan_long_output = check_fan(parameter_list, input_fan)
         add_output(fan_summary_output, fan_long_output)
-    
-    # Environment temperature check
-    env_temp = snmp_walk_data_class(parameter_list, oid_env_temp)
-    env_temp_thres = snmp_walk_data_class(parameter_list, oid_env_temp_thres)
-    
-    for x in range(env_temp.get_len()):
-        # OID returns -99 or 0 if environment temperature (threshold) cannot be determined by software
-        if (int(env_temp.valueAt(x)) != -99) and (int(env_temp.valueAt(x)) != 0):
-            if (int(env_temp_thres.valueAt(x)) != -99) and (int(env_temp_thres.valueAt(x)) != 0):
-                if int(env_temp.valueAt(x)) > int(env_temp_thres.valueAt(x)):
-                    helper.add_summary('Temperature at sensor %d above threshold (%s / %s)' % (x,env_temp.valueAt(x), env_temp_thres.valueAt(x)))
-                    helper.status(critical)
-                helper.add_long_output('Temperature %d: %s Celsius (threshold: %s Celsius)' % (x,env_temp.valueAt(x), env_temp_thres.valueAt(x)))
-            else:
-                helper.add_long_output('Temperature %d: %s Celsius (no threshold given)' % (x, env_temp.valueAt(x)))
-        else:
-            helper.add_summary('Temperature %d could not be determined' % x)
-            helper.status(critical)
+        
+    check_temperature_sensors()
     
     # Print out plugin information and exit nagios-style
     helper.exit()
