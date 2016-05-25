@@ -33,16 +33,12 @@ def get_system_uptime():
         return str(uptime_seconds)
 
 def test_get(capsys):
-    """
-    test of the get_data function
-    """
-    # try to get data from a not existing host
     with pytest.raises(SystemExit):
-        get_data("1.2.3.4", 2, "public", ".1")
+        get_data("1.2.3.4", 2, "public", ".1", helper)
     out, err = capsys.readouterr()    
-    assert "Unknown - SNMP connection to device failed " in out
+    assert "Unknown - snmpget failed - no data for host" in out
     # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0")[:-3] == get_system_uptime()[:-3]
+    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0", helper)[:-2] == get_system_uptime()[:-2]
 
 def test_without_options(capsys):
     # without options
@@ -57,29 +53,17 @@ def test_help():
 def test_linux_no_threshold():    
     # high offset, but no threshold is set
      p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H 127.0.0.1:1234", shell=True, stdout=subprocess.PIPE)
-     assert "OK - Remote UTC: 17:2:29. Offset = " in p.stdout.read()
+     assert "OK - Remote (UTC): 17:02:29. Offset =" in p.stdout.read()
 
 def test_linux_with_threshold():    
      # high offset, but threshold => critical
      p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H 127.0.0.1:1234 --th metric=offset,warning=-5:5,critical=-15:15", shell=True, stdout=subprocess.PIPE)
-     assert "Critical - Critical on offset. Remote UTC: 17:2:29. Offset =" in p.stdout.read()
+     assert "Critical - Critical on offset. Remote (UTC): 17:02:29. Offset =" in p.stdout.read()
 
 def test_linux_with_threshold_localhost():    
      # no offset, set threshold => OK
      p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H 127.0.0.1 --th metric=offset,warning=-5:5,critical=-15:15", shell=True, stdout=subprocess.PIPE)
      assert "Offset = 0 s | 'offset'=0.0s;-5:5;-15:15;;\n" in p.stdout.read()
-
-#def test_kaputti():    
-#     # with service scan
-#     var = netsnmp.Varbind(".1.3.6.1.2.1.1.1.0")
-#     data = netsnmp.snmpget(var, Version=2, DestHost="192.168.2.193", Community="public")
-#     print data
-#     var = netsnmp.Varbind(".1.3.6.1.2.1.25.1.2.0")
-#     data = netsnmp.snmpget(var, Version=2, DestHost="192.168.2.193", Community="public")
-#     print data 
-#     p=subprocess.Popen("health_monitoring_plugins/check_snmp_service/check_snmpj_service.py -H 127.0.0.1:1234 -s scan", shell=True, stdout=subprocess.PIPE)
-#     assert "Running services at host '127.0.0.1:1234':\n\nPower\nServer\nThemes\nIP Helper\n" in p.stdout.read()
- 
 
 def test_windows():
     # Time Stamp of Windows system  
@@ -89,9 +73,8 @@ def test_windows():
             '''   
     register_snmpwalk_ouput(walk)
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H 127.0.0.1:1234 --th metric=offset,warning=-5:5,critical=-15:15", shell=True, stdout=subprocess.PIPE)
-    assert "Critical - Critical on offset. Local-Remote Time: 19:4:29. Offset = " in p.stdout.read()
-
-
+    assert "Critical - Critical on offset. Remote (Local): 19:04:29. Offset =" in p.stdout.read()
+    
 def test_stop():
     # stop the testagent
     stop_server()

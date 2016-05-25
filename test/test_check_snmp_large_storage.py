@@ -39,14 +39,13 @@ def get_system_uptime():
         uptime_seconds = uptime_seconds.replace(".", "")
         return str(uptime_seconds)
 
-def test_get():
-    """
-    test of the get_data function
-    """
-    # try to get data from a not existing host
-    assert get_data("1.2.3.4", 2, "public", ".1") == None
+def test_get(capsys):
+    with pytest.raises(SystemExit):
+        get_data("1.2.3.4", 2, "public", ".1", helper)
+    out, err = capsys.readouterr()    
+    assert "Unknown - snmpget failed - no data for host" in out
     # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0")[:-3] == get_system_uptime()[:-3]
+    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0", helper)[:-2] == get_system_uptime()[:-2]
 
 def test_walk_data():
     """
@@ -56,7 +55,7 @@ def test_walk_data():
     #assert walk_data("1.2.3.4", 2, "public", ".1") == ()
 
     # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert walk_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1")[0][:-3] == get_system_uptime()[:-3]
+    assert walk_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1", helper)[0][:-3] == get_system_uptime()[:-3]
 
 def test_calculate_real_size():
     """
@@ -65,10 +64,31 @@ def test_calculate_real_size():
     assert calculate_real_size(5) == 5
     assert calculate_real_size(-5) == 2147483652
 
+def test_partition_found():
+    """
+    test partition_found(partition, description)
+    """
+    assert partition_found("/etc", "/etc") == True
+    assert partition_found("/etc", "/etc/var/bin/test") == False
+    assert partition_found("C:\\", "C:\\ Data Test ID x123") == True
+    assert partition_found("C:\\", "D:\\") == False
+
+def test_convert_to_XX(capsys):
+    """
+    test convert_to_XX(value, unit, targetunit)
+    """
+    assert convert_to_XX("1024", "4096", "MB") == 4
+    assert convert_to_XX("1048576", "4096", "GB") == 4
+    assert convert_to_XX("1073741824", "4096", "TB") == 4
+    with pytest.raises(SystemExit):
+        convert_to_XX("1024", "4096", "XYZ")
+    out, err = capsys.readouterr()    
+    assert "Unknown - Wrong targetunit: XYZ\n" == out
+
 def test_without_options(capsys):
     # without options
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_large_storage/check_snmp_large_storage.py", shell=True, stdout=subprocess.PIPE)
-    assert "All available disks at: localhost" in p.stdout.read()
+    assert "Unknown - Hostname must be specified" in p.stdout.read()
 
 def test_help():
     # with --help
@@ -83,24 +103,23 @@ def test_scan():
 def test_root_partition():
     # root partition
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_large_storage/check_snmp_large_storage.py -H 127.0.0.1:1234 -p /", shell=True, stdout=subprocess.PIPE)
-    assert "OK - 8.51% used (2.4GB of 28.16GB) at / | 'percent used'=8.51%;;;0;100" in p.stdout.read()
+    assert "OK - 8.51% used (2.4GB of 28.16GB) at '/' | 'percent used'=8.51%;;;0;100" in p.stdout.read()
 
 def test_root_partition_warning():
     # root partition in warning
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_large_storage/check_snmp_large_storage.py -H 127.0.0.1:1234 -p / --threshold metric='percent used',warning=5..inf,critical=95..inf", shell=True, stdout=subprocess.PIPE)
-    assert "Warning - 8.51% used (2.4GB of 28.16GB) at /. Warning on percent used | 'percent used'=8.51%;~:5;~:95;0;100\n" in p.stdout.read()
+    assert "Warning - 8.51% used (2.4GB of 28.16GB) at '/'. Warning on percent used | 'percent used'=8.51%;~:5;~:95;0;100\n" in p.stdout.read()
 
 def test_root_partition_in_TB():
     # root partition in TB
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_large_storage/check_snmp_large_storage.py -H 127.0.0.1:1234 -p / -u TB", shell=True, stdout=subprocess.PIPE)
-    assert "OK - 8.51% used (0.0TB of 0.03TB) at / | 'percent used'=8.51%;;;0;100\n" in p.stdout.read()
+    assert "OK - 8.51% used (0.0TB of 0.03TB) at '/' | 'percent used'=8.51%;;;0;100\n" in p.stdout.read()
 
 def test_root_partition_in_MB():
     # root partition in TB
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_large_storage/check_snmp_large_storage.py -H 127.0.0.1:1234 -p / -u MB", shell=True, stdout=subprocess.PIPE)
-    assert "OK - 8.51% used (2453.34MB of 28834.07MB) at / | 'percent used'=8.51%;;;0;100\n" in p.stdout.read()
-  
-  
+    assert "OK - 8.51% used (2453.34MB of 28834.07MB) at '/' | 'percent used'=8.51%;;;0;100\n" in p.stdout.read()
+    
 def test_stop():
     # stop the testagent
     stop_server()

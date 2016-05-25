@@ -17,14 +17,36 @@
 # along with check_snmp_service.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
-import netsnmp
+import netsnmp, sys, os
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, walk_data
+from pynag.Plugins import PluginHelper,ok,critical
+
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
 
+# Add command line parameters
+add_common_options(helper)
+helper.parser.add_option('-s', '--service', help="The name of the service you want to monitor (-s scan for scanning)", dest="service", default='')
+helper.parser.add_option('-S', '--scan',   dest  = 'scan_flag', default   = False,    action = "store_true", help      = 'Show all available services')
+
+helper.parse_arguments()
+    
+# get the options
+host, version, community = get_common_options(helper)
+service = helper.options.service
+scan = helper.options.scan_flag
+
 # that is the base id
 base_oid = ".1.3.6.1.4.1.77.1.2.3.1.1"
+
+# for check_snmp_service we need to adapt the get_data function
+def get_data(host, version, community, oid):
+    var = netsnmp.Varbind(oid)
+    data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
+    value = data[0]
+    return value
 
 def convert_in_oid(service_name):
     """
@@ -38,46 +60,28 @@ def convert_in_oid(service_name):
     # make the oid
     oid = base_oid + "." + length + "." + ".".join(str(x) for x in service_ascii)
     return oid
-    
-def get_data(host, version, community, oid):
-    var = netsnmp.Varbind(oid)
-    data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
-    value = data[0]
-    return value
-
-def walk_data(host, version, community, oid):
-    var = netsnmp.Varbind(oid)
-    data = netsnmp.snmpwalk(var, Version=version, DestHost=host, Community=community)
-    return data
 
 if __name__ == "__main__":
+    
+    # verify that a hostname is set
+    verify_host(host, helper)
 
-    # Add command line parameters
-    helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address", default="localhost")
-    helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')
-    helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
-    helper.parser.add_option('-s', help="The name of the service you want to monitor (-s scan for scanning)", dest="service", default="scan")
-    
-    helper.parse_arguments()
-    
-    # get the options
-    version = helper.options.version
-    community = helper.options.community
-    host = helper.options.hostname
-    service = helper.options.service
-    
     # The default return value should be always OK
     helper.status(ok)
-    
+
+    # if no partition / disk is set, we will do a scan
+    if service == "" or service is None:
+        scan = True
     
     ##########
     # Here we do a scan
     ##########
-    if service == "scan":
-        try:
-            services = walk_data(host, version, community, base_oid)
-        except:
-            print "snmpwalk not possible"
+    if scan:
+        
+        services = walk_data(host, version, community, base_oid, helper)
+
+        if not services:
+            print "No services found - SNMP disabled?"
             quit()
             
         print "Running services at host '" + host + "':\n"

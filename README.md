@@ -6,6 +6,11 @@ In every single plugin folder, you will find a readme file, that describes the d
 
 All plugins are released under the GPLv2.
 
+[![CircleCI](https://circleci.com/gh/rsmuc/health_monitoring_plugins.svg?style=svg)](https://circleci.com/gh/rsmuc/health_monitoring_plugins)
+[![Code Health](https://landscape.io/github/rsmuc/health_monitoring_plugins/master/landscape.svg?style=flat)](https://landscape.io/github/rsmuc/health_monitoring_plugins/master)
+[![Code Climate](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/gpa.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
+[![Issue Count](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/issue_count.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
+[![PyPI version](https://badge.fury.io/py/health_monitoring_plugins.svg)](https://badge.fury.io/py/health_monitoring_plugins)
 
 ## Plugins
 
@@ -14,7 +19,7 @@ All plugins are released under the GPLv2.
 - [check_snmp_ilo4](doc/check_snmp_ilo4/README.md)
 - [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
 - [check_snmp_port](doc/check_snmp_port/README.md)
-- [check_nmp_raritan](doc/check_nmp_raritan/README.md)
+- [check_snmp_raritan](doc/check_snmp_raritan/README.md)
 - [check_snmp_service](doc/check_snmp_service/README.md)
 - [check_snmp_time](doc/check_snmp_time/README.md)
 
@@ -120,13 +125,6 @@ To install the package from source with setup.py, you can run
     cd health_monitoring_plugins
     python setup.py install
 
-### manual
-
-You can download the source package from [PyPI](https://pypi.python.org/pypi/health_monitoring_plugins) or from [Github](https://github.com/rsmuc/health_monitoring_plugins)
-
-You can copy each single check script in your plugins folder to install the plugins.
-Ensure that you installed the pynag package.
-
 ## Run the unittests
 
 To run the unittests just execute:
@@ -136,6 +134,10 @@ To run the unittests just execute:
 The unittests require pytest.
 
 ## Changelog
+
+###### Version 0.0.2
+
+* Several bugfixes and code cleanup
 
 ###### Version 0.0.2
 
@@ -152,12 +154,11 @@ The unittests require pytest.
 
 * get_data and walk_data should be harmonized
 * harmonized unittests for walk and get
-* harmonize snmp settings
 * Implement SNMPv3 support for all plugins
-* fix --scan at check_ilo
-* fix smart status for check_ilo
-* fix redundancy status for check_ilo
-* add a default threshold to check_snmp_time2
-* check_snmp_time2: add leading 0 at the time
-* Add examples for commands.cfg and service configuration
 * Code cleanup
+
+Maybe:
+
+* add a default threshold to check_snmp_time2
+* check_snmp_raritan: It should be possible to monitor all outlets / sensors in one service
+* check_snmp_large_stroage: Check a list of storages

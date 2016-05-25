@@ -17,25 +17,31 @@
 # along with check_snmp_port.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
+import sys, os
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, walk_data
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
-import netsnmp
 
-def get_data(host, version, community, oid):
-    """
-    function for snmp get
-    """
-    var = netsnmp.Varbind(oid)
-    data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
-    value = data[0]
-    return value
 
-def walk_data(host, version, community, oid):
-    """
-    function for snmp walk
-    """
-    var = netsnmp.Varbind(oid)
-    data = netsnmp.snmpwalk(var, Version=version, DestHost=host, Community=community)
-    return data
+# Create an instance of PluginHelper()
+helper = PluginHelper()
+
+# Add command line parameters
+add_common_options(helper)
+helper.parser.add_option('-p', '--port', dest='port', help='The port you want to monitor', type='str', default='')
+helper.parser.add_option('-s', '--scan',   dest  = 'scan_flag', default   = False,    action = "store_true", help      = 'Show all open ports')
+helper.parser.add_option('-t', '--type', dest="type", help="TCP or UDP", default="udp")
+helper.parser.add_option('-w', dest="warning", help="warning values", default="synSent")
+helper.parser.add_option('-c', dest="critical", help="critical vales",default="closed")
+helper.parse_arguments()    
+
+# get the options
+typ = helper.options.type.lower()
+port = helper.options.port
+scan = helper.options.scan_flag
+host, version, community = get_common_options(helper)
+warning_param = helper.options.warning
+critical_param = helper.options.critical
 
 def check_typ(helper, typ):
     """
@@ -51,17 +57,16 @@ def check_port(helper, port):
     try:
         int(port)
     except ValueError:
-        if port != "scan":
-            helper.exit(summary="Port (-p) must be a integer value or 'scan'.", exit_code=unknown, perfdata='')
+        helper.exit(summary="Port (-p) must be a integer value.", exit_code=unknown, perfdata='')
 
 def check_udp(helper, host, version, community, port):
     """
     the check logic for UDP ports
     """
-    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.7.5.1.2") # the udpLocaLPort from UDP-MIB.mib (deprecated)
+    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.7.5.1.2", helper) # the udpLocaLPort from UDP-MIB.mib (deprecated)
     
     # here we show all open UDP ports
-    if port == "scan":
+    if scan:
         print "All open UDP ports at host " + host
         for port in open_ports:
             print "UDP: \t" + port
@@ -98,14 +103,14 @@ def check_tcp(helper, host, version, community, port, warning_param, critical_pa
     }
 
     # collect all open local ports
-    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.3") #tcpConnLocalPort from TCP-MIB (deprecated)
+    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.3", helper) #tcpConnLocalPort from TCP-MIB (deprecated)
     # collect all status information about the open ports
-    port_status = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.1") #tcpConnState from TCP-MIB (deprecated)
+    port_status = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.1", helper) #tcpConnState from TCP-MIB (deprecated)
     # make a dict out of the two lists
     port_and_status = dict(zip(open_ports, port_status))
     
     # here we show all open TCP ports and it's status
-    if port == "scan":
+    if scan:
         print "All open TCP ports: " + host
         for port in open_ports:
             tcp_status = port_and_status[port]
@@ -134,33 +139,18 @@ def check_tcp(helper, host, version, community, port, warning_param, critical_pa
         
     return ("Current status for TCP port " + port + " is: " + tcp_status)
             
-# Create an instance of PluginHelper()
-helper = PluginHelper()
-
 if __name__ == "__main__":
-    # Add command line parameters
-    helper.parser.add_option('-H', dest="hostname", help="Hostname or ip address", default="localhost")
-    helper.parser.add_option('-C', '--community', dest="community",  help='SNMP community of the SNMP service on target host.', default='public')
-    helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
-    helper.parser.add_option('-p', '--port', dest='port', help='The port you want to monitor (scan for scanning)', type='str', default='scan')
-    helper.parser.add_option('-t', '--type', dest="type", help="TCP or UDP", default="udp")
-    helper.parser.add_option('-w', dest="warning", help="warning values", default="synSent")
-    helper.parser.add_option('-c', dest="critical", help="critical vales",default="closed")
 
-    helper.parse_arguments()    
+    # verify that a hostname is set
+    verify_host(host, helper)
 
-    # get the options
-    typ = helper.options.type.lower()
-    port = helper.options.port
-    host = helper.options.hostname
-    version = helper.options.version
-    community = helper.options.community
-    warning_param = helper.options.warning
-    critical_param = helper.options.critical
+    # if no port is set, we will do a scan
+    if port == "" or port is None:
+        scan = True
+    else:
+        check_port(helper, port)
 
     check_typ(helper, typ) 
-
-    check_port(helper, port)
 
     # The default return value should be always OK
     helper.status(ok)
@@ -173,7 +163,7 @@ if __name__ == "__main__":
         helper.add_summary(check_udp(helper, host, version, community, port))
 
     # ############
-    # # here we now want to check TCP ports
+    # Check TCP
     # ############
    
     if typ == "tcp":

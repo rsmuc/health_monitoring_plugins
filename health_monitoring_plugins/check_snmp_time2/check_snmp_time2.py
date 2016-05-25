@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # check_snmp_time2.py - Check
 
-
 # Copyright (C) 2016 Retakfual, rsmuc <rsmuc@mailbox.org>
 # 
 # This program is free software; you can redistribute it and/or
@@ -17,57 +16,44 @@
 # You should have received a copy of the GNU General Public License
 # along with check_snmp_time2.py.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys, os
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data
 import time
-import netsnmp
 import datetime
-import math
 import struct
-from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
-
-# function for snmpget
-def get_data(host, version, community, oid):
-    try:
-        var = netsnmp.Varbind(oid)
-        data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
-        value = data[0]
-    except:
-        helper.exit(summary="SNMP connection to device failed " + oid, exit_code=unknown, perfdata='')
-    if not value:
-        helper.exit(summary="SNMP connection to device failed " + oid, exit_code=unknown, perfdata='')
-    return value
+from pynag.Plugins import PluginHelper,ok,unknown
 
 #Create an instance of PluginHelper()
 helper = PluginHelper()
 
 #Define the command line options
-helper.parser.add_option('-H',                  dest  = 'hostname',                                               help      = 'Hostname or ip address')
-helper.parser.add_option('-C', '--community',   dest  = 'community', default   = 'public',                        help      = 'SNMP community of the SNMP service on target host.')
-helper.parser.add_option('-V', '--snmpversion', dest  = 'version',   default   = 2,        type   = 'int',        help      = 'SNMP version. (1 or 2)')
-helper.parser.add_option('-o', '--tzoffset',    dest  = 'tzoffset',  default   = 0,        type   = 'int',        help      = 'the local systems utc offset to the servers utc, in minutes (use only if your remote device is in a different timezone)')
-helper.parser.add_option('-l', '--localtime',   dest  = 'time_flag', default   = False,    action = "store_true", help      = 'force to use local time (only recommended if you have a non Windows OS remote device, that returns localtime and not utc)')
+add_common_options(helper)
+helper.parser.add_option('-o', '--tzoffset', dest  = 'tzoffset',
+                         default = 0, type   = 'int',
+                         help = 'the local systems utc offset to the servers utc, in minutes (use only if your remote device is in a different timezone)')
+helper.parser.add_option('-l', '--localtime', dest  = 'time_flag',
+                         default = False, action = "store_true",
+                         help = 'force to use local time (only recommended if you have a non Windows OS remote device, that returns localtime and not utc)')
 helper.parse_arguments()
 
 #Get the options
-host                        = helper.options.hostname
-version                     = helper.options.version
-community                   = helper.options.community
+host, version, community = get_common_options(helper)
 o_tzoff                     = helper.options.tzoffset
 use_local                   = helper.options.time_flag
 
 if __name__ == "__main__":
     
-    #Verify that there is a hostname set
-    if  host                    == '' or           host  == None:
-        helper.exit(summary     = 'Hostname must be specified',          exit_code = unknown,  perfdata  = '')
-    
+    # verify that a hostname is set
+    verify_host(host, helper)    
     
     #The default return value should be always OK
     helper.status(ok)
     
     # get the remote time
-    remote_time                 = get_data(host, version, community, '.1.3.6.1.2.1.25.1.2.0')
+    remote_time                 = get_data(host, version, community, '.1.3.6.1.2.1.25.1.2.0', helper)
     # get the description (operating system)
-    descr                       = get_data(host, version, community, '.1.3.6.1.2.1.1.1.0')
+    descr                       = get_data(host, version, community, '.1.3.6.1.2.1.1.1.0', helper)
     
     # check if we are on a windows system
     windows = False
@@ -111,29 +97,28 @@ if __name__ == "__main__":
         
     try:
         #Format remote_time into timestamp
-        remote_timestamp        = datetime.datetime(remote_time_year, remote_time_month, remote_time_day, remote_time_hours, remote_time_minutes, remote_time_seconds)
+        remote_timestamp = datetime.datetime(remote_time_year, remote_time_month, remote_time_day, remote_time_hours, remote_time_minutes, remote_time_seconds)
         
         # Windows will return the local time (not UTC), so we need to use the local time to compare
         # Force this this if '-l' or '--localtime' is set in commandline
         if windows or use_local :
             local_timestamp     = datetime.datetime.now()
-            time_type = 'Local-Remote Time'
+            time_type = 'Remote (Local)'
         else:
             # usually the we need the UTC time
             local_timestamp     = datetime.datetime.utcnow()
-            time_type = 'Remote UTC'
+            time_type = 'Remote (UTC)'
     
         #Calculate the offset between local and remote time
-        offset                  = time.mktime(local_timestamp.timetuple()) - time.mktime(remote_timestamp.timetuple()) + 60 * o_tzoff 
+        offset = time.mktime(local_timestamp.timetuple()) - time.mktime(remote_timestamp.timetuple()) + 60 * o_tzoff 
     
         helper.add_metric(label = 'offset', value = offset, uom = 's')
         helper.check_all_metrics()
     
     except IndexError:
         helper.exit(summary = 'remote device does not return a time value', exit_code = unknown, perfdata = '')
-    
-    
+      
     #Print out plugin information and exit nagios-style
-    helper.add_summary('%s: %s:%s:%s' % (time_type, remote_time_hours, remote_time_minutes, remote_time_seconds))
+    helper.add_summary('%s: %s:%s:%s' % (time_type, str(remote_time_hours).zfill(2) , str(remote_time_minutes).zfill(2) , str(remote_time_seconds).zfill(2)))
     helper.add_summary('Offset = %d s' % offset)
     helper.exit()

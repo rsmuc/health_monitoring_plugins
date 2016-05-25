@@ -60,8 +60,7 @@ The plugin requires [pynag] and python-netsnmp.
   --noFan               Do not check global fan condition
   --noMemory            Do not check memory condition
   --noController        Do not check controller condition
-
-
+  --noPowerRedundancy   Ignore power supply redundancy
       
 ```
 
