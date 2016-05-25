@@ -70,15 +70,15 @@ def test_system_test_ilo4():
     ## with -H 1.2.3.4 --scan (unknown host)
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H 1.2.3.4 --scan', shell=True, stdout=subprocess.PIPE)
     #snmpget failed - no data for OID- maybe wrong MIB version selected or snmp is disabled
-    assert 'Unknown - \n SNMP connection to device failed or data retrieved from OID' in p.stdout.read()
+    assert 'Unknown - snmpwalk failed - no data for host 1.2.3.4 ' in p.stdout.read()
 
     ## with -H 127.0.0.1:1234 --scan (known host)
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H 127.0.0.1:1234 --scan', shell=True, stdout=subprocess.PIPE)
-    assert 'OK - \nAvailable devices:\n\nPhysical drive 0: ok\nPhysical drive 1: ok' in p.stdout.read()
+    assert 'OK - \nAvailable devices:\n\nPhysical drive 1: ok\nPhysical drive 2: ok' in p.stdout.read()
 
     ## with -H 127.0.0.1:1234 --scan (check scan priority)
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1 --scan', shell=True, stdout=subprocess.PIPE)
-    assert 'OK - \nAvailable devices:\n\nPhysical drive 0: ok\nPhysical drive 1: ok' in p.stdout.read()
+    assert 'OK - \nAvailable devices:\n\nPhysical drive 1: ok\nPhysical drive 2: ok' in p.stdout.read()
 
     # with --help
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py --help', shell=True, stdout=subprocess.PIPE)
@@ -289,8 +289,9 @@ def test_power_supply_brolen():
 
 def test_with_less_drives():
     # 4 drives configured (2 drives, 1 power supply running, 1 fan running)
-    summary_output, long_output = check_phy_drv(["127.0.0.1:1234", 2, "public", helper], 1, 4)
-    assert '4 physical drive(s) expected - 2 physical drive(s) in ok' in summary_output
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=4 --fan=0 --noPowerRedundancy', shell=True, stdout=subprocess.PIPE)
+    output = p.stdout.read()
+    assert '4 physical drive(s) expected - 2 physical drive(s) in ok' in output
 
 def test_with_drives_disabled():
     # no drives configured (2 drives, 1 power supply running, 1 fan running)
@@ -396,8 +397,7 @@ def test_drive_status_broken():
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=2 --fan=0', shell=True, stdout=subprocess.PIPE)
     assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Physical drive 1 status: failed Physical drive 1 smart sta' in p.stdout.read()
 
-def test_logical_drive_broken():
-    
+def test_logical_drive_broken():    
     unregister_all()
     
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
@@ -443,7 +443,7 @@ def test_logical_drive_broken():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 3''') # power supply redundancy
 
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=2 --fan=0', shell=True, stdout=subprocess.PIPE)
-    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Logical drive 0 status: failed' in p.stdout.read()
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Logical drive 1 status: failed' in p.stdout.read()
 
 
 def test_zero_phy_drv():
@@ -461,8 +461,7 @@ def test_zero_phy_drv():
     
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --scan', shell=True, stdout=subprocess.PIPE)
     cmd_output = p.stdout.read()
-    assert 'No physical drives detected' in cmd_output
-    assert 'Did not receive data from OID' in cmd_output
+    assert 'No physical drives detected' in cmd_output    
     assert 'Available devices:' in cmd_output
 
 

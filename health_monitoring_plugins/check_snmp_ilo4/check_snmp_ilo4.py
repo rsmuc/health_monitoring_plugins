@@ -21,7 +21,7 @@ import netsnmp
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from snmpSessionBaseClass import snmpSessionBaseClass, snmp_walk_data_class, snmp_get_data_class, snmp_try_walk_data_class, add_common_options, get_common_options, verify_host
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
@@ -196,33 +196,33 @@ def add_output(summary_output, long_output):
 
 # scan function. Show all Power supplies, fans and pyhsical drives
 def scan_ilo():    
-    ps = snmp_walk_data_class(parameter_list, oid_ps)
-    fan = snmp_walk_data_class(parameter_list, oid_fan)
+    ps = walk_data(host, version, community, oid_ps, helper)
+    fan = walk_data(host, version, community, oid_fan, helper)
 
     # we don't receive a result, if no physical drives are available.
-    phy_drv_status = snmp_try_walk_data_class(parameter_list, oid_phy_drv_status, 'No physical drives detected!')
-    data, err_msg = phy_drv_status.try_walk_data()
-
+    var = netsnmp.Varbind(oid_phy_drv_status)
+    phy_drv_status = netsnmp.snmpwalk(var, Version=version, DestHost=host, Community=community)
+    
     helper.add_long_output('Available devices:')
     helper.add_long_output('')
 
     # show the physical drives
-    if data:
-        for x in range(phy_drv_status.get_len()):
-            helper.add_long_output('Physical drive %d: %s' % (x, phy_drv_state[int(phy_drv_status.valueAt(x))]))        
+    if phy_drv_status:
+        for x, data in enumerate(phy_drv_status, 1):
+            helper.add_long_output('Physical drive %d: %s' % (x, phy_drv_state[int(data)]))        
     else:
-        helper.add_long_output(err_msg)
+        helper.add_long_output("No physical drives detected")
     # add a empty line after the pyhsical drives
     helper.add_long_output('')
 
     # show the power supplies
-    for x in range(ps.get_len()):
-        helper.add_long_output('Power supply %d: %s'  % (x, normal_state[int(ps.valueAt(x))]))
+    for x, data in enumerate(ps, 1):
+        helper.add_long_output('Power supply %d: %s'  % (x, normal_state[int(data)]))
     helper.add_long_output('')
 
     # show the fans
-    for x in range(fan.get_len()):
-        helper.add_long_output('Fan %d: %s'  % (x, normal_state[int(fan.valueAt(x))]))
+    for x, data in enumerate(fan, 1):
+        helper.add_long_output('Fan %d: %s'  % (x, normal_state[int(data)]))
     
     helper.exit(exit_code=ok, perfdata='')
 
@@ -235,8 +235,8 @@ def check_global_status(flag, name, oid):
     # only check the status, if the "no" flag is not set
     if flag:
         # get the data via snmp
-        myData = snmp_get_data_class(parameter_list, oid)
-        data_summary_output, data_long_output = state_summary(myData.get_data(), name, normal_state)
+        myData = get_data(host, version, community, oid, helper)
+        data_summary_output, data_long_output = state_summary(myData, name, normal_state)
         add_output(data_summary_output, data_long_output)
 
 def check_server_power():
@@ -245,8 +245,8 @@ def check_server_power():
     Skip this check, if the --noPowerState is set
     """
     if power_state_flag:
-        power_state = snmp_get_data_class(parameter_list, oid_power_state)
-        power_state_summary_output, power_state_long_output = state_summary(power_state.get_data(), 'Server power', server_power_state, None, server_power_state[3])
+        power_state = get_data(host, version, community, oid_power_state, helper)
+        power_state_summary_output, power_state_long_output = state_summary(power_state, 'Server power', server_power_state, None, server_power_state[3])
         add_output(power_state_summary_output, power_state_long_output)
 
 def check_storage_controllers():
@@ -255,11 +255,10 @@ def check_storage_controllers():
     Skip this check, if --noController is set
     """
     if ctrl_flag:
-        ctrl = snmp_walk_data_class(parameter_list, oid_ctrl)
-        for x in range(ctrl.get_len()):
-            ctrl_summary_output, ctrl_long_output = state_summary(ctrl.valueAt(x), 'Controller %d' % x, normal_state)
+        ctrl = walk_data(host, version, community, oid_ctrl, helper)
+        for x, data in enumerate(ctrl, 1):
+            ctrl_summary_output, ctrl_long_output = state_summary(data, 'Controller %d' % x, normal_state)
             add_output(ctrl_summary_output, ctrl_long_output)
-
 
 def check_temperature_sensors():
     """
@@ -267,12 +266,9 @@ def check_temperature_sensors():
     All sensors with the value or threshold is -99 or 0 are ignored
     """    
     # walk all temperature sensor values and thresholds
-    env_temp = snmp_walk_data_class(parameter_list, oid_env_temp)
-    env_temp_thres = snmp_walk_data_class(parameter_list, oid_env_temp_thres)
-        
-    env_temp_data = env_temp.walk_data()
-    env_temp_tresh_data = env_temp_thres.walk_data()
-    env_temp_zipped = zip(env_temp_data, env_temp_tresh_data)
+    env_temp = walk_data(host, version, community, oid_env_temp, helper)
+    env_temp_thresh = walk_data(host, version, community, oid_env_temp_thres, helper)    
+    env_temp_zipped = zip(env_temp, env_temp_thresh)
 
     for x, data in enumerate(env_temp_zipped, 1):
         # skip the check if -99 or 0 is in the value or threshold, because these data we can not use
@@ -290,39 +286,40 @@ def check_temperature_sensors():
 
 # physical drive check
 def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
-    physical_drive_status = snmp_walk_data_class(parameter_list, oid_phy_drv_status)
-    physical_drive_smart = snmp_walk_data_class(parameter_list, oid_phy_drv_smrt)
-    physical_drive_temp = snmp_walk_data_class(parameter_list, oid_phy_drv_temp)
-    physical_drive_temp_thres = snmp_walk_data_class(parameter_list, oid_phy_drv_temp_thres)
+    physical_drive_status = walk_data(host, version, community, oid_phy_drv_status, helper)
+    physical_drive_smart = walk_data(host, version, community, oid_phy_drv_smrt, helper)
+    physical_drive_temp = walk_data(host, version, community, oid_phy_drv_temp, helper)
+    physical_drive_temp_thres = walk_data(host, version, community, oid_phy_drv_temp_thres, helper)
     phy_drv_count_ok = 0
     summary_output = ''
     long_output = ''
     
-    for x in range(physical_drive_status.get_len()):        
-        if phy_drv_state[int(physical_drive_status.valueAt(x))] == 'ok' and phy_drv_smrt_state[int(physical_drive_smart.valueAt(x))] == 'ok':
+    for x, data in enumerate(physical_drive_status, 0):
+        if phy_drv_state[int(physical_drive_status[x])] == 'ok' and phy_drv_smrt_state[int(physical_drive_smart[x])] == 'ok':
             # check how many drives in OK state we find
             phy_drv_count_ok += 1
         else:
             # status is not ok
             helper.status(critical)
-            summary_output += ('Physical drive %d status: %s ' % (x+1, phy_drv_state[int(physical_drive_status.valueAt(x))]))
-            summary_output += ('Physical drive %d smart status: %s ' % (x+1, phy_drv_smrt_state[int(physical_drive_smart.valueAt(x))]))
+            summary_output += ('Physical drive %d status: %s ' % (x+1, phy_drv_state[int(physical_drive_status[x])]))
+            summary_output += ('Physical drive %d smart status: %s ' % (x+1, phy_drv_smrt_state[int(physical_drive_smart[x])]))
         
         # we always want to show the drive status in the long output, independend from the status
-        long_output += ('Physical drive %d status: %s\n' % (x+1, phy_drv_state[int(physical_drive_status.valueAt(x))]))
+        long_output += ('Physical drive %d status: %s\n' % (x+1, phy_drv_state[int(physical_drive_status[x])]))
+        long_output += ('Physical drive %d smart status: %s\n' % (x+1, phy_drv_state[int(physical_drive_smart[x])]))
     
         # check of the harddrive temperatures
         if temp_drive_flag:
             # only evaluate the temperatures if temp_drive_flag is not set (--noDriveTemp). We need that for our 15k SAS drives.            
-            if int(physical_drive_temp.valueAt(x)) != -1:
+            if int(physical_drive_temp[x]) != -1:
                 # OID returns -1 if the drive temperature (threshold) cannot be calculated or if the controller does not support reporting drive temperature threshold
-                if int(physical_drive_temp_thres.valueAt(x)) != -1:
-                    if int(physical_drive_temp.valueAt(x)) > int(physical_drive_temp_thres.valueAt(x)):
-                        summary_output += ('Physical drive %d temperature above threshold (%s / %s) ' % (x+1, physical_drive_temp.valueAt(x), physical_drive_temp_thres.valueAt(x)))
+                if int(physical_drive_temp_thres[x]) != -1:
+                    if int(physical_drive_temp[x]) > int(physical_drive_temp_thres[x]):
+                        summary_output += ('Physical drive %d temperature above threshold (%s / %s) ' % (x+1, physical_drive_temp[x], physical_drive_temp_thres[x]))
                         helper.status(critical)
-                    long_output += ('Physical drive %d temperature: %s Celsius (threshold: %s Celsius)\n' % (x+1, physical_drive_temp.valueAt(x), physical_drive_temp_thres.valueAt(x)))
+                    long_output += ('Physical drive %d temperature: %s Celsius (threshold: %s Celsius)\n' % (x+1, physical_drive_temp[x], physical_drive_temp_thres[x]))
                 else:
-                    long_output += ('Physical drive %d temperature: %s Celsius (no threshold given)\n' % (x+1, physical_drive_temp.valueAt(x)))
+                    long_output += ('Physical drive %d temperature: %s Celsius (no threshold given)\n' % (x+1, physical_drive_temp[x]))
             
     # if the count of the found OK drives does not match the amount of configured drives (--drives parameter)
     if int(phy_drv_count_ok) != int(input_phy_drv):
@@ -330,10 +327,10 @@ def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
         helper.status(critical)
     
     # Check Logical drive
-    logical_drive = snmp_walk_data_class(parameter_list, oid_log_drv)
+    logical_drive = walk_data(host, version, community, oid_log_drv, helper)
 
-    for x in range(logical_drive.get_len()):
-        log_drv_summary_output, log_drv_long_output = state_summary(logical_drive.valueAt(x), 'Logical drive %d' % x, log_drv_state)
+    for x, data in enumerate(logical_drive, 1):
+        log_drv_summary_output, log_drv_long_output = state_summary(data, 'Logical drive %d' % x, log_drv_state)
         summary_output += log_drv_summary_output
         long_output += log_drv_long_output
     return (summary_output, long_output)
@@ -344,9 +341,8 @@ def check_ps():
     Check if the power supplies are ok, and we have the configured amount
     The check is skipped if --ps=0
     """
-    if int(input_pwr_sply) != 0:
-        ps = snmp_walk_data_class(parameter_list, oid_ps)
-        ps_data = ps.walk_data()
+    if int(input_pwr_sply) != 0:        
+        ps_data = walk_data(host, version, community, oid_ps, helper)        
         ps_ok_count = 0
         
         for x, state in enumerate(ps_data, 1):
@@ -376,9 +372,8 @@ def check_power_redundancy():
     """
     # skip the check if --noPowerRedundancy is set
     if power_redundancy_flag:
-        # walk the data
-        ps_redundant = snmp_walk_data_class(parameter_list, oid_ps_redundant)
-        ps_redundant_data = ps_redundant.walk_data()        
+        # walk the data        
+        ps_redundant_data = walk_data(host, version, community, oid_ps_redundant, helper)        
         
         for x, state in enumerate(ps_redundant_data, 1):
             # human readable status
@@ -395,9 +390,8 @@ def check_fan(parameter_list, input_fan):
     """
     check the fans
     """
-    # get a list of all fans
-    fan_obj = snmp_walk_data_class(parameter_list, oid_fan)    
-    fan_data = fan_obj.walk_data()
+    # get a list of all fans      
+    fan_data = walk_data(host, version, community, oid_fan, helper)        
     
     fan_count = 0
     summary_output = ''
@@ -432,9 +426,9 @@ if __name__ == '__main__':
         scan_ilo()
     
     # Show always the product name and the serial number in the summary
-    product_name = snmp_walk_data_class(parameter_list, oid_product_name)
-    serial_number = snmp_walk_data_class(parameter_list, oid_serial_numb)    
-    helper.add_summary('%s - Serial number:%s' % (product_name.valueAt(0), serial_number.valueAt(0)))
+    product_name = walk_data(host, version, community, oid_product_name, helper)
+    serial_number = walk_data(host, version, community, oid_serial_numb, helper)
+    helper.add_summary('%s - Serial number:%s' % (product_name[0], serial_number[0]))
     
     # Verify that there is an input for the amount of components
     if input_phy_drv == '' or input_phy_drv is None:

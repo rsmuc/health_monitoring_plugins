@@ -125,13 +125,6 @@ To install the package from source with setup.py, you can run
     cd health_monitoring_plugins
     python setup.py install
 
-### manual
-
-You can download the source package from [PyPI](https://pypi.python.org/pypi/health_monitoring_plugins) or from [Github](https://github.com/rsmuc/health_monitoring_plugins)
-
-You can copy each single check script in your plugins folder to install the plugins.
-Ensure that you installed the pynag package.
-
 ## Run the unittests
 
 To run the unittests just execute:
@@ -141,6 +134,10 @@ To run the unittests just execute:
 The unittests require pytest.
 
 ## Changelog
+
+###### Version 0.0.2
+
+* Several bugfixes and code cleanup
 
 ###### Version 0.0.2
 
