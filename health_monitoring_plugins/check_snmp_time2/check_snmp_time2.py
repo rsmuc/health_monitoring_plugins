@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with check_snmp_time2.py.  If not, see <http://www.gnu.org/licenses/>.
 
-import netsnmp, sys, os
+import sys, os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
 from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data
 import time

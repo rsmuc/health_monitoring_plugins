@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with health_monitoring_plugins. If not, see <http://www.gnu.org/licenses/>.
 
-from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
+from pynag.Plugins import unknown
 import netsnmp
 
 def add_common_options(helper):

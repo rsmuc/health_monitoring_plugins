@@ -20,7 +20,7 @@
 import netsnmp, sys, os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
 from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, walk_data
-from pynag.Plugins import PluginHelper,ok,critical,unknown
+from pynag.Plugins import PluginHelper,ok,critical
 
 
 # Create an instance of PluginHelper()
@@ -77,10 +77,11 @@ if __name__ == "__main__":
     # Here we do a scan
     ##########
     if scan:
-        try:
-            services = walk_data(host, version, community, base_oid, helper)
-        except:
-            print "snmpwalk not possible"
+        
+        services = walk_data(host, version, community, base_oid, helper)
+
+        if not services:
+            print "No services found - SNMP disabled?"
             quit()
             
         print "Running services at host '" + host + "':\n"

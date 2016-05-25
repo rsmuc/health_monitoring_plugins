@@ -17,7 +17,7 @@
 # along with check_snmp_port.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-import netsnmp, sys, os
+import sys, os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
 from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, walk_data
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown

@@ -16,7 +16,7 @@
 # along with check_snmp_ilo4.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
+from pynag.Plugins import PluginHelper,ok,critical,unknown
 import netsnmp
 import sys
 import os
@@ -31,7 +31,8 @@ add_common_options(helper)
 helper.parser.add_option('--drives', help='Amount of physical drives', dest='amount_drvs')
 helper.parser.add_option('--ps', help='Amount of connected power supplies', dest='amount_pwr_sply')
 helper.parser.add_option('--fan', help='Amount of fans', dest='amount_fans')
-helper.parser.add_option('--scan', help='Scan the server if you do not know what is build in (does not return a health status)', default=False, action='store_true', dest='scan_server')
+helper.parser.add_option('--scan', help='Scan the server if you do not know what is build in (does not return a health status)', 
+                         default=False, action='store_true', dest='scan_server')
 helper.parser.add_option('--noStorage', help='Do not check global storage condition', default=True, action='store_false', dest='no_storage')
 helper.parser.add_option('--noSystem', help='Do not check global system state', default=True, action='store_false', dest='no_system')
 helper.parser.add_option('--noPowerSupply', help='Do not check global power supply condition', default=True, action='store_false', dest='no_power_supply')
@@ -272,7 +273,7 @@ def check_temperature_sensors():
 
     for x, data in enumerate(env_temp_zipped, 1):
         # skip the check if -99 or 0 is in the value or threshold, because these data we can not use
-        if not '-99' in data and not '0' in data:
+        if '-99' not  in data and '0' not in data:
             #check if the value is over the treshold
             if int(data[0]) > int(data[1]):
                 helper.add_summary('Temperature at sensor %d above threshold (%s / %s)' % (x, data[0], data[1]))
