@@ -306,7 +306,7 @@ def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
             # status is not ok
             helper.status(critical)
             summary_output += ('Physical drive %d status: %s ' % (x+1, phy_drv_state[int(physical_drive_status.valueAt(x))]))
-            summary_output +=('Physical drive %d smart status: %s ' % (x+1, phy_drv_smrt_state[int(physical_drive_smart.valueAt(x))]))
+            summary_output += ('Physical drive %d smart status: %s ' % (x+1, phy_drv_smrt_state[int(physical_drive_smart.valueAt(x))]))
         
         # we always want to show the drive status in the long output, independend from the status
         long_output += ('Physical drive %d status: %s\n' % (x+1, phy_drv_state[int(physical_drive_status.valueAt(x))]))
@@ -329,7 +329,7 @@ def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
         summary_output += ('%s physical drive(s) expected - %s physical drive(s) in ok state! ' % (input_phy_drv, phy_drv_count_ok))
         helper.status(critical)
     
-        # Check Logical drive
+    # Check Logical drive
     logical_drive = snmp_walk_data_class(parameter_list, oid_log_drv)
 
     for x in range(logical_drive.get_len()):

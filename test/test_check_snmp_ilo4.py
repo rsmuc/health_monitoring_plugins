@@ -287,183 +287,183 @@ def test_power_supply_brolen():
 ####################
 
 
-#def test_with_less_drives():
-#    # 4 drives configured (2 drives, 1 power supply running, 1 fan running)
-#    summary_output, long_output = check_phy_drv(["127.0.0.1:1234", 2, "public", helper], 1, 4)
-#    assert '4 physical drive(s) expected - 2 physical drive(s) in ok' in summary_output
+def test_with_less_drives():
+    # 4 drives configured (2 drives, 1 power supply running, 1 fan running)
+    summary_output, long_output = check_phy_drv(["127.0.0.1:1234", 2, "public", helper], 1, 4)
+    assert '4 physical drive(s) expected - 2 physical drive(s) in ok' in summary_output
 
-#def test_with_drives_disabled():
-#    # no drives configured (2 drives, 1 power supply running, 1 fan running)
-#    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=0 --fan=0 --noPowerRedundancy', shell=True, stdout=subprocess.PIPE)
-#    output = p.stdout.read()
-#    assert 'OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567 | \'Environment Temperature\'=20Celsius;;:42;;\nGlobal storage status: ok \n\nGlobal system status: ok' in output
+def test_with_drives_disabled():
+    # no drives configured (2 drives, 1 power supply running, 1 fan running)
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=0 --fan=0 --noPowerRedundancy', shell=True, stdout=subprocess.PIPE)
+    output = p.stdout.read()
+    assert 'OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567 | \'Environment Temperature\'=20Celsius;;:42;;\nGlobal storage status: ok \n\nGlobal system status: ok' in output
 
-#def test_smart_broken():
+def test_smart_broken():
     
-#    unregister_all()
+    unregister_all()
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.2.1.0 = STRING: "CZJ1234567"''') # serial number
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.1.3.0 = INTEGER: 2''') # global storage status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.1.3.0 = INTEGER: 2''') # global system status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.1.0 = INTEGER: 2''') # global power supply status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.9.2.2.32.0 = INTEGER: 3''') # power status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.1.0 = INTEGER: 2''') # global temp status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.3.0 = INTEGER: 2''') # global temp sensor
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.4.0 = INTEGER: 2''') # global fan status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.14.4.0 = INTEGER: 2''') # global memory status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.2.1.1.6.0 = INTEGER: 2''') # global controller status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.2.1.0 = STRING: "CZJ1234567"''') # serial number
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.1.3.0 = INTEGER: 2''') # global storage status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.1.3.0 = INTEGER: 2''') # global system status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.1.0 = INTEGER: 2''') # global power supply status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.9.2.2.32.0 = INTEGER: 3''') # power status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.1.0 = INTEGER: 2''') # global temp status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.3.0 = INTEGER: 2''') # global temp sensor
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.4.0 = INTEGER: 2''') # global fan status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.14.4.0 = INTEGER: 2''') # global memory status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.2.1.1.6.0 = INTEGER: 2''') # global controller status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.0 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.1 = INTEGER: 2''') # physical drive status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.0 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.1 = INTEGER: 2''') # physical drive status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.0 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.1 = INTEGER: 3''') # drive smart status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.0 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.1 = INTEGER: 3''') # drive smart status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.0 = INTEGER: 52''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.1 = INTEGER: 60''') # drive temperature
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.0 = INTEGER: 52''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.1 = INTEGER: 60''') # drive temperature
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.0 = INTEGER: 60''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.1 = INTEGER: 60''') # drive temperature threshold
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.0 = INTEGER: 60''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.1 = INTEGER: 60''') # drive temperature threshold
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.3.1.1.4.0.1 = INTEGER: 2''') # logical drive status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.3.1.1.4.0.1 = INTEGER: 2''') # logical drive status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.1 = INTEGER: 20''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.2 = INTEGER: 40''') # environment temperatures
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.1 = INTEGER: 20''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.2 = INTEGER: 40''') # environment temperatures
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.1 = INTEGER: 42''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.2 = INTEGER: 70''') # environment temperatures thresholds
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.1 = INTEGER: 42''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.2 = INTEGER: 70''') # environment temperatures thresholds
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.1 = INTEGER: 1''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.2 = INTEGER: 1''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.3 = INTEGER: 2''') # fan status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.1 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.2 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.3 = INTEGER: 2''') # fan status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.1 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.2 = INTEGER: 1''') # power supply status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.1 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.2 = INTEGER: 2''') # power supply status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 2''') # power supply redundancy
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 3''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 3''') # power supply redundancy
 
-#    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
-#    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567' in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=2 --fan=0', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Physical drive 2 status: ok Physical drive 2 smart status' in p.stdout.read()
 
-#def test_drive_status_broken():
+def test_drive_status_broken():
     
-#    unregister_all()
+    unregister_all()
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.2.1.0 = STRING: "CZJ1234567"''') # serial number
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.1.3.0 = INTEGER: 2''') # global storage status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.1.3.0 = INTEGER: 2''') # global system status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.1.0 = INTEGER: 2''') # global power supply status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.9.2.2.32.0 = INTEGER: 3''') # power status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.1.0 = INTEGER: 2''') # global temp status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.3.0 = INTEGER: 2''') # global temp sensor
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.4.0 = INTEGER: 2''') # global fan status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.14.4.0 = INTEGER: 2''') # global memory status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.2.1.1.6.0 = INTEGER: 2''') # global controller status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.2.1.0 = STRING: "CZJ1234567"''') # serial number
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.1.3.0 = INTEGER: 2''') # global storage status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.1.3.0 = INTEGER: 2''') # global system status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.1.0 = INTEGER: 2''') # global power supply status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.9.2.2.32.0 = INTEGER: 3''') # power status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.1.0 = INTEGER: 2''') # global temp status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.3.0 = INTEGER: 2''') # global temp sensor
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.4.0 = INTEGER: 2''') # global fan status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.14.4.0 = INTEGER: 2''') # global memory status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.2.1.1.6.0 = INTEGER: 2''') # global controller status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.0 = INTEGER: 3''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.1 = INTEGER: 3''') # physical drive status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.0 = INTEGER: 3''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.1 = INTEGER: 3''') # physical drive status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.0 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.1 = INTEGER: 3''') # drive smart status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.0 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.1 = INTEGER: 3''') # drive smart status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.0 = INTEGER: 52''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.1 = INTEGER: 60''') # drive temperature
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.0 = INTEGER: 52''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.1 = INTEGER: 60''') # drive temperature
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.0 = INTEGER: 60''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.1 = INTEGER: 60''') # drive temperature threshold
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.0 = INTEGER: 60''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.1 = INTEGER: 60''') # drive temperature threshold
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.3.1.1.4.0.1 = INTEGER: 2''') # logical drive status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.3.1.1.4.0.1 = INTEGER: 2''') # logical drive status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.1 = INTEGER: 20''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.2 = INTEGER: 40''') # environment temperatures
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.1 = INTEGER: 20''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.2 = INTEGER: 40''') # environment temperatures
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.1 = INTEGER: 42''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.2 = INTEGER: 70''') # environment temperatures thresholds
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.1 = INTEGER: 42''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.2 = INTEGER: 70''') # environment temperatures thresholds
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.1 = INTEGER: 1''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.2 = INTEGER: 1''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.3 = INTEGER: 2''') # fan status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.1 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.2 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.3 = INTEGER: 2''') # fan status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.1 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.2 = INTEGER: 1''') # power supply status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.1 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.2 = INTEGER: 2''') # power supply status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 2''') # power supply redundancy
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 3''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 3''') # power supply redundancy
 
-#    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
-#    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567' in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=2 --fan=0', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Physical drive 1 status: failed Physical drive 1 smart sta' in p.stdout.read()
 
-#def test_logical_drive_broken():
+def test_logical_drive_broken():
     
-#    unregister_all()
+    unregister_all()
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.2.1.0 = STRING: "CZJ1234567"''') # serial number
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.1.3.0 = INTEGER: 2''') # global storage status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.1.3.0 = INTEGER: 2''') # global system status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.1.0 = INTEGER: 2''') # global power supply status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.9.2.2.32.0 = INTEGER: 3''') # power status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.1.0 = INTEGER: 2''') # global temp status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.3.0 = INTEGER: 2''') # global temp sensor
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.4.0 = INTEGER: 2''') # global fan status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.14.4.0 = INTEGER: 2''') # global memory status
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.2.1.1.6.0 = INTEGER: 2''') # global controller status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.2.1.0 = STRING: "CZJ1234567"''') # serial number
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.1.3.0 = INTEGER: 2''') # global storage status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.1.3.0 = INTEGER: 2''') # global system status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.1.0 = INTEGER: 2''') # global power supply status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.9.2.2.32.0 = INTEGER: 3''') # power status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.1.0 = INTEGER: 2''') # global temp status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.3.0 = INTEGER: 2''') # global temp sensor
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.4.0 = INTEGER: 2''') # global fan status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.14.4.0 = INTEGER: 2''') # global memory status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.2.1.1.6.0 = INTEGER: 2''') # global controller status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.0 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.1 = INTEGER: 2''') # physical drive status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.0 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.6.0.1 = INTEGER: 2''') # physical drive status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.0 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.1 = INTEGER: 2''') # drive smart status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.0 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.57.0.1 = INTEGER: 2''') # drive smart status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.0 = INTEGER: 52''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.1 = INTEGER: 60''') # drive temperature
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.0 = INTEGER: 52''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.70.0.1 = INTEGER: 60''') # drive temperature
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.0 = INTEGER: 60''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.1 = INTEGER: 60''') # drive temperature threshold
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.0 = INTEGER: 60''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.5.1.1.71.0.1 = INTEGER: 60''') # drive temperature threshold
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.3.1.1.4.0.1 = INTEGER: 3''') # logical drive status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.3.2.3.1.1.4.0.1 = INTEGER: 3''') # logical drive status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.1 = INTEGER: 20''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.2 = INTEGER: 40''') # environment temperatures
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.1 = INTEGER: 20''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.4.0.2 = INTEGER: 40''') # environment temperatures
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.1 = INTEGER: 42''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.2 = INTEGER: 70''') # environment temperatures thresholds
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.1 = INTEGER: 42''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.8.1.5.0.2 = INTEGER: 70''') # environment temperatures thresholds
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.1 = INTEGER: 1''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.2 = INTEGER: 1''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.3 = INTEGER: 2''') # fan status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.1 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.2 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.3 = INTEGER: 2''') # fan status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.1 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.2 = INTEGER: 1''') # power supply status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.1 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.2 = INTEGER: 2''') # power supply status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 2''') # power supply redundancy
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.1 = INTEGER: 3''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.9.0.2 = INTEGER: 3''') # power supply redundancy
 
-#    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=1 --drives=2 --fan=1', shell=True, stdout=subprocess.PIPE)
-#    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567' in p.stdout.read()
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=2 --fan=0', shell=True, stdout=subprocess.PIPE)
+    assert 'Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. Logical drive 0 status: failed' in p.stdout.read()
 
 
-#def test_zero_phy_drv():
-#    unregister_all()
+def test_zero_phy_drv():
+    unregister_all()
 
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.2.1.0 = STRING: "CZJ1234567"''') # serial number
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.4.2.0 = STRING: "ProLiant DL380 Gen9"''') # product name
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.2.2.2.1.0 = STRING: "CZJ1234567"''') # serial number
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.1 = INTEGER: 1''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.2 = INTEGER: 1''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.3 = INTEGER: 2''') # fan status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.1 = INTEGER: 1''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.2 = INTEGER: 1''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.6.7.1.9.0.3 = INTEGER: 2''') # fan status
     
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.1 = INTEGER: 2''')
-#    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.2 = INTEGER: 1''') # power supply status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.1 = INTEGER: 2''')
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.232.6.2.9.3.1.4.0.2 = INTEGER: 1''') # power supply status
     
-#    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --scan', shell=True, stdout=subprocess.PIPE)
-#    cmd_output = p.stdout.read()
-#    assert 'No physical drives detected' in cmd_output
-#    assert 'Did not receive data from OID' in cmd_output
-#    assert 'Available devices:' in cmd_output
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --scan', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    assert 'No physical drives detected' in cmd_output
+    assert 'Did not receive data from OID' in cmd_output
+    assert 'Available devices:' in cmd_output
 
 
 ######################
