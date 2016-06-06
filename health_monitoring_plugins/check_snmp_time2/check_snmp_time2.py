@@ -89,11 +89,56 @@ if __name__ == "__main__":
         remote_time_minutes_offset  = remote_time[10] # offset to UTC minutes
         #Claculate UTC-time from local-time
         if remote_time_utc_dir      == '+':
-            remote_time_hours   -= remote_time_hours_offset
             remote_time_minutes -= remote_time_minutes_offset
+            if remote_time_minutes < 0:
+                remote_time_minutes += 60
+                remote_time_hours_offset += 1
+            remote_time_hours   -= remote_time_hours_offset
+            if remote_time_hours < 0:
+                remote_time_hours += 24
+                remote_time_day -= 1
+                if remote_time_day < 1:
+                     if int(remote_time_month) in [1,2,4,6,8,9,11]:
+                         remote_time_day += 31
+                     elif int(remote_time_month) == 3:
+                        if int(remote_time_year) % 4 == 0:
+                            remote_time_day += 29
+                        else:
+                            remote_time_day += 28
+                     else:
+                         remote_time_day += 30
+                     remote_time_month -= 1
+                     if int(remote_time_month) < 1:
+                         remote_time_year -= 1
+                         remote_time_month = 12
         elif remote_time_utc_dir     == '-':
-            remote_time_hours   += remote_time_hours_offset[9]
-            remote_time_minutes += remote_time_minutes_offset[10]
+            remote_time_minutes += remote_time_minutes_offset
+            if remote_time_minutes > 59:
+                remote_time_minutes -= 60
+                remote_time_hours_offset += 1
+            remote_time_hours   += remote_time_hours_offset
+            if remote_time_hours > 23:
+                remote_time_hours -= 24
+                remote_time_day += 1
+                if int(remote_time_month) in [1,3,5,7,8,10,12]:
+                    if remote_time_day > 31:
+                        remote_time_day -= 31
+                        remote_time_month += 1
+                        if int(remote_time_month) > 12:
+                            remote_time_month = 1
+                            remote_time_year += 1
+                elif int(remote_time_month) == 2:
+                    if int(remote_time_year) % 4 == 0:
+                        if int(remote_time_day) > 29:
+                            remote_time_day -= 29
+                            remote_time_month += 1
+                    elif int(remote_time_day) > 28:
+                        remote_time_day -= 28
+                        remote_time_month += 1
+                else:
+                    if int(remote_time_day) > 30:
+                        remote_time_day -= 30
+                        remote_time_month += 1
         
     try:
         #Format remote_time into timestamp
@@ -121,4 +166,5 @@ if __name__ == "__main__":
     #Print out plugin information and exit nagios-style
     helper.add_summary('%s: %s:%s:%s' % (time_type, str(remote_time_hours).zfill(2) , str(remote_time_minutes).zfill(2) , str(remote_time_seconds).zfill(2)))
     helper.add_summary('Offset = %d s' % offset)
+    helper.add_long_output('%s: %s.%s.%s %s:%s:%s' % (time_type, remote_time_year, str(remote_time_month).zfill(2), str(remote_time_day).zfill(2), str(remote_time_hours).zfill(2), str(remote_time_minutes).zfill(2), str(remote_time_seconds).zfill(2)))
     helper.exit()
