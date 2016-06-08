@@ -21,7 +21,7 @@ All plugins are released under the GPLv2.
 - [check_snmp_port](doc/check_snmp_port/README.md)
 - [check_snmp_raritan](doc/check_snmp_raritan/README.md)
 - [check_snmp_service](doc/check_snmp_service/README.md)
-- [check_snmp_time](doc/check_snmp_time/README.md)
+- [check_snmp_time2](doc/check_snmp_time2/README.md)
 
 A detailed description can be found in the README.md in folder of the corresponding plugin.
 
