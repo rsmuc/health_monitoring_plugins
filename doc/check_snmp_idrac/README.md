@@ -2,7 +2,7 @@
 
 This plugin checks the health of Dell iDRAC.
 
-The following components are checked:
+The following components/statuses are checked:
 
 - global system status
 - system LCD status
