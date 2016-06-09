@@ -16,6 +16,7 @@ All plugins are released under the GPLv2.
 
 - [check_meinberg_ntp](doc/check_meinberg_ntp/README.md)
 - [check_moxa_6000](doc/check_moxa_6000/README.md)
+- [check_snmp_idrac](doc/check_snmp_idrac/README.md)
 - [check_snmp_ilo4](doc/check_snmp_ilo4/README.md)
 - [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
 - [check_snmp_port](doc/check_snmp_port/README.md)
@@ -36,6 +37,10 @@ Tested with firmware version 5.30 and 6.18 (NG).
 
 Check the status of a Moxa NPORT 6000 RS232 to LAN converter.  
 You can check each port for the CTS, DSR, DTR and Error count.
+
+### check_snmp_idrac
+
+This plugin checks the health of Dell iDRAC.
 
 #### check_snmp_ilo4
 
