@@ -23,7 +23,7 @@ The plugin requires [pynag]
                         SNMP community of the SNMP service on target host.
   -V VERSION, --snmpversion=VERSION
                         SNMP version. (1 or 2)
-'''
+```
 
 #### Defaults
 ```
@@ -33,12 +33,12 @@ The plugin requires [pynag]
 
 ## Example
 
-'''
+```
 ./check_snmp_idrac.py -H 192.168.2.1
-'''
+```
 
 Output should look like this:
-'''
+```
 OK - User assigned name: Main System Chassis - Typ: PowerEdge R420xr - Service tag: 1AB2345
 Global System status: ok
 
@@ -55,7 +55,7 @@ Chassis intrusion sensor "System Board Intrusion" is ok
 Cooling unit "System Board Fan" status: ok
 
 Temperature probe at "System Board Inlet" is ok
-'''
+```
 
 
 
