@@ -89,9 +89,6 @@ oid_power_unit_redundancy      = '.1.3.6.1.4.1.674.10892.5.4.600.10.1.5'
 oid_power_unit_name            = '.1.3.6.1.4.1.674.10892.5.4.600.10.1.7'
 oid_power_unit_status          = '.1.3.6.1.4.1.674.10892.5.4.600.10.1.8'
 
-oid_voltage_probe_reading      = '.1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1.21'
-oid_voltage_probe_location     = '.1.3.6.1.4.1.674.10892.5.4.600.20.1.8'
-
 oid_chassis_intrusion          = '.1.3.6.1.4.1.674.10892.5.4.300.70.1.5'
 oid_chassis_intrusion_location = '.1.3.6.1.4.1.674.10892.5.4.300.70.1.8'
 
@@ -190,25 +187,6 @@ def temperature_probe_check(temperature_probe_status_data, temperature_probe_loc
     # erase the last '.' for a prettier summary output
     temperature_probe_summary_output = temperature_probe_summary_output[:-2]
     return temperature_probe_summary_output, temperature_probe_long_output
-
-# check the voltage probe
-def voltage_probe_check(voltage_probe_reading_data, voltage_probe_location_data):
-    voltage_probe_summary_output = ''
-    voltage_probe_long_output = ''
-    i = 0
-    
-    for x in range(len(voltage_probe_reading_data)):
-        #while (voltage_probe_reading_data[x].iid != voltage_probe_location_data[i].iid):
-        #    i += 1
-        print voltage_probe_reading_data[x].iid
-        print voltage_probe_location_data[x].iid
-        
-        print i
-        
-        helper.add_metric(label = 'voltage', value = voltage_probe_reading_data[x], uom = 'v')
-        helper.check_all_metrics()
-        voltage_long_output('Voltage proge "%s": %sV\n' % (voltage_probe_reading_data[x], voltage_probe_location_data[i]))
-    return voltage_probe_summary_output, voltage_probe_long_output
 
 if __name__ == '__main__':    
     # Create default parameter list for snmp classes
