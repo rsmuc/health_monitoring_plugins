@@ -133,7 +133,7 @@ def power_unit_check(power_unit_redundancy_data, power_unit_name_data, power_uni
     power_unit_summary_output = ''
     power_unit_long_output = ''
     
-    for x, data in enumerate(power_unit_status_data, 0):
+    for x in range(len(power_unit_status_data)):
         if  normal_state[int(power_unit_status_data[x])] != 'ok' or power_unit_redundancy_state[int(power_unit_redundancy_data[x])] != 'full':
             # status is not OK or redundancy is not FULL
             helper.status(critical)
@@ -149,7 +149,7 @@ def chassis_intrusion_check(chassis_intrusion_data, chassis_intrusion_location_d
     chassis_intrusion_summary_output = ''
     chassis_intrusion_long_output = ''
     
-    for x, data in enumerate(chassis_intrusion_data, 0):
+    for x in range(len(chassis_intrusion_data)):
         if normal_state[int(chassis_intrusion_data[x])] != 'ok':
             # status is not OK
             helper.status(critical)
@@ -164,7 +164,7 @@ def cooling_unit_check(cooling_unit_name_data, cooling_unit_status_data):
     cooling_unit_summary_output = ''
     cooling_unit_long_output = ''
     
-    for x, data in enumerate(cooling_unit_status_data, 0):
+    for x in range(len(cooling_unit_status_data)):
         if normal_state[int(cooling_unit_status_data[x])] != 'ok':
             # status is not OK
             helper.status(critical)
@@ -180,7 +180,7 @@ def temperature_probe_check(temperature_probe_status_data, temperature_probe_loc
     temperature_probe_summary_output = ''
     temperature_probe_long_output = ''
     
-    for x, data in enumerate(temperature_probe_status_data, 0):
+    for x in range(len(temperature_probe_status_data)):
         if temperature_probe_state[int(temperature_probe_status_data[x])] != 'ok':
             # status is not OK
             helper.status(critical)
@@ -197,7 +197,7 @@ def voltage_probe_check(voltage_probe_reading_data, voltage_probe_location_data)
     voltage_probe_long_output = ''
     i = 0
     
-    for x, data in enumerate(voltage_probe_reading_data, 0):
+    for x in range(len(voltage_probe_reading_data)):
         #while (voltage_probe_reading_data[x].iid != voltage_probe_location_data[i].iid):
         #    i += 1
         print voltage_probe_reading_data[x].iid
