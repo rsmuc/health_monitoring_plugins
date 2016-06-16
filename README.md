@@ -167,6 +167,10 @@ The unittests require pytest.
 
 ###### Version 0.0.2
 
+* Several bugfixes and code cleanup
+
+###### Version 0.0.2
+
 * Added unittests for all plugins
 * Fixed a bug in check_snmp_raritan Inlet check
 * Cleaned up some parts of the code
