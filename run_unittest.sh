@@ -23,3 +23,6 @@ py.test test/test_check_snmp_raritan.py -v
 
 echo "Test check_snmp_port"
 py.test test/test_check_snmp_port.py -v
+
+echo "Test check_snmp_idrac"
+py.test test/test_check_snmp_idrac.py -v

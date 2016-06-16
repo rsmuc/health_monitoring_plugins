@@ -98,6 +98,21 @@ It may take some time until Windows updates the status via snmp after starting o
 
 This plugin compares the time of the icinga/nagios machine with the time of a remote device.
 
+#### check_snmp_idrac.py
+
+This plugin checks the health of Dell iDRAC.
+
+The following components/statuses are checked:
+
+- global system status
+- system LCD status
+- global storage status
+- system power status
+- power unit and its redundancy
+- chassis intrusion sensor
+- cooling unit
+- temperature probes
+
 
 ## Installation
 
@@ -140,7 +155,13 @@ The unittests require pytest.
 
 ## Changelog
 
-###### Version 0.0.2
+###### Version 0.0.4
+
+* Fixed bug in check_snmp_time2
+
+* Added check_snmp_idrac
+
+###### Version 0.0.3
 
 * Several bugfixes and code cleanup
 
