@@ -16,12 +16,13 @@ All plugins are released under the GPLv2.
 
 - [check_meinberg_ntp](doc/check_meinberg_ntp/README.md)
 - [check_moxa_6000](doc/check_moxa_6000/README.md)
+- [check_snmp_idrac](doc/check_snmp_idrac/README.md)
 - [check_snmp_ilo4](doc/check_snmp_ilo4/README.md)
 - [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
 - [check_snmp_port](doc/check_snmp_port/README.md)
 - [check_snmp_raritan](doc/check_snmp_raritan/README.md)
 - [check_snmp_service](doc/check_snmp_service/README.md)
-- [check_snmp_time](doc/check_snmp_time/README.md)
+- [check_snmp_time2](doc/check_snmp_time2/README.md)
 
 A detailed description can be found in the README.md in folder of the corresponding plugin.
 
@@ -36,6 +37,10 @@ Tested with firmware version 5.30 and 6.18 (NG).
 
 Check the status of a Moxa NPORT 6000 RS232 to LAN converter.  
 You can check each port for the CTS, DSR, DTR and Error count.
+
+### check_snmp_idrac
+
+This plugin checks the health of Dell iDRAC.
 
 #### check_snmp_ilo4
 
@@ -93,6 +98,21 @@ It may take some time until Windows updates the status via snmp after starting o
 
 This plugin compares the time of the icinga/nagios machine with the time of a remote device.
 
+#### check_snmp_idrac.py
+
+This plugin checks the health of Dell iDRAC.
+
+The following components/statuses are checked:
+
+- global system status
+- system LCD status
+- global storage status
+- system power status
+- power unit and its redundancy
+- chassis intrusion sensor
+- cooling unit
+- temperature probes
+
 
 ## Installation
 
@@ -134,6 +154,16 @@ To run the unittests just execute:
 The unittests require pytest.
 
 ## Changelog
+
+###### Version 0.0.4
+
+* Fixed bug in check_snmp_time2
+
+* Added check_snmp_idrac
+
+###### Version 0.0.3
+
+* Several bugfixes and code cleanup
 
 ###### Version 0.0.2
 

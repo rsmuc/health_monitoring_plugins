@@ -81,24 +81,27 @@ if __name__ == "__main__":
     remote_time_minutes         = remote_time[5] #minutes
     remote_time_seconds         = remote_time[6] #seconds
     
-    
+    #Format remote_time into timestamp
+    remote_timestamp = datetime.datetime(remote_time_year, remote_time_month, remote_time_day, remote_time_hours, remote_time_minutes, remote_time_seconds)
+        
     if len(remote_time) == 11:
         # in case we receive 11 values from unpack (depending on the remote device), we must calculate the UTC time with the offset
         remote_time_utc_dir         = remote_time[8]  # + or -
-        remote_time_hours_offset    = remote_time[9]  # offset to UTC hours
+        remote_time_hours_offset    = remote_time[9] # offset to UTC hours
         remote_time_minutes_offset  = remote_time[10] # offset to UTC minutes
         #Claculate UTC-time from local-time
         if remote_time_utc_dir      == '+':
-            remote_time_hours   -= remote_time_hours_offset
-            remote_time_minutes -= remote_time_minutes_offset
+            remote_timestamp -= datetime.timedelta(hours=remote_time_hours_offset, minutes=remote_time_minutes_offset)
         elif remote_time_utc_dir     == '-':
-            remote_time_hours   += remote_time_hours_offset[9]
-            remote_time_minutes += remote_time_minutes_offset[10]
+            remote_timestamp += datetime.timedelta(hours=remote_time_hours_offset, minutes=remote_time_minutes_offset)
         
     try:
+<<<<<<< HEAD
+=======
         #Format remote_time into timestamp
         remote_timestamp = datetime.datetime(remote_time_year, remote_time_month, remote_time_day, remote_time_hours, remote_time_minutes, remote_time_seconds)
         
+>>>>>>> master
         # Windows will return the local time (not UTC), so we need to use the local time to compare
         # Force this this if '-l' or '--localtime' is set in commandline
         if windows or use_local :
@@ -111,7 +114,11 @@ if __name__ == "__main__":
     
         #Calculate the offset between local and remote time
         offset = time.mktime(local_timestamp.timetuple()) - time.mktime(remote_timestamp.timetuple()) + 60 * o_tzoff 
+<<<<<<< HEAD
+        
+=======
     
+>>>>>>> master
         helper.add_metric(label = 'offset', value = offset, uom = 's')
         helper.check_all_metrics()
     
@@ -119,6 +126,11 @@ if __name__ == "__main__":
         helper.exit(summary = 'remote device does not return a time value', exit_code = unknown, perfdata = '')
       
     #Print out plugin information and exit nagios-style
+<<<<<<< HEAD
+    helper.add_summary('%s: ' % (time_type) + datetime.datetime.fromtimestamp(time.mktime(remote_timestamp.timetuple())).strftime('%H:%M:%S') + '. Offset = %d s' % offset)
+    helper.add_long_output('%s: ' % (time_type) + datetime.datetime.fromtimestamp(time.mktime(remote_timestamp.timetuple())).strftime('%Y.%m.%d %H:%M:%S'))
+=======
     helper.add_summary('%s: %s:%s:%s' % (time_type, str(remote_time_hours).zfill(2) , str(remote_time_minutes).zfill(2) , str(remote_time_seconds).zfill(2)))
     helper.add_summary('Offset = %d s' % offset)
+>>>>>>> master
     helper.exit()

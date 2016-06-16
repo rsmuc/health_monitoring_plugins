@@ -74,7 +74,338 @@ def test_windows():
     register_snmpwalk_ouput(walk)
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H 127.0.0.1:1234 --th metric=offset,warning=-5:5,critical=-15:15", shell=True, stdout=subprocess.PIPE)
     assert "Critical - Critical on offset. Remote (Local): 19:04:29. Offset =" in p.stdout.read()
+
+def test_plus_two_hours():
+    unregister_all()
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x04\x09\x0b\x04\x2b\x01+\x02\x01"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
     
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.04.09 09:03:43' in cmd_output
+
+def test_plus_thirty_minutes():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x04\x03\x03\x0f\x2b\x01+\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.04.03 01:45:43' in cmd_output
+
+def test_minus_two_hours():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x04\x03\x16\x01\x2b\x01-\x02\x01"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.04.04 00:02:43' in cmd_output
+
+def test_minus_two_hours():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x04\x03\x16\x1e\x2b\x01-\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.04.04 00:00:43' in cmd_output
+
+def test_feb_to_mar_leap_year_minus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x02\x1d\x16\x1e\x2b\x01-\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xe0\x02\x1d\x16\x1e\x2b\x01-\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.03.01 00:00:43' in cmd_output
+
+def test_feb_to_mar_minus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xdf\x02\x1c\x16\x1e\x2b\x01-\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xdf\x02\x1c\x16\x1e\x2b\x01-\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2015.03.01 00:00:43' in cmd_output
+
+def test_mar_to_feb_leap_year_plus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x03\x01\x01\x1d\x2b\x01+\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xe0\x03\x01\x01\x1d\x2b\x01+\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.02.29 23:59:43' in cmd_output
+
+def test_mar_to_feb_plus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xdf\x03\x01\x01\x1d\x2b\x01+\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xdf\x03\x01\x01\x1d\x2b\x01+\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2015.02.28 23:59:43' in cmd_output
+
+def test_feb_to_jan_leap_year_plus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x02\x01\x01\x1d\x2b\x01+\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xe0\x02\x01\x01\x1d\x2b\x01+\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.01.31 23:59:43' in cmd_output
+
+def test_feb_to_jan_plus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xdf\x02\x01\x01\x1d\x2b\x01+\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xdf\x02\x01\x01\x1d\x2b\x01+\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2015.01.31 23:59:43' in cmd_output
+
+def test_aug_to_jul_leap_year_plus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x08\x01\x01\x1d\x2b\x01+\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xe0\x08\x01\x01\x1d\x2b\x01+\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.07.31 23:59:43' in cmd_output
+
+def test_aug_to_jul_plus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xdf\x08\x01\x01\x1d\x2b\x01+\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xdf\x08\x01\x01\x1d\x2b\x01+\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2015.07.31 23:59:43' in cmd_output
+
+def test_jun_to_jul_leap_year_minus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x06\x1e\x16\x1e\x2b\x01-\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xe0\x06\x1e\x16\x1e\x2b\x01-\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.07.01 00:00:43' in cmd_output
+
+def test_jun_to_jul_minus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xdf\x06\x1e\x16\x1e\x2b\x01-\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xdf\x06\x1e\x16\x1e\x2b\x01-\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2015.07.01 00:00:43' in cmd_output
+
+def test_jul_to_jun_leap_year_plus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xe0\x07\x01\x01\x1d\x2b\x01+\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xe0\x07\x01\x01\x1d\x2b\x01+\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2016.06.30 23:59:43' in cmd_output
+
+def test_jul_to_jun_plus():
+    unregister_all()
+    
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.25.1.2.0 = STRING: "\x07\xdf\x07\x01\x01\x1d\x2b\x01+\x01\x1e"''')
+    register_snmpwalk_ouput('''iso.3.6.1.2.1.1.1.0 = STRING: "Linux debian-dev 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt20-1+deb8u4 (2016-02-29) x86_64"''')
+    
+    the_time         = struct.unpack('BBBBBBBBcBB', '\x07\xdf\x07\x01\x01\x1d\x2b\x01+\x01\x1e')
+    
+    the_year = (the_time[0] * 256) + the_time[1]
+    
+    print 'Year: %d' % the_year # year
+    print 'Month: %d' % the_time[2] #month
+    print 'Day: %d' % the_time[3] #day
+    print 'Hour: %d' % the_time[4] #hours
+    print 'Minute: %d' % the_time[5] #minutes
+    print 'Second: %d' % the_time[6] #seconds
+    print 'Offset-hour: %d' % the_time[9] # offset-
+    print 'Offset-minute: %d' % the_time[10] # offset-
+    
+    p=subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print cmd_output
+    assert 'Remote (UTC): 2015.06.30 23:59:43' in cmd_output
+
 def test_stop():
     # stop the testagent
     stop_server()
