@@ -8,7 +8,6 @@ from check_meinberg_ntp import *
 import pytest
 import subprocess
 from testagent import *
-from types import MethodType
 
 # configuration of the testagent
 os.environ['MIBDIRS'] = os.path.dirname(os.path.abspath(__file__))
