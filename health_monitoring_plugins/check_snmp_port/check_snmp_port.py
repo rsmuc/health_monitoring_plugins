@@ -17,7 +17,9 @@
 # along with check_snmp_port.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-import sys, os
+import sys
+import os
+import netsnmp
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
 from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, walk_data
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
@@ -59,11 +61,11 @@ def check_port(helper, port):
     except ValueError:
         helper.exit(summary="Port (-p) must be a integer value.", exit_code=unknown, perfdata='')
 
-def check_udp(helper, host, version, community, port):
+def check_udp(helper, host, version, community, port, session):
     """
     the check logic for UDP ports
     """
-    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.7.5.1.2", helper) # the udpLocaLPort from UDP-MIB.mib (deprecated)
+    open_ports = walk_data(session, '.1.3.6.1.2.1.7.5.1.2', helper)[0] # the udpLocaLPort from UDP-MIB.mib (deprecated)
     
     # here we show all open UDP ports
     if scan:
@@ -79,7 +81,7 @@ def check_udp(helper, host, version, community, port):
         helper.status(critical)
     return ("Current status for UDP port " + port + " is: " + udp_status)
 
-def check_tcp(helper, host, version, community, port, warning_param, critical_param):
+def check_tcp(helper, host, version, community, port, warning_param, critical_param, session):
     """
     the check logic for check TCP ports
     """
@@ -103,9 +105,9 @@ def check_tcp(helper, host, version, community, port, warning_param, critical_pa
     }
 
     # collect all open local ports
-    open_ports = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.3", helper) #tcpConnLocalPort from TCP-MIB (deprecated)
+    open_ports = walk_data(session, '.1.3.6.1.2.1.6.13.1.3', helper)[0] #tcpConnLocalPort from TCP-MIB (deprecated)
     # collect all status information about the open ports
-    port_status = walk_data(host, version, community, ".1.3.6.1.2.1.6.13.1.1", helper) #tcpConnState from TCP-MIB (deprecated)
+    port_status = walk_data(session, '.1.3.6.1.2.1.6.13.1.1', helper)[0] #tcpConnState from TCP-MIB (deprecated)
     # make a dict out of the two lists
     port_and_status = dict(zip(open_ports, port_status))
     
@@ -144,6 +146,8 @@ if __name__ == "__main__":
     # verify that a hostname is set
     verify_host(host, helper)
 
+    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
+
     # if no port is set, we will do a scan
     if port == "" or port is None:
         scan = True
@@ -160,14 +164,14 @@ if __name__ == "__main__":
     #############
 
     if typ == "udp":
-        helper.add_summary(check_udp(helper, host, version, community, port))
+        helper.add_summary(check_udp(helper, host, version, community, port, sess))
 
     # ############
     # Check TCP
     # ############
    
     if typ == "tcp":
-        helper.add_summary(check_tcp(helper, host, version, community, port, warning_param, critical_param))
+        helper.add_summary(check_tcp(helper, host, version, community, port, warning_param, critical_param, sess))
      
     # Print out plugin information and exit nagios-style
     helper.exit()
