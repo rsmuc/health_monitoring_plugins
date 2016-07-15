@@ -47,7 +47,7 @@ def test_walk(capsys):
     out, err = capsys.readouterr()
     assert 'Unknown - snmpwalk failed - no data for host' in out
     # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert walk_data(session, '.1.3.6.1.2.1.25.1.1', helper)[0][0][:-2] == get_system_uptime()[:-2]
+    assert walk_data(session, '.1.3.6.1.2.1.25.1.1', helper)[0][0][:-3] == get_system_uptime()[:-3]
 
 
 def test_start():
