@@ -17,7 +17,9 @@
 # along with check_snmp_large_storage.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-import sys, os
+import sys
+import os
+import netsnmp
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
 from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data
 from pynag.Plugins import PluginHelper,ok,unknown
@@ -90,7 +92,7 @@ def run_scan():
     """
     show all available partitions
     """
-    all_disks = walk_data(host, version, community, oid_hrStorageDescr, helper)
+    all_disks = walk_data(sess, oid_hrStorageDescr, helper)[0]
         
     print "All available disks at: " + host
     for disk in all_disks:        
@@ -120,8 +122,8 @@ def check_partition():
     check the defined partition
     """
     
-    all_index           = walk_data(host, version, community, oid_hrStorageIndex, helper)
-    all_descriptions    = walk_data(host, version, community, oid_hrStorageDescr, helper)
+    all_index           = walk_data(sess, oid_hrStorageIndex, helper)[0]
+    all_descriptions    = walk_data(sess, oid_hrStorageDescr, helper)[0]
     # we need the sucess flag for the error handling (partition found or not found)
     sucess              = False
 
@@ -138,9 +140,9 @@ def check_partition():
             sucess = True
 
             # receive all values we need
-            unit    =   float(get_data(host, version, community, oid_hrStorageAllocationUnits + "." + index, helper))
-            size    =   float(get_data(host, version, community, oid_hrStorageSize + "." + index, helper))
-            used    =   float(get_data(host, version, community, oid_hrStorageUsed + "." + index, helper))
+            unit    =   float(get_data(sess, oid_hrStorageAllocationUnits + "." + index, helper))
+            size    =   float(get_data(sess, oid_hrStorageSize + "." + index, helper))
+            used    =   float(get_data(sess, oid_hrStorageUsed + "." + index, helper))
 
             if size == 0 or used == 0:
                 # if the host return "0" as used or size, then we have a problem with the calculation (devision by zero)
@@ -179,6 +181,8 @@ if __name__ == "__main__":
     
     # verify that a hostname is set
     verify_host(host, helper)
+
+    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
 
     # if no partition / disk is set, we will do a scan
     if disk == "" or disk is None:
