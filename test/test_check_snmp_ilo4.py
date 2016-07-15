@@ -8,11 +8,57 @@ from check_snmp_ilo4 import *
 import pytest
 import subprocess
 from testagent import *
-from types import MethodType
 
 # configuration of the testagent
 os.environ['MIBDIRS'] = os.path.dirname(os.path.abspath(__file__))
 configure(agent_address = "localhost:1234", rocommunity='public', rwcommunity='private')
+
+# create netsnmp Session for test_get, test_walk ant test_attempt_walk
+session = netsnmp.Session(Version=2, DestHost='localhost', Community='public')
+failSession = netsnmp.Session(Version=2, DestHost='1.2.3.4', Community='public')
+
+def get_system_uptime():
+    """
+    just a helper to get the system uptime in seconds
+    """
+    with open('/proc/uptime', 'r') as f:
+        uptime_seconds = str(f.readline().split()[0])
+        uptime_seconds = uptime_seconds.replace('.', '')
+    return str(uptime_seconds)
+
+def test_get(capsys):
+    """
+    test of get_data function
+    """
+    # run a get on a not exitsting host
+    with pytest.raises(SystemExit):
+        get_data(failSession, '.1', helper)
+    out, err = capsys.readouterr()
+    assert 'Unknown - snmpget failed - no data for host' in out
+    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
+    assert get_data(session, '.1.3.6.1.2.1.25.1.1.0', helper)[:-2] == get_system_uptime()[:-2]
+
+def test_walk(capsys):
+    """
+    test of the walk_data function
+    """
+    # run a walk on a not existing host
+    with pytest.raises(SystemExit):
+        assert walk_data(failSession, '.1', helper)
+    out, err = capsys. readouterr()
+    assert 'Unknown - snmpwalk failed - no data for host' in out
+    
+    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
+    assert walk_data(session, '.1.3.6.1.2.1.25.1.1', helper)[0][0][:-2] == get_system_uptime()[:-2]
+
+def test_attempt_walk():
+    """
+    test of the attempt_walk_data function
+    """
+    # try to get data from a not existing host
+    assert attempt_walk_data(failSession, '.1')[0] == []
+    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
+    assert attempt_walk_data(session, '.1.3.6.1.2.1.25.1.1')[0][0][:-2] == get_system_uptime()[:-2]
 
 def test_start():
  # start the testagent
@@ -62,6 +108,7 @@ def test_start():
 
     start_server()
 
+
 def test_system_test_ilo4():
     # without options
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py', shell=True, stdout=subprocess.PIPE)
@@ -97,16 +144,6 @@ def test_with_no_input():
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
     assert 'Amount of physical drives must be specified (--drives)' in p.stdout.read()
 
-def test_state_summary_ok():
-    summary_output, long_output = state_summary(2, 'summary output', normal_state)
-    assert 'status: ok' in long_output
-
-def test_state_summary_failed():
-    summary_output, long_output = state_summary(4, 'summary output', normal_state)
-    assert 'status: failed' in long_output
-    assert 'status: failed' in summary_output
-
-
 ##################
 # FAN tests
 ##################
@@ -115,7 +152,6 @@ def test_with_less_fans():
     # 4 fans configured (2 drives, 2 power supply running, 3 fan running)
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=0 --fan=4', shell=True, stdout=subprocess.PIPE)
     assert "Critical - ProLiant DL380 Gen9 - Serial number:CZJ1234567. 4 fan(s) expected - 3 fan(s) ok." in p.stdout.read()
-    
 
 def test_one_fan_broken():
     """ 
@@ -233,7 +269,7 @@ def test_power_suppply_redundancy_check_disabled():
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=2 --drives=0 --fan=0 --noPowerRedundancy', shell=True, stdout=subprocess.PIPE)
     assert "OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567" in p.stdout.read()
 
-def test_power_supply_brolen():
+def test_power_supply_broken():
     # 2 power supplies configured, 1 power suppliy running, 1 degraded
     unregister_all()
     
