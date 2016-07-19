@@ -16,7 +16,7 @@
 # along with check_snmp_idrac.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-from pynag.Plugins import PluginHelper,ok,warning,critical
+from pynag.Plugins import PluginHelper,ok,critical
 import netsnmp
 import sys
 import os
