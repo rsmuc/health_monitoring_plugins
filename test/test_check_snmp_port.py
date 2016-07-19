@@ -78,26 +78,26 @@ def test_check_port(capsys):
 def test_check_udp(capsys):
     """ test the check_udp function """
     # check udp port "161" (open)
-    assert check_udp(helper, "127.0.0.1:1234", 2, "public", "161", test_session) == "Current status for UDP port 161 is: OPEN"
+    assert check_udp(helper, "127.0.0.1:1234", "161", test_session) == "Current status for UDP port 161 is: OPEN"
     
     # check udp port "164" (closed)
-    assert check_udp(helper, "127.0.0.1:1234", 2, "public", "164", test_session) == "Current status for UDP port 164 is: CLOSED"
+    assert check_udp(helper, "127.0.0.1:1234", "164", test_session) == "Current status for UDP port 164 is: CLOSED"
 
     # check udp port "test"
-    assert check_udp(helper, "127.0.0.1:1234", 2, "public", "test", test_session) == "Current status for UDP port test is: CLOSED"
+    assert check_udp(helper, "127.0.0.1:1234", "test", test_session) == "Current status for UDP port test is: CLOSED"
         
 def test_check_tcp(capsys):     
     # check "22" (listen)
-    assert check_tcp(helper, "127.0.0.1:1234", 2, "public", "22", "closed", "closed", test_session) == "Current status for TCP port 22 is: listen"
+    assert check_tcp(helper, "127.0.0.1:1234", "22", "closed", "closed", test_session) == "Current status for TCP port 22 is: listen"
     
     # check "22" (listen), but listen is a warning status
-    assert check_tcp(helper, "127.0.0.1:1234", 2, "public", "22", "listen", "listen", test_session) == "Current status for TCP port 22 is: listen"
+    assert check_tcp(helper, "127.0.0.1:1234", "22", "listen", "listen", test_session) == "Current status for TCP port 22 is: listen"
 
     # check "164" (closed / not a UDP port)
-    assert check_tcp(helper, "127.0.0.1:1234", 2, "public", "164", "closed", "closed", test_session) == "Current status for TCP port 164 is: CLOSED"
+    assert check_tcp(helper, "127.0.0.1:1234", "164", "closed", "closed", test_session) == "Current status for TCP port 164 is: CLOSED"
 
     # check "test"
-    assert check_tcp(helper, "127.0.0.1:1234", 2, "public", "test", "closed", "closed", test_session) == "Current status for TCP port test is: CLOSED"
+    assert check_tcp(helper, "127.0.0.1:1234", "test", "closed", "closed", test_session) == "Current status for TCP port test is: CLOSED"
 
 #integration test
 def test_system_call(capsys):

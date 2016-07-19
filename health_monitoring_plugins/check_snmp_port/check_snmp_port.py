@@ -61,7 +61,7 @@ def check_port(helper, port):
     except ValueError:
         helper.exit(summary="Port (-p) must be a integer value.", exit_code=unknown, perfdata='')
 
-def check_udp(helper, host, version, community, port, session):
+def check_udp(helper, host, port, session):
     """
     the check logic for UDP ports
     """
@@ -81,7 +81,7 @@ def check_udp(helper, host, version, community, port, session):
         helper.status(critical)
     return ("Current status for UDP port " + port + " is: " + udp_status)
 
-def check_tcp(helper, host, version, community, port, warning_param, critical_param, session):
+def check_tcp(helper, host, port, warning_param, critical_param, session):
     """
     the check logic for check TCP ports
     """
@@ -164,14 +164,14 @@ if __name__ == "__main__":
     #############
 
     if typ == "udp":
-        helper.add_summary(check_udp(helper, host, version, community, port, sess))
+        helper.add_summary(check_udp(helper, host, port, sess))
 
     # ############
     # Check TCP
     # ############
    
     if typ == "tcp":
-        helper.add_summary(check_tcp(helper, host, version, community, port, warning_param, critical_param, sess))
+        helper.add_summary(check_tcp(helper, host, port, warning_param, critical_param, sess))
      
     # Print out plugin information and exit nagios-style
     helper.exit()

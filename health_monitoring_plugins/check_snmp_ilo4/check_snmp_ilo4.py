@@ -260,7 +260,7 @@ def check_temperature_sensors():
             
 
 # physical drive check
-def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
+def check_phy_drv(temp_drive_flag, input_phy_drv):
     physical_drive_status = walk_data(sess, oid_phy_drv_status, helper)[0]
     physical_drive_smart = walk_data(sess, oid_phy_drv_smrt, helper)[0]
     physical_drive_temp = walk_data(sess, oid_phy_drv_temp, helper)[0]
@@ -361,7 +361,7 @@ def check_power_redundancy():
             helper.add_long_output('Power supply %s: %s' % (x, hr_status))
         helper.add_long_output('')
 
-def check_fan(parameter_list, input_fan):
+def check_fan(input_fan):
     """
     check the fans
     """
@@ -432,7 +432,7 @@ if __name__ == '__main__':
     
     # Physical drive check
     if int(input_phy_drv) != 0:
-        phy_drv_summary_output, phy_drv_long_output = check_phy_drv(parameter_list,temp_drive_flag, input_phy_drv)
+        phy_drv_summary_output, phy_drv_long_output = check_phy_drv(temp_drive_flag, input_phy_drv)
         add_output(phy_drv_summary_output, phy_drv_long_output, helper)
             
     # Power supply check
@@ -443,7 +443,7 @@ if __name__ == '__main__':
             
     # Fan check
     if int(input_fan) != 0:
-        fan_summary_output, fan_long_output = check_fan(parameter_list, input_fan)
+        fan_summary_output, fan_long_output = check_fan(input_fan)
         add_output(fan_summary_output, fan_long_output, helper)
         
     check_temperature_sensors()

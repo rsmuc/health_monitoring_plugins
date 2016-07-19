@@ -139,7 +139,7 @@ def real_value(value, digit):
     """
     return str(float(value) / math.pow(10, float(digit)))
 
-def check_inlet(host, version, community):
+def check_inlet(sess):
     """
     check the Inlets of Raritan PDUs
     """
@@ -180,7 +180,7 @@ def check_inlet(host, version, community):
                           ":" + inlet_warning_upper, inlet_critical_lower + ":" +\
                           inlet_critical_upper, "", "", inlet_unit)
         
-def check_outlet(host, version, community):
+def check_outlet(sess):
     """
     check the status of the specified outlet
     """
@@ -195,7 +195,7 @@ def check_outlet(host, version, community):
     # print the status
     helper.add_summary("Outlet %s - '%s' is: %s" % (number, outlet_name, outlet_real_state.upper()))
     
-def check_sensor(host, version, community):
+def check_sensor(sess):
     """
     check the status of the specified sensor
     """
@@ -278,21 +278,21 @@ if __name__ == "__main__":
     ## here we check the inlet
     ######
     if typ.lower() == "inlet":
-        check_inlet(host, version, community)
+        check_inlet(sess)
     
     ######
     # here we check the outlets
     ######
     
     if typ.lower() == "outlet":
-        check_outlet(host, version, community)
+        check_outlet(sess)
 
     #######
     # here we check the sensors
     #######
         
     if typ.lower() == "sensor":
-        check_sensor(host, version, community)
+        check_sensor(sess)
         
     ## Print out plugin information and exit nagios-style
     helper.exit()
