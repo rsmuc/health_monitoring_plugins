@@ -56,53 +56,6 @@ status = {
     "4" : "Pos2"
     }
 
-def check_status():
-    """
-    check and show the current NTP status
-    """
-    ntp_status_int = get_data(sess, oid_ntp_current_state_int, helper)
-
-    # convert the ntp_status integer value in a human readable value
-    try:
-        ntp_status_string = ntp_status[ntp_status_int]
-    except KeyError:
-        # if we receive an value, that is not in the dict
-        helper.exit(summary="received an undefined value from device: " + ntp_status_int, exit_code=unknown, perfdata='')
-
-    # the ntp status should be synchronized (new MIB) or normalOperation (old mib)
-    if ntp_status_string != "synchronized" and ntp_status_string != "normalOperationPPS":    
-        # that is a critical condition, because the time reference will not be reliable anymore
-        helper.status(critical)
-        helper.add_summary("NTP status: " + ntp_status_string)
-
-def check_gps_status():
-    """
-    check and show the current GPS status
-    """
-    gps_status_int = get_data(sess, oid_gps_mode_int, helper)
-
-    try:
-        gps_mode_string = gps_mode[gps_status_int]
-    except KeyError:
-        # if we receive an value, that is not in the dict
-        helper.exit(summary="received an undefined value from device: " + gps_status_int, exit_code=unknown, perfdata='')
-
-    if gps_mode_string != "normalOperation" and gps_mode_string != "gpsSync" :
-        # that is a warning condition, NTP could still work without the GPS antenna
-        helper.status(warning)
-        helper.add_summary("GPS status: " + gps_mode_string)
-
-def check_satellites():
-    """
-    check and show the good satellites
-    """
-    # here we get the value for the satellites
-    good_satellites = get_data(sess, oid_gps_satellites_good, helper)
-
-    # Show the summary and add the metric and afterwards check the metric
-    helper.add_summary("Good satellites: %s" % good_satellites)
-    helper.add_metric(label='satellites',value=good_satellites) 
-
 if __name__ == "__main__":
 
     # verify that a hostname is set
@@ -121,9 +74,9 @@ if __name__ == "__main__":
 
         helper.add_summary("%s: %s" % (name, status[value]))
         
+        # if the value is 1 / Fault the status is set to critical
         if value == "1":
             helper.status(critical)
-
 
     # Print out plugin information and exit nagios-style
     helper.exit()
