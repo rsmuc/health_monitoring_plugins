@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_teledyne'))
  
-from check_meinberg_ntp import *
+#from check_snmp_teledyne import *
 
 import pytest
 import subprocess
@@ -14,34 +14,6 @@ os.environ['MIBDIRS'] = os.path.dirname(os.path.abspath(__file__))
 configure(agent_address = "localhost:1234",
     rocommunity='public', rwcommunity='private')
 
-# create netsnmp Sessions for test_get
-session = netsnmp.Session(Version=2, DestHost='localhost', Community='public')
-failSession = netsnmp.Session(Version=2, DestHost='1.2.3.4', Community='public')
-
-def get_system_uptime():
-    """
-    just a helper to get the system uptime in seconds
-    """
-    with open('/proc/uptime', 'r') as f:
-        uptime_seconds = str(f.readline().split()[0])
-        uptime_seconds = uptime_seconds.replace('.', '')
-        return str(uptime_seconds)
-
-def test_get(capsys):
-    """
-    test of the get_data function
-    """
-    # run a get on a not existing host
-    with pytest.raises(SystemExit):
-        get_data(failSession, '.1', helper)
-    out, err = capsys.readouterr()    
-    assert 'Unknown - snmpget failed - no data for host' in out
-    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert get_data(session, '.1.3.6.1.2.1.25.1.1.0', helper)[:-2] == get_system_uptime()[:-2]
-
-#####################################
-# run the test for the old firmware #
-#####################################
 
 def test_start():
     # start the testagent
