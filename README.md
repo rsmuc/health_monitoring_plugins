@@ -2,7 +2,7 @@
 ---
 
 This is the main readme file for the health montiroing plugins project. In this project we pubish all our plugins we write for icinga / nagios.
-In every single plugin folder, you will find a readme file, that describes the details of the plugin.
+The plugins are provided on pypi as python package.
 
 All plugins are released under the GPLv2.
 
@@ -13,37 +13,22 @@ All plugins are released under the GPLv2.
 
 ## Plugins
 
-- [check_meinberg_ntp](doc/check_meinberg_ntp/README.md)
-- [check_moxa_6000](doc/check_moxa_6000/README.md)
-- [check_snmp_idrac](doc/check_snmp_idrac/README.md)
-- [check_snmp_ilo4](doc/check_snmp_ilo4/README.md)
-- [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
-- [check_snmp_port](doc/check_snmp_port/README.md)
-- [check_snmp_raritan](doc/check_snmp_raritan/README.md)
-- [check_snmp_service](doc/check_snmp_service/README.md)
-- [check_snmp_time2](doc/check_snmp_time2/README.md)
-- [check_snmp_teledyne](doc/check_snmp_teledyne/README.md)
+A detailed description can be found in the README in the doc folder.
 
-
-A detailed description can be found in the README.md in folder of the corresponding plugin.
-
-#### check_meinberg_ntp
+#### [check_meinberg_ntp](doc/check_meinberg_ntp/README.md)
 
 Check the Meinberg NTP server LANTIME M300.
 
 The plugin checks the current ntp and gps state, shows the current gps position and checks the good satellites.
 Tested with firmware version 5.30 and 6.18 (NG).
 
-#### check_moxa_6000
+#### [check_moxa_6000](doc/check_moxa_6000/README.md)
 
 Check the status of a Moxa NPORT 6000 RS232 to LAN converter.  
 You can check each port for the CTS, DSR, DTR and Error count.
 
-### check_snmp_idrac
 
-This plugin checks the health of Dell iDRAC.
-
-#### check_snmp_ilo4
+#### [check_snmp_ilo4](doc/check_snmp_ilo4/README.md)
 
 This plugin checks the health of HP servers with iLo 4 interface via SNMP.
 
@@ -58,7 +43,7 @@ The following components are checked:
 - the global health status
 
 
-#### check_snmp_large_storage
+#### [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
 
 Check the used / free disk space of a device via SNMP (using the HOST-RESOURCES-MIB hrStorageSize).
 There are already script doing that like http://nagios.manubulon.com/snmp_storage.html . But these check script have a big problem with large storage systems. 
@@ -68,7 +53,7 @@ Integer counter. If you have a storage that is larger then 8 TB you will have th
 
 This script will handle the negative integer values and will calculate the proper size. That will only work if the counter overruns once.
 
-#### check_snmp_port
+#### [check_snmp_port](doc/check_snmp_port/README.md)
 
 Check the status of a tcp/udp port via SNMP. For TCP ports also the status is checked (e.g listen, established).
 
@@ -77,7 +62,7 @@ You could also use for example the check_tcp script. But check_tcp always trys t
 If you know snmpnetstat, then you know how the plugin works.
 
 
-#### check_snmp_raritan
+#### [check_snmp_raritan](doc/check_snmp_raritan/README.md)
 
 Check a Raritan Dominition PX PDU (Power Distribution Unit):
 * outlets (On, Off)
@@ -88,18 +73,18 @@ Tested device: PX2-2486
 Tested sensors: Temperature, Humidity, Contact Closure, Air Pressure
 
 
-#### check_snmp_service
+#### [check_snmp_service](doc/check_snmp_service/README.md)
 
 Icinga / Nagios plugin to check if a Windows service is in running state via SNMP.
 
 It may take some time until Windows updates the status via snmp after starting or stopping a service.
 
 
-#### check_snmp_time2
+#### [check_snmp_time2](doc/check_snmp_time2/README.md)
 
 This plugin compares the time of the icinga/nagios machine with the time of a remote device.
 
-#### check_snmp_idrac.py
+#### [check_snmp_idrac](doc/check_snmp_idrac/README.md)
 
 This plugin checks the health of Dell iDRAC.
 
@@ -115,7 +100,7 @@ The following components/statuses are checked:
 - temperature probes
 
 
-### check_snmp_teledyne
+### [check_snmp_teledyne](doc/check_snmp_teledyne/README.md)
 
 This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
 
@@ -158,7 +143,7 @@ To run the unittests just execute:
 
     python setup.py test
 
-The unittests require pytest.
+The unittests require pytest. For the unittests we use the testagent from [haxtibal](https://github.com/haxtibal).
 
 ## Changelog
 
@@ -195,10 +180,7 @@ The unittests require pytest.
 
 ## TODO
 
-* get_data and walk_data should be harmonized
-* harmonized unittests for walk and get
 * Implement SNMPv3 support for all plugins
-* Code cleanup
 
 Maybe:
 
