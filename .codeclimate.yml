@@ -1,7 +1,21 @@
-engines:
-  # ... CONFIG CONTENT ...
+Python: true
+
+rubocop:
+    enabled: true
+    #checks:
+    # Rubocop/Metrics/ClassLength:
+    #   enabled: false
+  golint:
+    enabled: true
+  eslint:
+    enabled: true
+  csslint:
+    enabled: true
   duplication:
     enabled: true
+    config:
+      languages:
+        - python
     # ... CONFIG CONTENT ...
     exclude_fingerprints:
     - b5024d779ba0982e139af401d41c0d62
