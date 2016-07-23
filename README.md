@@ -6,7 +6,6 @@ In every single plugin folder, you will find a readme file, that describes the d
 
 All plugins are released under the GPLv2.
 
-[![CircleCI](https://circleci.com/gh/rsmuc/health_monitoring_plugins.svg?style=svg)](https://circleci.com/gh/rsmuc/health_monitoring_plugins)
 [![Code Health](https://landscape.io/github/rsmuc/health_monitoring_plugins/master/landscape.svg?style=flat)](https://landscape.io/github/rsmuc/health_monitoring_plugins/master)
 [![Code Climate](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/gpa.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
 [![Issue Count](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/issue_count.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
@@ -23,6 +22,8 @@ All plugins are released under the GPLv2.
 - [check_snmp_raritan](doc/check_snmp_raritan/README.md)
 - [check_snmp_service](doc/check_snmp_service/README.md)
 - [check_snmp_time2](doc/check_snmp_time2/README.md)
+- [check_snmp_teledyne](doc/check_snmp_teledyne/README.md)
+
 
 A detailed description can be found in the README.md in folder of the corresponding plugin.
 
@@ -114,6 +115,12 @@ The following components/statuses are checked:
 - temperature probes
 
 
+### check_snmp_teledyne
+
+This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
+
+
+
 ## Installation
 
 ###  pip (recommended)
@@ -154,6 +161,12 @@ To run the unittests just execute:
 The unittests require pytest.
 
 ## Changelog
+
+###### Version 0.0.5
+
+* Added check_snmp_teledyne
+
+* Several bugfixes
 
 ###### Version 0.0.4
 
