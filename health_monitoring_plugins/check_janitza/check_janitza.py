@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
 
-# Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>
+# check_janitza.py - Monitor the Janitza 604 via SNMP.
+
+# Copyright (C) 2016 Retakfual <https://github.com/Retakfual>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -14,8 +16,7 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with health_monitoring_plugins. If not, see <http://www.gnu.org/licenses/>.
-
+# along with check_meinberg_ntp.py.  If not, see <http://www.gnu.org/licenses/>.
 
 
 # Imports
@@ -64,7 +65,7 @@ if __name__ == '__main__':
 # The default return value should be always OK
   helper.status(ok)
   
-  
+  # shows the list of possible types if the flag is set
   if flag_list == True:
     for w,v in zip(names, descriptions):
       print w + ' = ' + v
