@@ -16,7 +16,7 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with check_meinberg_ntp.py.  If not, see <http://www.gnu.org/licenses/>.
+# along with check_janitza.py.  If not, see <http://www.gnu.org/licenses/>.
 
 
 # Imports
