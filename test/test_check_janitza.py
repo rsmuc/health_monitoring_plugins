@@ -94,8 +94,8 @@ def test_list_flag():
   assert list_output in p.stdout.read()
 
 
-# tests all the 
-def test_janiza_outputs():
+# tests the function of every type with a ok check
+def test_ok_janiza_outputs():
   for n,d in zip(names,descriptions):
     p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=:10,critical=:20", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     assert "OK -  | \'type\'=4 "+d+" ;:10;:20;;" in p.stdout.read()
@@ -110,7 +110,7 @@ def test_start_critical_walk():
   
   register_snmpwalk_ouput(walk_var)
   
-  # tests all the 
+  # tests the function of every type with a critical check
 def test_critical_janiza_outputs():
   for n,d in zip(names,descriptions):
     p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=:10,critical=:20", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -133,7 +133,7 @@ def test_start_warning_walk():
   
   
   
-  # tests all the 
+# tests the function of every type with a warning check
 def test_warning_janiza_outputs():
   for n,d in zip(names,descriptions):
     p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=:10,critical=:20", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
