@@ -51,13 +51,17 @@ descriptions=['Voltage Phase L1 in 100mV','Voltage Phase L2 in 100mV','Voltage P
   'Cos(Phi) L2 * 0.001','Cos(Phi) L3 * 0.001','Real Power Summe L1..L3 in Watt','Reaktiv Power Summe L1..L3 in Watt','Power Summe L1..L3 in Watt',
   'Voltage L1-L2','Voltage L2-L3','Voltage L3-L1']
 
+vals_test=["0","1","1","1","256980","270097","258532","185239","1","-5","-3","-4","0","0","0","-4","24","29","29","22","1000","-10","0","83","1","1","1"]
+
+
+
 
 
 def test_start_ok_walk():
   # starts the testagent and fills the oid with values
   walk_var =''''''
-  for o in oid:
-    walk_var += base_oid+ o + " = INTEGER: 4\n" 
+  for o,v in zip(oid,vals_test):
+    walk_var += base_oid+ o + " = INTEGER: "+v+"\n" 
   
   register_snmpwalk_ouput(walk_var)
   start_server()
@@ -96,53 +100,53 @@ def test_list_flag():
 
 # tests the function of every type with a ok check
 def test_ok_janiza_outputs():
-  for n,d in zip(names,descriptions):
-    p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=:10,critical=:20", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    assert "OK -  | \'type\'=4 "+d+" ;:10;:20;;" in p.stdout.read()
+  for n,d,v in zip(names,descriptions,vals_test):
+    p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=-30:,critical=-40:", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    assert "OK -  | \'type\'="+v+" "+d+" ;-30:;-40:;;" in p.stdout.read()
 
     
 def test_start_critical_walk():
   unregister_all()
   # starts the testagent and fills the oid with values
   walk_var =''''''
-  for o in oid:
-    walk_var += base_oid+ o + " = INTEGER: 22\n" 
+  for o,v in zip(oid,vals_test):
+    walk_var += base_oid+ o + " = INTEGER: "+v+"\n" 
   
   register_snmpwalk_ouput(walk_var)
   
-  # tests the function of every type with a critical check
+    # tests the function of every type with a critical check
 def test_critical_janiza_outputs():
-  for n,d in zip(names,descriptions):
-    p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=:10,critical=:20", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  for n,d,v in zip(names,descriptions,vals_test):
+    p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=3:4,critical=2:5", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     
     myoutput = p.stdout.read()
     print myoutput
-    print  "Critical - Critical on type | \'type\'=22 "+d+" ;:10;:20;;"
+    print  "Critical - Critical on type | \'type\'="+v+" "+d+" ;3:4;2:5;;"
     
-    assert "Critical - Critical on type | \'type\'=22 "+d+" ;:10;:20;;" in myoutput
+    assert "Critical - Critical on type | \'type\'="+v+" "+d+" ;3:4;2:5;;" in myoutput
 
 
 def test_start_warning_walk():
   unregister_all()
   # starts the testagent and fills the oid with values
   walk_var =''''''
-  for o in oid:
-    walk_var += base_oid+ o + " = INTEGER: 19\n" 
+  for o,v in zip(oid,vals_test):
+    walk_var += base_oid+ o + " = INTEGER: "+v+"\n" 
   
   register_snmpwalk_ouput(walk_var)
   
   
   
-# tests the function of every type with a warning check
+    # tests the function of every type with a warning check
 def test_warning_janiza_outputs():
-  for n,d in zip(names,descriptions):
-    p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=:10,critical=:20", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  for n,d,v in zip(names,descriptions,vals_test):
+    p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=2:5,critical=-40:280000", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     
     myoutput = p.stdout.read()
     print myoutput
-    print  "Warning - Warning on type | \'type\'=19 "+d+" ;:10;:20;;"
+    print  "Warning - Warning on type | \'type\'="+v+" "+d+" ;2:5;-40:280000;;"
     
-    assert "Warning - Warning on type | \'type\'=19 "+d+" ;:10;:20;;" in myoutput
+    assert "Warning - Warning on type | \'type\'="+v+" "+d+" ;2:5;-40:280000;;" in myoutput
     
     
 def test_stop_final():
