@@ -78,7 +78,7 @@ if __name__ == '__main__':
   # open session after validated host
   sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
   
-  # verify, that output parameter is not empty
+  # verify, that status(/type) parameter is not empty
   if (status == None) or (status not in names):
     helper.status(unknown)
     helper.exit(summary='Argument -t is missing or false!')
