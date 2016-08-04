@@ -36,15 +36,15 @@ session = netsnmp.Session(Version=2, DestHost='localhost', Community='public')
 failSession = netsnmp.Session(Version=2, DestHost='1.2.3.4', Community='public')
 
 
-names = ["up", "signal", "cpu1m", "cpu5m", "cpu15m", "totalmem", "freemem", "tx", "rx"]
-descriptions=["Uptime", "Signal Strength", "CPU usage (1 Minute Average)", "CPU usage (5 Minute Average)", 
+names = ["signal", "cpu1m", "cpu5m", "cpu15m", "totalmem", "freemem", "tx", "rx"]
+descriptions=["Signal Strength", "CPU usage (1 Minute Average)", "CPU usage (5 Minute Average)", 
 "CPU usage (15 Minute Average)", "Total memory", "Free memory", "Tx Rate", "Rx Rate" ]
 
-oids=["iso.3.6.1.2.1.1.3.0", "iso.3.6.1.4.1.14988.1.1.1.1.1.4", "iso.3.6.1.4.1.10002.1.1.1.4.2.1.3.1",
+oids=["iso.3.6.1.4.1.14988.1.1.1.1.1.4", "iso.3.6.1.4.1.10002.1.1.1.4.2.1.3.1",
 "iso.3.6.1.4.1.10002.1.1.1.4.2.1.3.2","iso.3.6.1.4.1.10002.1.1.1.4.2.1.3.3","iso.3.6.1.4.1.10002.1.1.1.1.1.0",
 "iso.3.6.1.4.1.10002.1.1.1.1.2.0","iso.3.6.1.4.1.14988.1.1.1.1.1.2","iso.3.6.1.4.1.14988.1.1.1.1.1.3"]
 
-units =['', '', '', '%', '%', '%', '', 'Byte', '', '' ]
+units =['', '', '%', '%', '%', '', 'Byte', '', '' ]
 
 def test_start_ok_walk():
   # starts the testagent and fills the oid with values
@@ -138,6 +138,17 @@ def test_warning_ubiquiti_outputs():
     assert "Warning - Warning on type | \'type\'=19 "+u+" ;:10;:20;;" in myoutput
     
     
-def test_stop_final():
-    # stop the testagent
-    stop_server()
+    
+    
+def test_uptime():
+  unregister_all()
+  # starts the testagent and fills the oid with values
+  walk_var="iso.3.6.1.2.1.1.3.0 = INTEGER: 4242424242\n" 
+  register_snmpwalk_ouput(walk_var)
+  p = subprocess.Popen("health_monitoring_plugins/check_ubiquiti/check_ubiquiti.py -H 127.0.0.1:1234 -t \"up\" --th metric=type,warning=:10,critical=:20", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  
+  myoutput = p.stdout.read()
+  print myoutput
+  print "OK - Uptime = 49102 days, 3:10:42"
+  
+  assert "OK - Uptime = 49102 days, 3:10:42" in myoutput
