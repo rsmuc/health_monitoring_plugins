@@ -24,6 +24,7 @@ from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
 import commands, sys, argparse, math
 import netsnmp
 import os
+import datetime
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
 from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data
 
@@ -81,6 +82,10 @@ if __name__ == '__main__':
   # snmp gets for all oids in type-list
   ind = names.index(status)
   value = get_data(sess, oids[ind],helper)
+  
+  if names.index(status) == 0:
+    value = str(datetime.timedelta(seconds=int(value)))
+    helper.exit(summary='Uptime = %s'%value)
   
   # metric compares
   helper.add_metric(label='type', value = value, uom =' '+units[ind]+' ')
