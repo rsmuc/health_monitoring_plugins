@@ -1,9 +1,8 @@
 #!/usr/bin/python
 
+# check_snmp_janitza.py - Monitor the Janitza 604 via SNMP.
 
-# check_janitza.py - Monitor the Janitza 604 via SNMP.
-
-# Copyright (C) 2016 Retakfual <https://github.com/Retakfual>
+# Copyright (C) 2016 Retakfual <https://github.com/Retakfual>, rsmuc
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -16,7 +15,7 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with check_janitza.py.  If not, see <http://www.gnu.org/licenses/>.
+# along with check_snmp_janitza.py.  If not, see <http://www.gnu.org/licenses/>.
 
 
 # Imports

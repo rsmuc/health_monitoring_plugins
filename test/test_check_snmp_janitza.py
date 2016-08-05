@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-# test_check_janitza.py - test for Monitor the Janitza 604 via SNMP.
+# test_check_snmp_janitza.py - test for Monitor the Janitza 604 via SNMP.
 
-# Copyright (C) 2016 Retakfual <https://github.com/Retakfual>
+# Copyright (C) 2016 Retakfual <https://github.com/Retakfual>, rsmuc
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,13 +15,13 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with test_check_janitza.py.  If not, see <http://www.gnu.org/licenses/>.
+# along with test_check_snmp_janitza.py.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
 import sys
 sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_janitza'))
-from check_janitza import *
+from check_snmp_janitza import *
 
 import pytest
 import subprocess
