@@ -43,6 +43,22 @@ The following components are checked:
 - the global health status
 
 
+####[check_snmp_janitza](doc/check_snmp_janitza/README.md)
+Check the status of a Janitza 604 device.
+
+You can check: 
+- uL1 - 3               Voltage Phases
+- iL1 - 6               Current Phases
+- pL1 - 3                Real Power
+- qL1 - 3               Reaktiv Power
+- sL1 - 3               Power
+- cosPL1 - 3            Cos(Phi)
+- p3                    Real Power Summe
+- q3                    Reaktiv Power Summe
+- s3                    Power Summe
+- uL1L2,uL2L3,uL3L3     Voltage deltas between Phases
+
+
 #### [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
 
 Check the used / free disk space of a device via SNMP (using the HOST-RESOURCES-MIB hrStorageSize).
@@ -104,13 +120,22 @@ The following components/statuses are checked:
 
 This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
 
-#### [check_snmp_janitza](doc/check_snmp_janitza/README.md)
 
-Check the status of a Janitza 604 device.
 
 #### [check_snmp_ubiquiti](doc/check_snmp_ubiquiti/README.md)
 
-Check the status of a Ubiquiti device.
+Check the status of a Ubiquiti airMax device.
+
+You can check the:
+- Uptime
+- Signal Strength
+- CPU usage (1 Minute Average)
+- CPU usage (5 Minute Average)
+- CPU usage (15 Minute Average)
+- Total memory
+- Free memory
+- Tx Rate
+- Rx Rate
 
 
 ## Installation
