@@ -20,7 +20,7 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_janitza'))
+sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_janitza'))
 from check_janitza import *
 
 import pytest
@@ -71,7 +71,7 @@ def test_start_ok_walk():
 def test_janitza_basics():
   
   #without options
-  p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  p = subprocess.Popen("health_monitoring_plugins/check_snmp_janitza/check_snmp_janitza.py", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   myout =  p.stdout.read()
   print "--------------------"
   print myout
@@ -80,17 +80,17 @@ def test_janitza_basics():
   assert "Unknown - Hostname must be specified" in myout
   
   # with host and no -t(does not depend if host is valid or not atm)
-  p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 1.2.3.4", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  p = subprocess.Popen("health_monitoring_plugins/check_snmp_janitza/check_snmp_janitza.py -H 1.2.3.4", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   assert "Unknown - Argument -t is missing or false!" in p.stdout.read()
   
-   # with  unknown host (-H 1.2.3.4) and -t qL1  
-  p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 1.2.3.4 -t qL1", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+   # with  unknown host (-H 1.2.3.4) and -t qL1  snmp_
+  p = subprocess.Popen("health_monitoring_plugins/check_snmp_janitza/check_snmp_janitza.py -H 1.2.3.4 -t qL1", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   assert "Unknown - snmpget failed - no data for host 1.2.3.4 OID: .1.3.6.1.4.1.34278.1.16.0" in p.stdout.read()
 
 
 # tests the list if the listflag ist set
 def test_list_flag():
-  p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -l", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  p = subprocess.Popen("health_monitoring_plugins/check_snmp_janitza/check_snmp_janitza.py -l", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   list_output =""
   for n,d in zip(names,descriptions):
     list_output += n +" = "+d+"\n"
@@ -101,7 +101,7 @@ def test_list_flag():
 # tests the function of every type with a ok check
 def test_ok_janiza_outputs():
   for n,d,v in zip(names,descriptions,vals_test):
-    p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=-30:,critical=-40:", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen("health_monitoring_plugins/check_snmp_janitza/check_snmp_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=-30:,critical=-40:", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     assert "OK -  | \'type\'="+v+" "+d+" ;-30:;-40:;;" in p.stdout.read()
 
     
@@ -117,7 +117,7 @@ def test_start_critical_walk():
     # tests the function of every type with a critical check
 def test_critical_janiza_outputs():
   for n,d,v in zip(names,descriptions,vals_test):
-    p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=3:4,critical=2:5", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen("health_monitoring_plugins/check_snmp_janitza/check_snmp_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=3:4,critical=2:5", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     
     myoutput = p.stdout.read()
     print myoutput
@@ -140,7 +140,7 @@ def test_start_warning_walk():
     # tests the function of every type with a warning check
 def test_warning_janiza_outputs():
   for n,d,v in zip(names,descriptions,vals_test):
-    p = subprocess.Popen("health_monitoring_plugins/check_janitza/check_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=2:5,critical=-40:280000", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen("health_monitoring_plugins/check_snmp_janitza/check_snmp_janitza.py -H 127.0.0.1:1234 -t "+n +" --th metric=type,warning=2:5,critical=-40:280000", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     
     myoutput = p.stdout.read()
     print myoutput
