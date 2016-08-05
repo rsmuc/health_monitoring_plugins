@@ -12,3 +12,9 @@
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
+
+# Index files and folders
+*.index
+
+# Cache folder
+.cache/

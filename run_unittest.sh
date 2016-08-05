@@ -29,3 +29,9 @@ py.test test/test_check_snmp_idrac.py -v
 
 echo "Test check_snmp_teledyne"
 py.test test/test_check_snmp_teledyne.py -v
+
+echo "Test check_snmp_janitza"
+py.test test/test_check_snmp_janitza.py -v
+
+echo "Test check_snmp_ubiquiti"
+py.test test/test_check_snmp_ubiquiti.py -v

@@ -100,10 +100,17 @@ The following components/statuses are checked:
 - temperature probes
 
 
-### [check_snmp_teledyne](doc/check_snmp_teledyne/README.md)
+#### [check_snmp_teledyne](doc/check_snmp_teledyne/README.md)
 
 This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
 
+#### [check_snmp_janitza](doc/check_snmp_janitza/README.md)
+
+Check the status of a Janitza 604 device.
+
+#### [check_snmp_ubiquiti](doc/check_snmp_ubiquiti/README.md)
+
+Check the status of a Ubiquiti device.
 
 
 ## Installation
@@ -149,7 +156,7 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 
 ###### Version 0.0.5
 
-* Added check_snmp_teledyne
+* Added check_snmp_teledyne, check_snmp_janitza, check_snmp_ubiquiti
 
 * Several bugfixes
 
