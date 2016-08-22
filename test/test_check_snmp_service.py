@@ -8,13 +8,47 @@ from check_snmp_service import *
 import pytest
 import subprocess
 from testagent import *
-from types import MethodType
 
 
 # configuration of the testagent
 os.environ['MIBDIRS'] = os.path.dirname(os.path.abspath(__file__))
 configure(agent_address = "localhost:1234",
     rocommunity='public', rwcommunity='private')
+
+# create netsnmp Session  for test_attempt_get and test_walk
+session = netsnmp.Session(Version=2, DestHost='localhost', Community='public')
+failSession = netsnmp.Session(Version=2, DestHost='1.2.3.4', Community='public')
+
+def get_system_uptime():
+    """
+    just a helper to get the system uptime in seconds
+    """
+    with open('/proc/uptime', 'r') as f:
+        uptime_seconds = str(f.readline().split()[0])
+        uptime_seconds = uptime_seconds.replace('.', '')
+        return str(uptime_seconds)
+
+def test_attempt_get():
+    """
+    test of the attempt_get_data function
+    """
+    # try to get data from a not existing host
+    assert attempt_get_data(failSession, '.1') == None
+    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
+    assert attempt_get_data(session, '.1.3.6.1.2.1.25.1.1.0')[:-2] == get_system_uptime()[:-2]
+
+def test_walk(capsys):
+    """
+    test of the walk_data function
+    """
+    # run a walk on a not existing host
+    with pytest.raises(SystemExit):
+        assert walk_data(failSession, '.1', helper)
+    out, err = capsys.readouterr()
+    assert 'Unknown - snmpwalk failed - no data for host' in out
+    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
+    assert walk_data(session, '.1.3.6.1.2.1.25.1.1', helper)[0][0][:-3] == get_system_uptime()[:-3]
+
 
 def test_start():
     # some open Windows services   
@@ -24,35 +58,6 @@ def test_start():
             .1.3.6.1.4.1.77.1.2.3.1.1.9.73.80.32.72.101.108.112.101.114 = STRING: "IP Helper"'''   
     register_snmpwalk_ouput(walk)
     start_server()
-
-def get_system_uptime():
-    """
-    just a helper to get the system uptime in seconds
-    """
-    with open('/proc/uptime', 'r') as f:
-        uptime_seconds = str(f.readline().split()[0])
-        uptime_seconds = uptime_seconds.replace(".", "")
-        return str(uptime_seconds)
-
-# we have a different behavor of get_data in check_snmp_service
-def test_get():
-    """
-    test of the get_data function
-    """
-    # try to get data from a not existing host
-    assert get_data("1.2.3.4", 2, "public", ".1") == None
-    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0")[:-3] == get_system_uptime()[:-3]
-
-def test_walk_data():
-    """
-    test of the walk_data function
-    """
-    # run a walk on a not existing host
-    #assert walk_data("1.2.3.4", 2, "public", ".1") == ()
-
-    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert walk_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1", helper)[0][:-3] == get_system_uptime()[:-3]
 
 def test_oid_conversion():
     """

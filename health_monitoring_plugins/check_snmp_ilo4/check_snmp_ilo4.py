@@ -21,7 +21,7 @@ import netsnmp
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data, attempt_walk_data, state_summary, add_output
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
@@ -132,10 +132,11 @@ ps_redundant_state = {
               3 : 'redundant'
               }
 
-### from CPQIDA-MIB
-oid_product_name = '.1.3.6.1.4.1.232.2.2.4.2'
-oid_serial_numb = '.1.3.6.1.4.1.232.2.2.2.1'
+### from CPQSINFO-MIB
+oid_product_name = '.1.3.6.1.4.1.232.2.2.4.2.0'
+oid_serial_numb = '.1.3.6.1.4.1.232.2.2.2.1.0'
 
+### from CPQIDA-MIB
 # for global state
 oid_storage = '.1.3.6.1.4.1.232.3.1.3.0'
 oid_system = '.1.3.6.1.4.1.232.6.1.3.0'
@@ -168,41 +169,14 @@ oid_ps = '.1.3.6.1.4.1.232.6.2.9.3.1.4'
 oid_ps_redundant = '.1.3.6.1.4.1.232.6.2.9.3.1.9'
 
 
-def state_summary(value, name, state_list, info = None, ok_value = 'ok'):
-    """
-    Always add the status to the long output, and if the status is not ok (or ok_value), 
-    we show it in the summary and set the status to critical
-    """
-    # translate the value (integer) we receive to a human readable value (e.g. ok, critical etc.) with the given state_list
-    state_value = state_list[int(value)]    
-    summary_output = ''
-    long_output = ''
-    if not info:
-        info = ''
-    if state_value != ok_value:
-        summary_output += ('%s status: %s %s ' % (name, state_value, info))
-        helper.status(critical)
-    long_output += ('%s status: %s %s\n' % (name, state_value, info))
-    return (summary_output, long_output)
-
-
-def add_output(summary_output, long_output):
-    """
-    if the summary output is empty, we don't add it as summary, otherwise we would have empty spaces (e.g.: '. . . . .') in our summary report
-    """
-    if summary_output != '':
-        helper.add_summary(summary_output)
-    helper.add_long_output(long_output)
-
-
 # scan function. Show all Power supplies, fans and pyhsical drives
-def scan_ilo():    
-    ps = walk_data(host, version, community, oid_ps, helper)
-    fan = walk_data(host, version, community, oid_fan, helper)
-
+def scan_ilo():
+    helper.status(critical)
+    ps_data = walk_data(sess, oid_ps, helper)[0]
+    fan_data = walk_data(sess, oid_fan, helper)[0]
+    
     # we don't receive a result, if no physical drives are available.
-    var = netsnmp.Varbind(oid_phy_drv_status)
-    phy_drv_status = netsnmp.snmpwalk(var, Version=version, DestHost=host, Community=community)
+    phy_drv_status = attempt_walk_data(sess, oid_phy_drv_status)[0]
     
     helper.add_long_output('Available devices:')
     helper.add_long_output('')
@@ -210,19 +184,19 @@ def scan_ilo():
     # show the physical drives
     if phy_drv_status:
         for x, data in enumerate(phy_drv_status, 1):
-            helper.add_long_output('Physical drive %d: %s' % (x, phy_drv_state[int(data)]))        
+            helper.add_long_output('Physical drive %d: %s' % (x, phy_drv_state[int(data)]))
     else:
         helper.add_long_output("No physical drives detected")
     # add a empty line after the pyhsical drives
     helper.add_long_output('')
 
     # show the power supplies
-    for x, data in enumerate(ps, 1):
+    for x, data in enumerate(ps_data, 1):
         helper.add_long_output('Power supply %d: %s'  % (x, normal_state[int(data)]))
     helper.add_long_output('')
 
     # show the fans
-    for x, data in enumerate(fan, 1):
+    for x, data in enumerate(fan_data, 1):
         helper.add_long_output('Fan %d: %s'  % (x, normal_state[int(data)]))
     
     helper.exit(exit_code=ok, perfdata='')
@@ -236,9 +210,9 @@ def check_global_status(flag, name, oid):
     # only check the status, if the "no" flag is not set
     if flag:
         # get the data via snmp
-        myData = get_data(host, version, community, oid, helper)
-        data_summary_output, data_long_output = state_summary(myData, name, normal_state)
-        add_output(data_summary_output, data_long_output)
+        myData = get_data(sess, oid, helper)
+        data_summary_output, data_long_output = state_summary(myData, name, normal_state, helper)
+        add_output(data_summary_output, data_long_output, helper)
 
 def check_server_power():
     """
@@ -246,9 +220,9 @@ def check_server_power():
     Skip this check, if the --noPowerState is set
     """
     if power_state_flag:
-        power_state = get_data(host, version, community, oid_power_state, helper)
-        power_state_summary_output, power_state_long_output = state_summary(power_state, 'Server power', server_power_state, None, server_power_state[3])
-        add_output(power_state_summary_output, power_state_long_output)
+        power_state = get_data(sess, oid_power_state, helper)
+        power_state_summary_output, power_state_long_output = state_summary(power_state, 'Server power', server_power_state, helper, server_power_state[3])
+        add_output(power_state_summary_output, power_state_long_output, helper)
 
 def check_storage_controllers():
     """
@@ -256,10 +230,10 @@ def check_storage_controllers():
     Skip this check, if --noController is set
     """
     if ctrl_flag:
-        ctrl = walk_data(host, version, community, oid_ctrl, helper)
+        ctrl = walk_data(sess, oid_ctrl, helper)[0]
         for x, data in enumerate(ctrl, 1):
-            ctrl_summary_output, ctrl_long_output = state_summary(data, 'Controller %d' % x, normal_state)
-            add_output(ctrl_summary_output, ctrl_long_output)
+            ctrl_summary_output, ctrl_long_output = state_summary(data, 'Controller %d' % x, normal_state, helper)
+            add_output(ctrl_summary_output, ctrl_long_output, helper)
 
 def check_temperature_sensors():
     """
@@ -267,8 +241,8 @@ def check_temperature_sensors():
     All sensors with the value or threshold is -99 or 0 are ignored
     """    
     # walk all temperature sensor values and thresholds
-    env_temp = walk_data(host, version, community, oid_env_temp, helper)
-    env_temp_thresh = walk_data(host, version, community, oid_env_temp_thres, helper)    
+    env_temp = walk_data(sess, oid_env_temp, helper)[0]
+    env_temp_thresh = walk_data(sess, oid_env_temp_thres, helper)[0]
     env_temp_zipped = zip(env_temp, env_temp_thresh)
 
     for x, data in enumerate(env_temp_zipped, 1):
@@ -286,11 +260,11 @@ def check_temperature_sensors():
             
 
 # physical drive check
-def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
-    physical_drive_status = walk_data(host, version, community, oid_phy_drv_status, helper)
-    physical_drive_smart = walk_data(host, version, community, oid_phy_drv_smrt, helper)
-    physical_drive_temp = walk_data(host, version, community, oid_phy_drv_temp, helper)
-    physical_drive_temp_thres = walk_data(host, version, community, oid_phy_drv_temp_thres, helper)
+def check_phy_drv(temp_drive_flag, input_phy_drv):
+    physical_drive_status = walk_data(sess, oid_phy_drv_status, helper)[0]
+    physical_drive_smart = walk_data(sess, oid_phy_drv_smrt, helper)[0]
+    physical_drive_temp = walk_data(sess, oid_phy_drv_temp, helper)[0]
+    physical_drive_temp_thres = walk_data(sess, oid_phy_drv_temp_thres, helper)[0]
     phy_drv_count_ok = 0
     summary_output = ''
     long_output = ''
@@ -328,10 +302,10 @@ def check_phy_drv(parameter_list, temp_drive_flag, input_phy_drv):
         helper.status(critical)
     
     # Check Logical drive
-    logical_drive = walk_data(host, version, community, oid_log_drv, helper)
+    logical_drive = walk_data(sess, oid_log_drv, helper)[0]
 
     for x, data in enumerate(logical_drive, 1):
-        log_drv_summary_output, log_drv_long_output = state_summary(data, 'Logical drive %d' % x, log_drv_state)
+        log_drv_summary_output, log_drv_long_output = state_summary(data, 'Logical drive %d' % x, log_drv_state, helper)
         summary_output += log_drv_summary_output
         long_output += log_drv_long_output
     return (summary_output, long_output)
@@ -343,7 +317,7 @@ def check_ps():
     The check is skipped if --ps=0
     """
     if int(input_pwr_sply) != 0:        
-        ps_data = walk_data(host, version, community, oid_ps, helper)        
+        ps_data = walk_data(sess, oid_ps, helper)[0]
         ps_ok_count = 0
         
         for x, state in enumerate(ps_data, 1):
@@ -374,7 +348,7 @@ def check_power_redundancy():
     # skip the check if --noPowerRedundancy is set
     if power_redundancy_flag:
         # walk the data        
-        ps_redundant_data = walk_data(host, version, community, oid_ps_redundant, helper)        
+        ps_redundant_data = walk_data(sess, oid_ps_redundant, helper)[0]
         
         for x, state in enumerate(ps_redundant_data, 1):
             # human readable status
@@ -387,12 +361,12 @@ def check_power_redundancy():
             helper.add_long_output('Power supply %s: %s' % (x, hr_status))
         helper.add_long_output('')
 
-def check_fan(parameter_list, input_fan):
+def check_fan(input_fan):
     """
     check the fans
     """
     # get a list of all fans      
-    fan_data = walk_data(host, version, community, oid_fan, helper)        
+    fan_data = walk_data(sess, oid_fan, helper)[0]
     
     fan_count = 0
     summary_output = ''
@@ -422,14 +396,16 @@ if __name__ == '__main__':
     # verify that a hostname is set
     verify_host(host, helper)
     
+    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
+    
     # If the --scan option is set, we show all components and end the script
     if scan:
         scan_ilo()
     
     # Show always the product name and the serial number in the summary
-    product_name = walk_data(host, version, community, oid_product_name, helper)
-    serial_number = walk_data(host, version, community, oid_serial_numb, helper)
-    helper.add_summary('%s - Serial number:%s' % (product_name[0], serial_number[0]))
+    product_name = get_data(sess, oid_product_name, helper)
+    serial_number = get_data(sess, oid_serial_numb, helper)
+    helper.add_summary('%s - Serial number:%s' % (product_name, serial_number))
     
     # Verify that there is an input for the amount of components
     if input_phy_drv == '' or input_phy_drv is None:
@@ -456,8 +432,8 @@ if __name__ == '__main__':
     
     # Physical drive check
     if int(input_phy_drv) != 0:
-        phy_drv_summary_output, phy_drv_long_output = check_phy_drv(parameter_list,temp_drive_flag, input_phy_drv)
-        add_output(phy_drv_summary_output, phy_drv_long_output)
+        phy_drv_summary_output, phy_drv_long_output = check_phy_drv(temp_drive_flag, input_phy_drv)
+        add_output(phy_drv_summary_output, phy_drv_long_output, helper)
             
     # Power supply check
     check_ps()
@@ -467,8 +443,8 @@ if __name__ == '__main__':
             
     # Fan check
     if int(input_fan) != 0:
-        fan_summary_output, fan_long_output = check_fan(parameter_list, input_fan)
-        add_output(fan_summary_output, fan_long_output)
+        fan_summary_output, fan_long_output = check_fan(input_fan)
+        add_output(fan_summary_output, fan_long_output, helper)
         
     check_temperature_sensors()
     

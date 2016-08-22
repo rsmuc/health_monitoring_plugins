@@ -8,12 +8,41 @@ from check_snmp_raritan import *
 import pytest
 import subprocess
 from testagent import *
-from types import MethodType
 
 # configuration of the testagent
 os.environ['MIBDIRS'] = os.path.dirname(os.path.abspath(__file__))
 configure(agent_address = "localhost:1234",
     rocommunity='public', rwcommunity='private')
+
+# create netsnmp Sessions for test_get and test_walk
+session = netsnmp.Session(Version=2, DestHost='localhost', Community='public')
+failSession = netsnmp.Session(Version=2, DestHost='1.2.3.4', Community='public')
+
+def get_system_uptime():
+    with open('/proc/uptime', 'r') as f:
+        uptime_seconds = str(f.readline().split()[0])
+        uptime_seconds = uptime_seconds.replace('.', '')
+        return str(uptime_seconds)
+
+def test_get(capsys):
+    with pytest.raises(SystemExit):
+        get_data(failSession, '.1', helper)
+    out, err = capsys.readouterr()    
+    assert 'Unknown - snmpget failed - no data for host' in out
+    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
+    assert get_data(session, '.1.3.6.1.2.1.25.1.1.0', helper)[:-2] == get_system_uptime()[:-2]
+
+def test_walk(capsys):
+    """
+    test of the walk_data function
+    """
+    # run a walk on a not existing host
+    with pytest.raises(SystemExit):
+        assert walk_data(failSession, '.1', helper)
+    out, err = capsys.readouterr()
+    assert 'Unknown - snmpwalk failed - no data for host' in out
+    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
+    assert walk_data(session, '.1.3.6.1.2.1.25.1.1', helper)[0][0][:-3] == get_system_uptime()[:-3]
 
 def test_start_raritan():
     # start the testagent (Raritan walk)
@@ -187,30 +216,6 @@ def test_start_raritan():
                 iso.3.6.1.4.1.13742.6.3.6.3.1.34.1.8 = INTEGER: 800'''   
     register_snmpwalk_ouput(walk)
     start_server()
-
-def get_system_uptime():
-    with open('/proc/uptime', 'r') as f:
-        uptime_seconds = str(f.readline().split()[0])
-        uptime_seconds = uptime_seconds.replace(".", "")
-        return str(uptime_seconds)
-
-def test_get(capsys):
-    with pytest.raises(SystemExit):
-        get_data("1.2.3.4", 2, "public", ".1", helper)
-    out, err = capsys.readouterr()    
-    assert "Unknown - snmpget failed - no data for host" in out
-    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert get_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1.0", helper)[:-2] == get_system_uptime()[:-2]
-
-def test_walk_data():
-    """
-    test of the walk_data function
-    """
-    # run a walk on a not existing host
-    #assert walk_data("1.2.3.4", 2, "public", ".1") == ()
-
-    # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
-    assert walk_data("localhost", 2, "public", ".1.3.6.1.2.1.25.1.1", helper)[0][:-3] == get_system_uptime()[:-3]
 
 def test_real_value_raritan(capsys):
     assert real_value(100, 2) == "1.0"

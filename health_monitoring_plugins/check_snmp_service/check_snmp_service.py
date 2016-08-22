@@ -17,9 +17,11 @@
 # along with check_snmp_service.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-import netsnmp, sys, os
+import sys
+import os
+import netsnmp
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
-from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, walk_data
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, attempt_get_data, walk_data
 from pynag.Plugins import PluginHelper,ok,critical
 
 
@@ -41,12 +43,14 @@ scan = helper.options.scan_flag
 # that is the base id
 base_oid = ".1.3.6.1.4.1.77.1.2.3.1.1"
 
-# for check_snmp_service we need to adapt the get_data function
-def get_data(host, version, community, oid):
+'''
+# for check_snmp_service we need to adapt the service_get_data function
+def service_get_data(sess, host, version, community, oid):
     var = netsnmp.Varbind(oid)
     data = netsnmp.snmpget(var, Version=version, DestHost=host, Community=community)
     value = data[0]
     return value
+'''
 
 def convert_in_oid(service_name):
     """
@@ -66,6 +70,8 @@ if __name__ == "__main__":
     # verify that a hostname is set
     verify_host(host, helper)
 
+    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
+
     # The default return value should be always OK
     helper.status(ok)
 
@@ -78,7 +84,7 @@ if __name__ == "__main__":
     ##########
     if scan:
         
-        services = walk_data(host, version, community, base_oid, helper)
+        services = walk_data(sess, base_oid, helper)[0]
 
         if not services:
             print "No services found - SNMP disabled?"
@@ -104,8 +110,9 @@ if __name__ == "__main__":
     
         ## convert the service name to a oid
         service_oid = convert_in_oid(service)
+        print service_oid
         # get the data
-        result = get_data(host, version, community, service_oid)
+        result = attempt_get_data(sess, service_oid)
     
         if not result or result == "NOSUCHOBJECT":
             service_status = "NOT RUNNING"

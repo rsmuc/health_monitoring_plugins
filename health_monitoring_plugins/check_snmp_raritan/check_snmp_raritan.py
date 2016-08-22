@@ -17,7 +17,10 @@
 # along with check_snmp_raritan.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-import sys, os, math
+import sys
+import os
+import math
+import netsnmp
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
 from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
@@ -136,19 +139,19 @@ def real_value(value, digit):
     """
     return str(float(value) / math.pow(10, float(digit)))
 
-def check_inlet(host, version, community):
+def check_inlet(sess):
     """
     check the Inlets of Raritan PDUs
     """
     # walk the data
-    inlet_values                = walk_data(host, version, community, oid_inlet_value, helper)
-    inlet_units                 = walk_data(host, version, community, oid_inlet_unit, helper)
-    inlet_digits                = walk_data(host, version, community, oid_inlet_digits, helper)
-    inlet_states                = walk_data(host, version, community, oid_inlet_state, helper)
-    inlet_warning_uppers        = walk_data(host, version, community, oid_inlet_warning_upper, helper)    
-    inlet_critical_uppers       = walk_data(host, version, community, oid_inlet_critical_upper, helper)
-    inlet_critical_lowers       = walk_data(host, version, community, oid_inlet_critical_lower, helper)
-    inlet_warning_lowers        = walk_data(host, version, community, oid_inlet_warning_lower, helper)
+    inlet_values                = walk_data(sess, oid_inlet_value, helper)[0]
+    inlet_units                 = walk_data(sess, oid_inlet_unit, helper)[0]
+    inlet_digits                = walk_data(sess, oid_inlet_digits, helper)[0]
+    inlet_states                = walk_data(sess, oid_inlet_state, helper)[0]
+    inlet_warning_uppers        = walk_data(sess, oid_inlet_warning_upper, helper)[0]
+    inlet_critical_uppers       = walk_data(sess, oid_inlet_critical_upper, helper)[0]
+    inlet_critical_lowers       = walk_data(sess, oid_inlet_critical_lower, helper)[0]
+    inlet_warning_lowers        = walk_data(sess, oid_inlet_warning_lower, helper)[0]
 
     # just print the summary, that the inlet sensors are checked
     helper.add_summary("Inlet")
@@ -177,12 +180,12 @@ def check_inlet(host, version, community):
                           ":" + inlet_warning_upper, inlet_critical_lower + ":" +\
                           inlet_critical_upper, "", "", inlet_unit)
         
-def check_outlet(host, version, community):
+def check_outlet(sess):
     """
     check the status of the specified outlet
     """
-    outlet_name                 = get_data(host, version, community, oid_outlet_name, helper)
-    outlet_state                = get_data(host, version, community, oid_outlet_state, helper)
+    outlet_name                 = get_data(sess, oid_outlet_name, helper)
+    outlet_state                = get_data(sess, oid_outlet_state, helper)
     outlet_real_state           = states[int(outlet_state)]
     
     # here we check if the outlet is powered on
@@ -192,20 +195,20 @@ def check_outlet(host, version, community):
     # print the status
     helper.add_summary("Outlet %s - '%s' is: %s" % (number, outlet_name, outlet_real_state.upper()))
     
-def check_sensor(host, version, community):
+def check_sensor(sess):
     """
     check the status of the specified sensor
     """
 
-    sensor_name             = get_data(host, version, community, oid_sensor_name, helper)
-    sensor_state            = get_data(host, version, community, oid_sensor_state, helper)
+    sensor_name             = get_data(sess, oid_sensor_name, helper)
+    sensor_state            = get_data(sess, oid_sensor_state, helper)
     sensor_state_string     = states[int(sensor_state)]
     sensor_unit             = "" # if it's a onOff Sensor or something like that, we need an empty string for the summary
     sensor_unit_string      = ""
     sensor_value            = ""
     sensor_digit            = ""
     real_sensor_value       = ""
-    sensor_type             = get_data(host, version, community, oid_sensor_type, helper)
+    sensor_type             = get_data(sess, oid_sensor_type, helper)
     sensor_warning_upper    = ""
     sensor_critical_upper   = ""
     sensor_warning_lower    = ""
@@ -219,14 +222,14 @@ def check_sensor(host, version, community):
         # 18: smokeDetection
         # 19: binary
         # 20: contact
-        sensor_unit                 = int(get_data(host, version, community, oid_sensor_unit, helper))
+        sensor_unit                 = int(get_data(sess, oid_sensor_unit, helper))
         sensor_unit_string          = units[int(sensor_unit)]
-        sensor_digit                = get_data(host, version, community, oid_sensor_digit, helper)
-        sensor_warning_upper        = get_data(host, version, community, oid_sensor_warning_upper, helper)
-        sensor_critical_upper       = get_data(host, version, community, oid_sensor_critical_upper, helper)
-        sensor_warning_lower        = get_data(host, version, community, oid_sensor_warning_lower, helper)
-        sensor_critical_lower       = get_data(host, version, community, oid_sensor_critical_lower, helper)
-        sensor_value                = int(get_data(host, version, community, oid_sensor_value, helper))
+        sensor_digit                = get_data(sess, oid_sensor_digit, helper)
+        sensor_warning_upper        = get_data(sess, oid_sensor_warning_upper, helper)
+        sensor_critical_upper       = get_data(sess, oid_sensor_critical_upper, helper)
+        sensor_warning_lower        = get_data(sess, oid_sensor_warning_lower, helper)
+        sensor_critical_lower       = get_data(sess, oid_sensor_critical_lower, helper)
+        sensor_value                = int(get_data(sess, oid_sensor_value, helper))
         real_sensor_value           = real_value(sensor_value, sensor_digit)
         real_sensor_warning_upper   = real_value(sensor_warning_upper, sensor_digit)
         real_sensor_critical_upper  = real_value(sensor_critical_upper, sensor_digit)
@@ -266,6 +269,8 @@ if __name__ == "__main__":
     # verify that a hostname is set
     verify_host(host, helper)
 
+    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
+
     # The default return value should be always OK
     helper.status(ok)
     
@@ -273,21 +278,21 @@ if __name__ == "__main__":
     ## here we check the inlet
     ######
     if typ.lower() == "inlet":
-        check_inlet(host, version, community)
+        check_inlet(sess)
     
     ######
     # here we check the outlets
     ######
     
     if typ.lower() == "outlet":
-        check_outlet(host, version, community)
+        check_outlet(sess)
 
     #######
     # here we check the sensors
     #######
         
     if typ.lower() == "sensor":
-        check_sensor(host, version, community)
+        check_sensor(sess)
         
     ## Print out plugin information and exit nagios-style
     helper.exit()

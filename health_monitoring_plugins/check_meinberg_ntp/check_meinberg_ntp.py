@@ -17,7 +17,9 @@
 # along with check_meinberg_ntp.py.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
-import sys, os
+import sys
+import os
+import netsnmp
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
 from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
@@ -115,14 +117,14 @@ def check_gps_position():
     """
     just print the curret GPS position
     """
-    gps_position = get_data(host, version, community, oid_gps_position, helper)
+    gps_position = get_data(sess, oid_gps_position, helper)
     helper.add_summary(gps_position)
 
 def check_ntp_status():
     """
     check and show the current NTP status
     """
-    ntp_status_int = get_data(host, version, community, oid_ntp_current_state_int, helper)
+    ntp_status_int = get_data(sess, oid_ntp_current_state_int, helper)
 
     # convert the ntp_status integer value in a human readable value
     try:
@@ -141,7 +143,7 @@ def check_gps_status():
     """
     check and show the current GPS status
     """
-    gps_status_int = get_data(host, version, community, oid_gps_mode_int, helper)
+    gps_status_int = get_data(sess, oid_gps_mode_int, helper)
 
     try:
         gps_mode_string = gps_mode[gps_status_int]
@@ -159,7 +161,7 @@ def check_satellites():
     check and show the good satellites
     """
     # here we get the value for the satellites
-    good_satellites = get_data(host, version, community, oid_gps_satellites_good, helper)
+    good_satellites = get_data(sess, oid_gps_satellites_good, helper)
 
     # Show the summary and add the metric and afterwards check the metric
     helper.add_summary("Good satellites: %s" % good_satellites)
@@ -172,6 +174,8 @@ if __name__ == "__main__":
 
     # The default return value should be always OK
     helper.status(ok)
+
+    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
 
     check_gps_position()
     check_ntp_status()

@@ -16,13 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with check_snmp_time2.py.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, os
-sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
-from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data
+# Import PluginHelper and some utility constants from the Plugins module
+from pynag.Plugins import PluginHelper,ok,unknown
+import netsnmp
+import sys
+import os
 import time
 import datetime
 import struct
-from pynag.Plugins import PluginHelper,ok,unknown
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data
+
 
 #Create an instance of PluginHelper()
 helper = PluginHelper()
@@ -38,22 +42,23 @@ helper.parser.add_option('-l', '--localtime', dest  = 'time_flag',
 helper.parse_arguments()
 
 #Get the options
-host, version, community = get_common_options(helper)
+host, version, community    = get_common_options(helper)
 o_tzoff                     = helper.options.tzoffset
 use_local                   = helper.options.time_flag
 
 if __name__ == "__main__":
-    
     # verify that a hostname is set
     verify_host(host, helper)    
     
     #The default return value should be always OK
     helper.status(ok)
     
+    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
+    
     # get the remote time
-    remote_time                 = get_data(host, version, community, '.1.3.6.1.2.1.25.1.2.0', helper)
+    remote_time                 = get_data(sess, '.1.3.6.1.2.1.25.1.2.0', helper)
     # get the description (operating system)
-    descr                       = get_data(host, version, community, '.1.3.6.1.2.1.1.1.0', helper)
+    descr                       = get_data(sess, '.1.3.6.1.2.1.1.1.0', helper)
     
     # check if we are on a windows system
     windows = False
