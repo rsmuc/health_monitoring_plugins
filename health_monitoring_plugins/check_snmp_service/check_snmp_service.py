@@ -110,7 +110,6 @@ if __name__ == "__main__":
     
         ## convert the service name to a oid
         service_oid = convert_in_oid(service)
-        print service_oid
         # get the data
         result = attempt_get_data(sess, service_oid)
     
