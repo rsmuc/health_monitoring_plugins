@@ -19,7 +19,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='health_monitoring_plugins',
-      version='0.0.5',
+      version='0.0.6',
       description='Health monitoring plugins for icinga/nagios',
       url='https://github.com/rsmuc/health_monitoring_plugins',
       author='rsmuc',

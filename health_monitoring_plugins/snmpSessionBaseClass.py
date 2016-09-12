@@ -17,6 +17,22 @@
 
 from pynag.Plugins import unknown, critical
 import netsnmp
+import os
+import sys
+
+dev_null = os.open(os.devnull, os.O_WRONLY)
+tmp_stdout = os.dup(sys.stdout.fileno())
+
+def dev_null_wrapper(func, *a, **kwargs):
+    """
+    Temporarily swap stdout with /dev/null, and execute given function while stdout goes to /dev/null.
+    This is useful because netsnmp writes to stdout and disturbes Icinga result in some cases.
+    """
+    os.dup2(dev_null, sys.stdout.fileno())
+    return_object = func(*a, **kwargs)
+    sys.stdout.flush()
+    os.dup2(tmp_stdout, sys.stdout.fileno())
+    return return_object
 
 def add_common_options(helper):
     # Define the common command line parameters
@@ -32,6 +48,21 @@ def get_common_options(helper):
     return host, version, community
 
 def verify_host(host, helper):
+
+    netsnmp_session = dev_null_wrapper(netsnmp.Session, 
+                        DestHost=helper.options.hostname,
+                        Community=helper.options.community,
+                        Version=helper.options.version)
+
+    try:
+        # Works around lacking error handling in netsnmp package.
+        if netsnmp_session.sess_ptr == 0:
+            helper.exit(summary="SNMP connection failed", exit_code=unknown, perfdata='')
+    
+    except ValueError as error:
+        helper.exit(summary=str(error), exit_code=unknown, perfdata='')
+
+
     if host == "" or host is None:
         helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
 

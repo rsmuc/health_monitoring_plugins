@@ -179,6 +179,10 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 
 ## Changelog
 
+###### Version 0.0.6
+
+* Fixed segfault, if there is no route to host
+
 ###### Version 0.0.5
 
 * Added check_snmp_teledyne, check_snmp_janitza, check_snmp_ubiquiti
