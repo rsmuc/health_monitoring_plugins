@@ -48,6 +48,8 @@ def get_common_options(helper):
     return host, version, community
 
 def verify_host(host, helper):
+    if host == "" or host is None:
+        helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
 
     netsnmp_session = dev_null_wrapper(netsnmp.Session, 
                         DestHost=helper.options.hostname,
@@ -61,10 +63,7 @@ def verify_host(host, helper):
     
     except ValueError as error:
         helper.exit(summary=str(error), exit_code=unknown, perfdata='')
-
-
-    if host == "" or host is None:
-        helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
+           
 
 # make a snmp get, if it fails (or returns nothing) exit the plugin
 def get_data(session, oid, helper):
