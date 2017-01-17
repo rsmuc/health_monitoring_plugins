@@ -15,6 +15,11 @@ All plugins are released under the GPLv2.
 
 A detailed description can be found in the README in the doc folder.
 
+#### [check_snmp_lband](doc/check_snmp_lband/README.md)
+
+Check the status of the CROSS TECHNOLOGIES redundancy controller 2082-141.
+Implemented against MIB 2082-141.mib
+
 #### [check_meinberg_ntp](doc/check_meinberg_ntp/README.md)
 
 Check the Meinberg NTP server LANTIME M300.
@@ -178,6 +183,10 @@ To run the unittests just execute:
 The unittests require pytest. For the unittests we use the testagent from [haxtibal](https://github.com/haxtibal).
 
 ## Changelog
+
+###### Version 0.0.7
+
+* Added check_snmo_lband
 
 ###### Version 0.0.6
 
