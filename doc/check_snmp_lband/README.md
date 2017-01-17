@@ -1,7 +1,9 @@
 # check_snmp_lband.py
 ---
 
-This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
+This plugin checks the  status of the CROSS TECHNOLOGIES redundancy controller 2082-141. 
+
+Implemented against MIB 2082-141.mib
 
 ### Options
 ```

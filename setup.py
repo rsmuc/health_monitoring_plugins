@@ -19,7 +19,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='health_monitoring_plugins',
-      version='0.0.6',
+      version='0.0.7',
       description='Health monitoring plugins for icinga/nagios',
       url='https://github.com/rsmuc/health_monitoring_plugins',
       author='rsmuc',
@@ -44,6 +44,7 @@ setup(name='health_monitoring_plugins',
                'health_monitoring_plugins/check_snmp_janitza/check_snmp_janitza.py',
                'health_monitoring_plugins/check_snmp_ubiquiti/check_snmp_ubiquiti.py',
                'health_monitoring_plugins/check_snmp_teledyne/check_snmp_teledyne.py',
+               'health_monitoring_plugins/check_snmp_lband/check_snmp_lband.py',
                'health_monitoring_plugins/snmpSessionBaseClass.py',
                ],
       test_suite="test",
