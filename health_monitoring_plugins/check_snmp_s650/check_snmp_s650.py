@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# check_snmp_lband.py - Monitor a L-band redundancy controller via SNMP.
+# check_snmp_s650.py - Monitor a Microsemi S650 Timeserver
 
 # Copyright (C) 2017 rsmuc rsmuc@mailbox.org
 # 
@@ -15,7 +15,9 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along check_snmp_lband.py.  If not, see <http://www.gnu.org/licenses/>.
+# along check_snmp_s650.py.  If not, see <http://www.gnu.org/licenses/>.
+
+# based on the S650ALARM.mib
 
 import sys
 import os
@@ -36,9 +38,9 @@ helper.parse_arguments()
 host, version, community = get_common_options(helper)
 unit = helper.options.unit
 
-# OIDs from 2082-141.mib.txt
-unit1_oid = ".1.3.6.1.4.1.31210.52.1.9.0"
-unit2_oid = ".1.3.6.1.4.1.31210.52.1.13.0"
+# OIDs from S650ALARM.mib
+unit1_oid = "iso.1.3.6.1.4.1.31210.52.1.9.0"
+unit2_oid = "iso.1.3.6.1.4.1.31210.52.1.13.0"
 
 status = {
     "0" : "Online",
