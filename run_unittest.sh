@@ -38,3 +38,6 @@ py.test test/test_check_snmp_ubiquiti.py -v
 
 echo "Test check_snmp_lband"
 py.test test/test_check_snmp_lband.py -v
+
+echo "Test check_snmp_sencere"
+py.test test/test_check_snmp_sencere.py -v
