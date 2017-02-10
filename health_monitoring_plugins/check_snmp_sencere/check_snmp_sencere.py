@@ -29,7 +29,7 @@ helper = PluginHelper()
 
 # Define the command line options
 add_common_options(helper)
-helper.parser.add_option('-s', '--service', dest='service', help='Select the service that shall be monitored: IPProcessing, Thurayaprocessing, EventAssembler, ContentAssembler, ContentModelling, ContentWriter, ContentReader, EventReader, EventWriter, WebServer, PostProcessing, ISATprocessing, UserStore, AnnotationStore, RuleStore', default="IPProcessing") 
+helper.parser.add_option('-s', '--service', dest='service', help='Select the service that shall be monitored: IPProcessing, Thurayaprocessing, EventAssembler, ContentAssembler, ContentModelling, ContentWriter, ContentReader, EventReader, EventWriter, WebServer, PostProcessing, ISATprocessing, UserStore, AnnotationStore, RuleStore, HandoverConnectionsIn, HandoverConnectionsOut', default="IPProcessing") 
 helper.parse_arguments()
 
 # get the options
@@ -39,21 +39,23 @@ service = helper.options.service
 # OIDs from RS8IP-BACKEND-MIB.mib
 
 services = {
-              "IPProcessing" : ".1.3.6.1.4.1.2566.127.5.315.1.1.1",
-              "Thurayaprocessing" : ".1.3.6.1.4.1.2566.127.5.315.1.2.1",
-              "EventAssembler" : ".1.3.6.1.4.1.2566.127.5.315.1.3.1",
-              "ContentAssembler" : ".1.3.6.1.4.1.2566.127.5.315.1.4.1",
-              "ContentModelling" : ".1.3.6.1.4.1.2566.127.5.315.1.5.1",
-              "ContentWriter" : ".1.3.6.1.4.1.2566.127.5.315.1.6.1",
-              "ContentReader" : ".1.3.6.1.4.1.2566.127.5.315.1.7.1",
-              "EventReader" : ".1.3.6.1.4.1.2566.127.5.315.1.8.1",
-              "EventWriter" : ".1.3.6.1.4.1.2566.127.5.315.1.9.1",
-              "WebServer" : ".1.3.6.1.4.1.2566.127.5.315.1.10.1",
-              "PostProcessing" : ".1.3.6.1.4.1.2566.127.5.315.1.11.1",
-              "ISATprocessing" : ".1.3.6.1.4.1.2566.127.5.315.1.12.1",
-              "UserStore" : ".1.3.6.1.4.1.2566.127.5.315.1.13.1",
-              "AnnotationStore" : ".1.3.6.1.4.1.2566.127.5.315.1.14.1",
-              "RuleStore" : ".1.3.6.1.4.1.2566.127.5.315.1.15.1"
+              "IPProcessing" : ".1.3.6.1.4.1.2566.127.5.315.1.1.1.0",
+              "Thurayaprocessing" : ".1.3.6.1.4.1.2566.127.5.315.1.2.1.0",
+              "EventAssembler" : ".1.3.6.1.4.1.2566.127.5.315.1.3.1.0",
+              "ContentAssembler" : ".1.3.6.1.4.1.2566.127.5.315.1.4.1.0",
+              "ContentModelling" : ".1.3.6.1.4.1.2566.127.5.315.1.5.1.0",
+              "ContentWriter" : ".1.3.6.1.4.1.2566.127.5.315.1.6.1.0",
+              "ContentReader" : ".1.3.6.1.4.1.2566.127.5.315.1.7.1.0",
+              "EventReader" : ".1.3.6.1.4.1.2566.127.5.315.1.8.1.0",
+              "EventWriter" : ".1.3.6.1.4.1.2566.127.5.315.1.9.1.0",
+              "WebServer" : ".1.3.6.1.4.1.2566.127.5.315.1.10.1.0",
+              "PostProcessing" : ".1.3.6.1.4.1.2566.127.5.315.1.11.1.0",
+              "ISATprocessing" : ".1.3.6.1.4.1.2566.127.5.315.1.12.1.0",
+              "UserStore" : ".1.3.6.1.4.1.2566.127.5.315.1.13.1.0",
+              "AnnotationStore" : ".1.3.6.1.4.1.2566.127.5.315.1.14.1.0",
+              "RuleStore" : ".1.3.6.1.4.1.2566.127.5.315.1.15.1.0",
+              "HandoverConnectionsIn" : ".1.3.6.1.4.1.2566.127.5.300.1.2.9.0",
+              "HandoverConnectionsOut" : ".1.3.6.1.4.1.2566.127.5.300.1.2.10.0"
               }
 
 
@@ -75,18 +77,26 @@ if __name__ == "__main__":
     except KeyError:
         helper.exit(summary="Wrong service specified", exit_code=unknown, perfdata='')
 
-
-    # add the summary
-    helper.add_summary("%s status is: %s" % (service, value))
-
-    if value == "error":
-        helper.status(critical)
-    elif value == "stopping":
-        helper.status(warning)
-    elif value in ["initializing", "running", "backingoff"]:
-        helper.status(ok)
+    # if one of the handover values drop to 0, show a warning.
+    if service in ["HandoverConnectionsIn", "HandoverConnectionsOut"]:
+        helper.add_summary("Currently %s %s" % (value, service))
+        if int(value) == 0:
+            helper.status(warning)
+        else:
+            helper.status(ok)
+    
     else:
-        helper.status(unknown)
+        # add the summary
+        helper.add_summary("%s status is: %s" % (service, value))
+
+        if value == "error":
+            helper.status(critical)
+        elif value == "stopping":
+            helper.status(warning)
+        elif value in ["initializing", "running", "backingoff"]:
+            helper.status(ok)
+        else:
+            helper.status(unknown)
     
     # Print out plugin information and exit nagios-style
     helper.exit()
