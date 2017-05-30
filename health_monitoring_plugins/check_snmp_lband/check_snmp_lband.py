@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # check_snmp_lband.py - Monitor a L-band redundancy controller via SNMP.
 

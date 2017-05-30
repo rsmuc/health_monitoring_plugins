@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # check_snmp_time2.py - Check
 
 # Copyright (C) 2016 Retakfual, rsmuc <rsmuc@mailbox.org>

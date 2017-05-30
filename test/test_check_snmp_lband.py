@@ -54,7 +54,8 @@ def test_Lband_basics():
   assert "Unknown - Hostname must be specified" in myout
   # with  unknown host (-H 1.2.3.4)
   p = subprocess.Popen("health_monitoring_plugins/check_snmp_lband/check_snmp_lband.py -H 1.2.3.4 -U 1", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  assert "Unknown - snmpget failed - no data for host 1.2.3.4 OID: iso.1.3.6.1.4.1.31210.52.1.9.0\n" in p.stdout.read()
+  myout =  p.stdout.read()
+  assert "Unknown - snmpget failed - no data for host 1.2.3.4 OID: .1.3.6.1.4.1.31210.52.1.9.0\n" in myout
   
 # test if result without -U switch is correct  
 def test_ok_outputs():

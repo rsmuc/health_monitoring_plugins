@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # check_meinberg_ntp.py - Monitor the Meinberg NTP Server M300.
 
 # Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>
 # 
@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with health_monitoring_plugins. If not, see <http://www.gnu.org/licenses/>.
 
-from pynag.Plugins import unknown, critical
+import pynag
+
 import netsnmp
 import os
 import sys
@@ -49,7 +50,9 @@ def get_common_options(helper):
 
 def verify_host(host, helper):
     if host == "" or host is None:
-        helper.exit(summary="Hostname must be specified", exit_code=unknown, perfdata='')
+        helper.exit(summary="Hostname must be specified"
+                    , exit_code=pynag.Plugins.unknown
+                    , perfdata='')
 
     netsnmp_session = dev_null_wrapper(netsnmp.Session, 
                         DestHost=helper.options.hostname,
@@ -59,20 +62,33 @@ def verify_host(host, helper):
     try:
         # Works around lacking error handling in netsnmp package.
         if netsnmp_session.sess_ptr == 0:
-            helper.exit(summary="SNMP connection failed", exit_code=unknown, perfdata='')
+            helper.exit(summary="SNMP connection failed"
+                        , exit_code=pynag.Plugins.unknown
+                        , perfdata='')
     
     except ValueError as error:
-        helper.exit(summary=str(error), exit_code=unknown, perfdata='')
+        helper.exit(summary=str(error)
+                    , exit_code=pynag.Plugins.unknown
+                    , perfdata='')
            
 
 # make a snmp get, if it fails (or returns nothing) exit the plugin
-def get_data(session, oid, helper):
+def get_data(session, oid, helper, empty_allowed=False):
     var = netsnmp.Varbind(oid)
     varl = netsnmp.VarList(var)
     data = session.get(varl)
     value = data[0]
-    if not value:
-        helper.exit(summary="snmpget failed - no data for host " + session.DestHost + " OID: " +oid, exit_code=unknown, perfdata='')
+    if value is None:
+        helper.exit(summary="snmpget failed - no data for host "
+                    + session.DestHost + " OID: " +oid
+                    , exit_code=pynag.Plugins.unknown
+                    , perfdata='')
+         
+    if not empty_allowed and not value:
+            helper.exit(summary="snmpget failed - no data for host "
+                        + session.DestHost + " OID: " +oid
+                        , exit_code=pynag.Plugins.unknown
+                        , perfdata='')
     return value
 
 # make a snmp get, but do not exit the plugin, if it returns nothing
@@ -91,7 +107,10 @@ def walk_data(session, oid, helper):
     varl = netsnmp.VarList(var)
     data = list(session.walk(varl))
     if len(data) == 0:
-        helper.exit(summary="snmpwalk failed - no data for host " + session.DestHost + " OID: " +oid, exit_code=unknown, perfdata='')
+        helper.exit(summary="snmpwalk failed - no data for host " + session.DestHost
+                    + " OID: " +oid
+                    , exit_code=pynag.Plugins.unknown
+                    , perfdata='')
     for x in range(0, len(data)):
         tag.append(varl[x].tag)
     return data, tag
@@ -120,7 +139,7 @@ def state_summary(value, name, state_list, helper, ok_value = 'ok', info = None)
         info = ''
     if state_value != ok_value:
         summary_output += ('%s status: %s %s ' % (name, state_value, info))
-        helper.status(critical)
+        helper.status(pynag.Plugins.critical)
     long_output += ('%s status: %s %s\n' % (name, state_value, info))
     return (summary_output, long_output)
 

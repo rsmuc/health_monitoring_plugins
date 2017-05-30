@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # check_snmp_port.py - Check the status of a tcp/udp port via SNMP. For TCP port also the status is checked.
 
 # Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>

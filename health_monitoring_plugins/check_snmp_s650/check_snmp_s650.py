@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # check_snmp_s650.py - Monitor a Microsemi S650 Timeserver
 

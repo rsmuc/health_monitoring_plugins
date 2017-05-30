@@ -112,7 +112,7 @@ def Counter32(initval = None, oidstr = None, writable = True, context = ""):
     varobj.value = _wrap_locked(varobj.value)
     return varobj
 
-def Counter32(initval = None, oidstr = None, writable = True, context = ""):
+def Counter32Instance(initval = None, oidstr = None, writable = True, context = ""):
     """Create scalar of ASN type COUNTER.
     This appends a .0 to your OID.
     Registered using netsnmp_register_watched_scalar internally."""
