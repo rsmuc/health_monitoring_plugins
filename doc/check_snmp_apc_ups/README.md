@@ -2,7 +2,7 @@
 ---
 
 Check state of a Schneider APC UPS:
-The plugin checks various characteristics of an Eaton UPS. It gets an SNMP value according to 
+The plugin checks various characteristics of an APC UPS. It gets an SNMP value according to 
 the defined check type and compares the returned value against the set thresholds. 
 
 Checkable values:
