@@ -15,6 +15,14 @@ All plugins are released under the GPLv2.
 
 A detailed description can be found in the README in the doc folder.
 
+#### [check_snmp_apc_ups](doc/check_snmp_apc_ups/README.md)
+
+Monitor an UPS from APC via SNMP.
+
+#### [check_snmp_eaton_ups](doc/check_snmp_eaton_ups/README.md)
+
+Monitor an UPS from Eaton via SNMP. Requires the built in Eaton network card.
+
 #### [check_snmp_lband](doc/check_snmp_lband/README.md)
 
 Check the status of the CROSS TECHNOLOGIES redundancy controller 2082-141.
@@ -48,7 +56,7 @@ The following components are checked:
 - the global health status
 
 
-####[check_snmp_janitza](doc/check_snmp_janitza/README.md)
+#### [check_snmp_janitza](doc/check_snmp_janitza/README.md)
 Check the status of a Janitza 604 device.
 
 You can check: 
@@ -186,7 +194,10 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 
 ###### Version 0.0.7
 
-* Added check_snmo_lband
+* Added check_snmp_lband
+* Added check_snmp_eaton_ups
+* Added check_snmp_apc_ups
+* Several bugfixes and code improvements
 
 ###### Version 0.0.6
 
