@@ -50,3 +50,6 @@ py.test test/test_check_snmp_apc_ups.py -v
 
 echo "Test check_snmp_eaton_ups"
 py.test test/test_check_snmp_eaton_ups.py -v
+
+echo "Test check_snmp_procurve"
+py.test test/test_check_snmp_procurve.py -v

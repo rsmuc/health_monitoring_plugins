@@ -194,10 +194,12 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 
 ###### Version 0.0.7
 
+* Added check_snmp_procurve
 * Added check_snmp_lband
 * Added check_snmp_eaton_ups
 * Added check_snmp_apc_ups
 * Several bugfixes and code improvements
+
 
 ###### Version 0.0.6
 

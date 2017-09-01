@@ -13,7 +13,7 @@ import snmpSessionBaseClass
 import test_util
 
 sys.path.append(r'/home/dausch/eclipse_opt/cpp-neon/eclipse/plugins/org.python.pydev_5.6.0.201703221358/pysrc/')
-import pydevd
+#import pydevd
 #pydevd.settrace('172.29.153.190') # replace IP with address of Eclipse host machine
 
 apc_ups_check_plugin_path = "health_monitoring_plugins/check_snmp_apc_ups/check_snmp_apc_ups.py"

@@ -20,7 +20,7 @@
 import sys
 import os
 import netsnmp
-sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
 from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
 
