@@ -1,4 +1,7 @@
 #/bin/bash
+# exit after error
+set -e
+set -x
 
 echo "Test check_snmp_time2"
 py.test test/test_check_snmp_time2.py -v
@@ -35,3 +38,18 @@ py.test test/test_check_snmp_janitza.py -v
 
 echo "Test check_snmp_ubiquiti"
 py.test test/test_check_snmp_ubiquiti.py -v
+
+echo "Test check_snmp_lband"
+py.test test/test_check_snmp_lband.py -v
+
+echo "Test check_snmp_sencere"
+py.test test/test_check_snmp_sencere.py -v
+
+echo "Test check_snmp_apc_ups"
+py.test test/test_check_snmp_apc_ups.py -v
+
+echo "Test check_snmp_eaton_ups"
+py.test test/test_check_snmp_eaton_ups.py -v
+
+echo "Test check_snmp_procurve"
+py.test test/test_check_snmp_procurve.py -v

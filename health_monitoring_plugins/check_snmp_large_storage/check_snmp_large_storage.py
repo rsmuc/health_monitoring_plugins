@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # check_snmp_large_storage.py - Check the used / free disk space of a device via SNMP (using the HOST-RESOURCES-MIB hrStorageSize).
 # example command ./check_snmp_large_storage.py -H 192.168.2.1 -d "C:\" -u TB 
 # Copyright (C) 2016 rsmuc rsmuc@mailbox.org

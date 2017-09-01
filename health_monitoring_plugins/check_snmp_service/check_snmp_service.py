@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # check_snmp_service.py - Check if a Windows service is in running state via SNMP.
 
 # Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>

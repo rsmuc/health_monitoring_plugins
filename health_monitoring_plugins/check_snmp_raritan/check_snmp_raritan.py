@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # check_snmp_raritan.py - Check a Raritan Dominition PX PDU (Power Distribution Unit), the inlets, outlets and the connected sensors
 
 # Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>

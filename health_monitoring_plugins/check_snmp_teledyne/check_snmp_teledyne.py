@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # check_snmp_teledyne.py - Monitor the health status of Teledyne Paradise Datacom
 
 # Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>

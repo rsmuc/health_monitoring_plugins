@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # check_snmp_ubiquiti.py - Monitor a Ubiquity airMax.
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # check_snmp_janitza.py - Monitor the Janitza 604 via SNMP.
 
