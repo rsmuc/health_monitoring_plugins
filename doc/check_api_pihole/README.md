@@ -5,8 +5,9 @@ Check a pihole server via it's json api. Checks the percentage blocked today, do
 
 ### Example:
 
-```check_api_pihole.py -H 192.168.2.184 -p 80 --threshold metric="blocked_today",critical=1:5 --threshold metric="domains_being_blocked",critical=900000: --threshold metric="dns_queries_today",critical=1:30000
 ```
+check_api_pihole.py -H 192.168.2.184 -p 80 --threshold metric="blocked_today",critical=1:5 --threshold metric="domains_being_blocked",critical=900000: --threshold metric="dns_queries_today",critical=1:30000
+
 => 
 OK - Blocked Today: 3.872009%. Domains being blocked: 971495. DNS queries today: 22314 | 'blocked_today'=3.872009%%;;1:5;; 'domains_being_blocked'=971495Domains;;1:1000000;; 'dns_queries_today'=22314;;1:30000;;
 
