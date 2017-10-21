@@ -15,6 +15,10 @@ All plugins are released under the GPLv2.
 
 A detailed description can be found in the README in the doc folder.
 
+#### [check_api_pihole](doc/check_api_pihole/README.md)
+
+Check a pihole instance.
+
 #### [check_snmp_apc_ups](doc/check_snmp_apc_ups/README.md)
 
 Monitor an UPS from APC via SNMP.

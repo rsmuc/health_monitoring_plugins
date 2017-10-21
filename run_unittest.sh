@@ -53,3 +53,6 @@ py.test test/test_check_snmp_eaton_ups.py -v
 
 echo "Test check_snmp_procurve"
 py.test test/test_check_snmp_procurve.py -v
+
+#echo "Test check_api_pihole"
+#py.test test/test_check_api_pihole.py -v
