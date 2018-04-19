@@ -53,3 +53,9 @@ py.test test/test_check_snmp_eaton_ups.py -v
 
 echo "Test check_snmp_procurve"
 py.test test/test_check_snmp_procurve.py -v
+
+echo "Test check_snmp_fortinet"
+py.test test/test_check_snmp_fortinet.py -v
+
+echo "Test check_snmp_trusted_filter"
+py.test test/test_check_snmp_trusted_filter.py -v
