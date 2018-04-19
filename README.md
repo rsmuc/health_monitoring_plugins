@@ -15,6 +15,18 @@ All plugins are released under the GPLv2.
 
 A detailed description can be found in the README in the doc folder.
 
+#### [check_jenkins_api](doc/check_jenkins_api/README.md)
+
+Monitor the jobs in the Jenkins job queue
+
+#### [check_snmp_fortinet](doc/check_snmp_fortinet/README.md)
+
+Monitor Fortinet Wifi Controllers via SNMP
+
+#### [check_snmp_procurve](doc/check_snmp_procurve/README.md)
+
+Monitor HP / Aruba procurve switches via SNMP
+
 #### [check_snmp_apc_ups](doc/check_snmp_apc_ups/README.md)
 
 Monitor an UPS from APC via SNMP.
@@ -45,31 +57,10 @@ You can check each port for the CTS, DSR, DTR and Error count.
 
 This plugin checks the health of HP servers with iLo 4 interface via SNMP.
 
-The following components are checked:
-
-- status of powersupply
-- status of physical and logical drives (incl. drive temperatures)
-- status of fans
-- status of the temperature sensors
-- the power state of the server (On or Off)
-- status of the memory
-- the global health status
-
 
 #### [check_snmp_janitza](doc/check_snmp_janitza/README.md)
 Check the status of a Janitza 604 device.
 
-You can check: 
-- uL1 - 3               Voltage Phases
-- iL1 - 6               Current Phases
-- pL1 - 3                Real Power
-- qL1 - 3               Reaktiv Power
-- sL1 - 3               Power
-- cosPL1 - 3            Cos(Phi)
-- p3                    Real Power Summe
-- q3                    Reaktiv Power Summe
-- s3                    Power Summe
-- uL1L2,uL2L3,uL3L3     Voltage deltas between Phases
 
 
 #### [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
@@ -77,18 +68,9 @@ You can check:
 Check the used / free disk space of a device via SNMP (using the HOST-RESOURCES-MIB hrStorageSize).
 There are already script doing that like http://nagios.manubulon.com/snmp_storage.html . But these check script have a big problem with large storage systems. 
 
-In our case we want to monitor a Microsoft Windows Server 2012 R2 with an 10 TB partition and one Server with an 25 TB partition. The problem all scripts have, that the SNMP counter hrStorageSize is a 32 Bits
-Integer counter. If you have a storage that is larger then 8 TB you will have the issue, that the conuter overruns and will return a negative integer value.
-
-This script will handle the negative integer values and will calculate the proper size. That will only work if the counter overruns once.
-
 #### [check_snmp_port](doc/check_snmp_port/README.md)
 
 Check the status of a tcp/udp port via SNMP. For TCP ports also the status is checked (e.g listen, established).
-
-You could also use for example the check_tcp script. But check_tcp always trys to connect to the port, so we did see a lot of connects and disconncets in the logfile of our database service. And it is also not possible to check the connection status of the port.
-
-If you know snmpnetstat, then you know how the plugin works.
 
 
 #### [check_snmp_raritan](doc/check_snmp_raritan/README.md)
@@ -98,15 +80,9 @@ Check a Raritan Dominition PX PDU (Power Distribution Unit):
 * inlet (Power, Current, Voltage)
 * connected sensors
 
-Tested device: PX2-2486  
-Tested sensors: Temperature, Humidity, Contact Closure, Air Pressure
-
-
 #### [check_snmp_service](doc/check_snmp_service/README.md)
 
 Icinga / Nagios plugin to check if a Windows service is in running state via SNMP.
-
-It may take some time until Windows updates the status via snmp after starting or stopping a service.
 
 
 #### [check_snmp_time2](doc/check_snmp_time2/README.md)
@@ -117,39 +93,15 @@ This plugin compares the time of the icinga/nagios machine with the time of a re
 
 This plugin checks the health of Dell iDRAC.
 
-The following components/statuses are checked:
-
-- global system status
-- system LCD status
-- global storage status
-- system power status
-- power unit and its redundancy
-- chassis intrusion sensor
-- cooling unit
-- temperature probes
-
 
 #### [check_snmp_teledyne](doc/check_snmp_teledyne/README.md)
 
 This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
 
 
-
 #### [check_snmp_ubiquiti](doc/check_snmp_ubiquiti/README.md)
 
 Check the status of a Ubiquiti airMax device.
-
-You can check the:
-- Uptime
-- Signal Strength
-- CPU usage (1 Minute Average)
-- CPU usage (5 Minute Average)
-- CPU usage (15 Minute Average)
-- Total memory
-- Free memory
-- Tx Rate
-- Rx Rate
-
 
 ## Installation
 
@@ -191,6 +143,11 @@ To run the unittests just execute:
 The unittests require pytest. For the unittests we use the testagent from [haxtibal](https://github.com/haxtibal).
 
 ## Changelog
+
+###### Version 0.0.8
+
+* Added check_snmp_fortinet
+* Added check_jenkins_api
 
 ###### Version 0.0.7
 
