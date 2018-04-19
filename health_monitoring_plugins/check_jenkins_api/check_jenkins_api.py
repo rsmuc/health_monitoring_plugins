@@ -22,15 +22,18 @@ import os
 import urllib2, json, base64
 from datetime import datetime
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from pynag.Plugins import PluginHelper, ok, critical
+from pynag.Plugins import PluginHelper, ok, critical, unknown, warning
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
 helper.parser.add_option('-p', help="the port the Jenkins webserver (default: 80)", dest="port", default="80")
 helper.parser.add_option('-H', help="the IP address or hostname of the Jenkins", dest="host", default="127.0.0.1")
-helper.parser.add_option('-U', help="the user for the basic authentication)", dest="user", default="user")
-helper.parser.add_option('-P', help="the password for the basic authentication)", dest="password", default="password")
-helper.parser.add_option('-A', help="the maximum age of a Jenkins job in hours", dest="age", default="5.0")
+helper.parser.add_option('-U', help="the user for the basic authentication", dest="user", default="user")
+helper.parser.add_option('-P', help="the password for the basic authentication or the API token", dest="password", default="password")
+helper.parser.add_option('--PWF', help="a file containing the password", dest="pwf")
+helper.parser.add_option('-A', help="the maximum age of a Jenkins job in hours", dest="age")
+helper.parser.add_option('-S', help="check if Jenkins is in shudown mode", dest="shutdown", default=False, action='store_true')
+helper.parser.add_option('-D', help="check if a Jenkins executor is disconnected", dest="disconnect", default=False, action='store_true')
 
 
 helper.parse_arguments()
@@ -40,33 +43,84 @@ port = helper.options.port
 host = helper.options.host
 user = helper.options.user
 password = helper.options.password
-age = float(helper.options.age)
+if helper.options.age:
+    age = float(helper.options.age)
+else:
+    age = None
+shutdown = helper.options.shutdown
+disconnect = helper.options.disconnect
+pwf = helper.options.pwf
 
+if pwf:
+    with open(pwf, 'r') as myfile:
+        password=myfile.read().replace('\n', '')
 
 # The default return value should be always OK
 helper.status(ok)
-helper.add_summary("Jenkins")
+helper.add_summary("%s" % host)
 
 if __name__ == "__main__":    
 
-    # query the data from the Jenkins JSON API
-    url = "http://%s/queue/api/json?pretty=true:%s" % (host, port)
+    if age:
+        helper.add_summary("job queue:")
+        # query the data from the Jenkins JSON API
+        url = "http://%s/queue/api/json?pretty=true:%s" % (host, port)
 
-    request = urllib2.Request(url)
-    base64string = base64.b64encode('%s:%s' % (user, password))
-    request.add_header("Authorization", "Basic %s" % base64string)        
-    response = urllib2.urlopen(request)
-    data = json.loads(response.read())
+        request = urllib2.Request(url)
+        base64string = base64.b64encode('%s:%s' % (user, password))
+        request.add_header("Authorization", "Basic %s" % base64string)        
+        response = urllib2.urlopen(request)
+        data = json.loads(response.read())
 
-    # check every job in the build queue
-    for item in data['items']:
-        starttime = item['inQueueSince']
-        # quick and dirty
-        starttime = datetime.fromtimestamp(float(starttime/1000))        
-        currenttime = datetime.today()                
-        waitingfor = abs(currenttime - starttime).total_seconds() / 3600.0
+        # check every job in the build queue
+        for item in data['items']:
+            starttime = item['inQueueSince']
+            # quick and dirty
+            starttime = datetime.fromtimestamp(float(starttime/1000))        
+            currenttime = datetime.today()                
+            waitingfor = abs(currenttime - starttime).total_seconds() / 3600.0
                 
-        if waitingfor > age:
+            if waitingfor > age:
+                    helper.status(critical)
+                    helper.add_summary("JENKINS JOB WAITING FOR %s hours - CHECK INSTANCES" % (waitingfor))
+    
+    elif shutdown:
+        helper.add_summary("shutdown status:")
+         # query the data from the Jenkins JSON API
+        url = "http://%s/api/json?pretty=true:%s" % (host, port)
+
+        request = urllib2.Request(url)
+        base64string = base64.b64encode('%s:%s' % (user, password))
+        request.add_header("Authorization", "Basic %s" % base64string)        
+        response = urllib2.urlopen(request)
+        data = json.loads(response.read())
+
+        if data["quietingDown"] == True:
+            helper.status(warning)
+            helper.add_summary("JENKINS IS IN SHUTDOWN MODE")
+
+    elif disconnect:
+        helper.add_summary("executor status:")
+         # query the data from the Jenkins JSON API
+        url = "http://%s/computer/api/json?pretty=true:%s" % (host, port)
+
+        request = urllib2.Request(url)
+        base64string = base64.b64encode('%s:%s' % (user, password))
+        request.add_header("Authorization", "Basic %s" % base64string)        
+        response = urllib2.urlopen(request)
+        data = json.loads(response.read())
+
+        for computer in data['computer']:
+            
+            if computer["temporarilyOffline"] == True:
+                helper.status(warning)
+                helper.add_summary("Jenkins executor temporarily offline")
+
+            if computer["offline"] == True:
                 helper.status(critical)
-                helper.add_summary("JENKINS JOB WAITING FOR %s hours - CHECK INSTANCES" % (waitingfor))
+                helper.add_summary("Jenkins executor temporarily offline")
+                
+    else:
+        helper.status(unknown)
+        helper.add_summary("Missing parameter")
 helper.exit()
