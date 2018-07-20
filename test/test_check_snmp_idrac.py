@@ -151,11 +151,7 @@ def test_everything_not_ok():
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_idrac/check_snmp_idrac.py -H localhost:1234', shell=True, stdout=subprocess.PIPE)
     cmd_output = p.stdout.read()
     print cmd_output
-    assert 'Critical - User assigned name: Main System Chassis - Typ: PowerEdge R420xr - Service tag: ABCD123. Global System status:\
- critical. System LCD status: critical. Global Storage status: critical. System Power status: off. Power unit "System Board PS\
- Redundancy" status: critical. Redundancy: lost. Chassis intrusion sensor "System Board Intrusion" is critical.\
- Cooling unit "System Board Fan Redundancy" status: critical. Temperature probe at "inlet temperature" is\
- criticalUpper. Voltage probe at "ps 1 voltage" is criticalUpper' in cmd_output
+    assert 'Critical - User assigned name: Main System Chassis - Typ: PowerEdge R420xr - Service tag: ABCD123. Global System status: critical. System LCD status: critical. Global Storage status: critical. System Power status: off. Power redundancy status: lost. Chassis intrusion sensor "System Board Intrusion" is critical. Cooling unit "System Board Fan Redundancy" status: critical. Temperature probe at "inlet temperature" is criticalUpper. Voltage probe at "ps 1 voltage" is criticalUpper' in cmd_output
     
 def test_overall_state_critical():
     """
@@ -213,8 +209,8 @@ def test_power_unit_critical():
     print 'summary: %s' % power_unit_summary
     print 'long: %s' % power_unit_long
     
-    assert 'Power unit "power unit" status: critical. Redundancy: full' in power_unit_summary
-    assert 'Power unit "power unit" status: critical. Redundancy: full' in power_unit_long
+    assert 'Power unit "power unit": critical' in power_unit_summary
+    assert 'Power unit "power unit": critical. Power redundancy status: full' in power_unit_long
     
 def test_redundancy_lost():
     """
@@ -226,8 +222,8 @@ def test_redundancy_lost():
     print 'summary: %s' % power_unit_summary
     print 'long: %s' % power_unit_long
     
-    assert 'Power unit "power unit" status: ok. Redundancy: lost' in power_unit_summary
-    assert 'Power unit "power unit" status: ok. Redundancy: lost' in power_unit_long
+    assert 'Power redundancy status: lost' in power_unit_summary
+    assert 'Power unit "power unit": ok. Power redundancy status: lost' in power_unit_long
     
 def test_chassis_critical():
     """

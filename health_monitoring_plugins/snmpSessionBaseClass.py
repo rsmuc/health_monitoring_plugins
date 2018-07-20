@@ -82,6 +82,13 @@ def verify_host(host, helper):
                     , perfdata='')
            
 
+def verify_seclevel(seclevel, helper):
+    if seclevel != "authPriv" and seclevel != "noAuthNoPriv" and seclevel != "authNoPriv" and seclevel != "":
+        helper.exit(summary="security level is incorrect: %s. Check -l parameter." % (seclevel)
+                        , exit_code=pynag.Plugins.unknown
+                        , perfdata='')
+
+
 # make a snmp get, if it fails (or returns nothing) exit the plugin
 def get_data(session, oid, helper, empty_allowed=False):
     var = netsnmp.Varbind(oid)

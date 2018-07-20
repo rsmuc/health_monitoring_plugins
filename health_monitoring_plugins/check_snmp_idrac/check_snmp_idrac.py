@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>
+# Copyright (C) 2016 - 2018 rsmuc <rsmuc@mailbox.org>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@ import netsnmp
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from snmpSessionBaseClass import add_common_options, add_snmpv3_options, get_common_options, verify_host, get_data, walk_data, state_summary, add_output, attempt_walk_data
+from snmpSessionBaseClass import add_common_options, verify_seclevel, add_snmpv3_options, get_common_options, verify_host, get_data, walk_data, state_summary, add_output, attempt_walk_data
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
@@ -221,6 +221,9 @@ if __name__ == '__main__':
     # verify that a hostname is set
     verify_host(host, helper)
     
+    # verify that seclevel is correctly used, otherwise there will be an exception
+    verify_seclevel(seclevel, helper)
+
     # The default return value should be always OK
     helper.status(ok)
 

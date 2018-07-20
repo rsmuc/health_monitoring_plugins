@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>
+# Copyright (C) 2016 - 2018 rsmuc <rsmuc@mailbox.org>
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@ import netsnmp
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data, attempt_walk_data, state_summary, add_output
+from snmpSessionBaseClass import add_common_options, verify_seclevel, add_snmpv3_options, get_common_options, verify_host, get_data, walk_data, attempt_walk_data, state_summary, add_output
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
@@ -44,6 +44,7 @@ helper.parser.add_option('--noFan', help='Do not check global fan condition', de
 helper.parser.add_option('--noMemory', help='Do not check memory condition', default=True, action='store_false', dest='no_mem')
 helper.parser.add_option('--noController', help='Do not check controller condition', default=True, action='store_false', dest='no_ctrl')
 helper.parser.add_option('--noPowerRedundancy', help='Do not check powersupply redundancy', default=True, action='store_false', dest='no_pwr_redund')
+add_snmpv3_options(helper)
 helper.parse_arguments()
 
 # Get the options
@@ -63,6 +64,12 @@ fan_flag = helper.options.no_fan
 mem_flag = helper.options.no_mem
 ctrl_flag = helper.options.no_ctrl
 power_redundancy_flag = helper.options.no_pwr_redund
+secname, seclevel, authproto, authpass, privproto, privpass  = helper.options.secname, \
+    helper.options.seclevel, \
+    helper.options.authproto, \
+    helper.options.authpass, \
+    helper.options.privproto, \
+    helper.options.privpass
 
 # States definitions
 normal_state = {
@@ -396,7 +403,10 @@ if __name__ == '__main__':
     # verify that a hostname is set
     verify_host(host, helper)
     
-    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
+    # verify that seclevel is correctly used, otherwise there will be an exception
+    verify_seclevel(seclevel, helper)
+
+    sess = netsnmp.Session(Version=version, DestHost=host, SecLevel = seclevel,  SecName = secname, AuthProto = authproto, AuthPass = authpass, PrivProto = privproto, PrivPass = privpass)       
     
     # If the --scan option is set, we show all components and end the script
     if scan:
