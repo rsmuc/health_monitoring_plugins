@@ -117,6 +117,7 @@ def walk_data(session, oid, helper):
     var = netsnmp.Varbind(oid)
     varl = netsnmp.VarList(var)
     data = list(session.walk(varl))
+
     if len(data) == 0:
         helper.exit(summary="snmpwalk failed - no data for host " + session.DestHost
                     + " OID: " +oid

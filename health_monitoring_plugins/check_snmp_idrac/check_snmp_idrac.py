@@ -21,7 +21,7 @@ import netsnmp
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from snmpSessionBaseClass import add_common_options, add_snmpv3_options, get_common_options, verify_host, get_data, walk_data, state_summary, add_output
+from snmpSessionBaseClass import add_common_options, add_snmpv3_options, get_common_options, verify_host, get_data, walk_data, state_summary, add_output, attempt_walk_data
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
@@ -94,8 +94,8 @@ oid_system_power               = '.1.3.6.1.4.1.674.10892.5.2.4.0'
 
 
 oid_power_unit_redundancy      = '.1.3.6.1.4.1.674.10892.5.4.600.10.1.5'
-oid_power_unit_name            = '.1.3.6.1.4.1.674.10892.5.4.600.10.1.7'
-oid_power_unit_status          = '.1.3.6.1.4.1.674.10892.5.4.600.10.1.8'
+oid_power_unit_name            = '.1.3.6.1.4.1.674.10892.5.4.600.12.1.8'
+oid_power_unit_status          = '.1.3.6.1.4.1.674.10892.5.4.600.12.1.5'
 
 oid_chassis_intrusion          = '.1.3.6.1.4.1.674.10892.5.4.300.70.1.5'
 oid_chassis_intrusion_location = '.1.3.6.1.4.1.674.10892.5.4.300.70.1.8'
@@ -118,13 +118,26 @@ def power_unit_check(power_unit_redundancy_data, power_unit_name_data, power_uni
     power_unit_long_output = ''
     
     for x in range(len(power_unit_status_data)):
-        if  normal_state[int(power_unit_status_data[x])] != 'ok' or power_unit_redundancy_state[int(power_unit_redundancy_data[x])] != 'full':
-            # status is not OK or redundancy is not FULL
+        if  normal_state[int(power_unit_status_data[x])] != 'ok':
+            # status is of PS is not OK:
             helper.status(critical)
-            power_unit_summary_output += 'Power unit "%s" status: %s. Redundancy: %s. ' % (power_unit_name_data[x], normal_state[int(power_unit_status_data[x])], power_unit_redundancy_state[int(power_unit_redundancy_data[x])])
-        # we always want to show the information in the long output, independend from the status
-        power_unit_long_output += 'Power unit "%s" status: %s. Redundancy: %s\n' % (power_unit_name_data[x], normal_state[int(power_unit_status_data[x])], power_unit_redundancy_state[int(power_unit_redundancy_data[x])])
-    # erase the last '.' for a prettier summary output
+            power_unit_summary_output += 'Power unit "%s": %s. ' % (power_unit_name_data[x], normal_state[int(power_unit_status_data[x])])
+            
+        #we always want to show the information in the long output, independend from the status
+        power_unit_long_output += 'Power unit "%s": %s. ' % (power_unit_name_data[x], normal_state[int(power_unit_status_data[x])])
+    
+   
+    if power_unit_redundancy_data != []: 
+        if power_unit_redundancy_state[int(power_unit_redundancy_data[0])] != "full":
+            # redundancy is not full
+            helper.status(critical)
+            power_unit_summary_output += 'Power redundancy status: %s. ' % (power_unit_redundancy_state[int(power_unit_redundancy_data[0])])
+        
+        #we always want to show the information in the long output, independend from the status
+        power_unit_long_output += 'Power redundancy status: %s\n' % (power_unit_redundancy_state[int(power_unit_redundancy_data[0])])
+
+        
+   # erase the last '.' for a prettier summary output    
     power_unit_summary_output = power_unit_summary_output[:-2]
     return power_unit_summary_output, power_unit_long_output
 
@@ -235,10 +248,10 @@ if __name__ == '__main__':
     add_output(global_storage_summary, global_storage_long, helper)
     add_output(system_power_summary, system_power_long, helper)
     
-    # power unit
-    power_unit_redundancy_data = walk_data(sess, oid_power_unit_redundancy, helper)[0]
-    power_unit_name_data = walk_data(sess, oid_power_unit_name, helper)[0]
-    power_unit_status_data = walk_data(sess, oid_power_unit_status, helper)[0]
+    # power unit    
+    power_unit_redundancy_data = attempt_walk_data(sess, oid_power_unit_redundancy)[0]
+    power_unit_name_data = attempt_walk_data(sess, oid_power_unit_name)[0]
+    power_unit_status_data = attempt_walk_data(sess, oid_power_unit_status)[0]
     
     power_unit_summary_output, power_unit_long_output = power_unit_check(power_unit_redundancy_data, power_unit_name_data, power_unit_status_data)
     
@@ -273,14 +286,13 @@ if __name__ == '__main__':
     voltage_probe_summary_output = ''
     voltage_probe_long_output = ''
     
-    voltage_probe_status_data, voltage_probe_status_tag = walk_data(sess, oid_voltage_probe_status, helper)
-    voltage_probe_reading_data, voltage_probe_reading_tag = walk_data(sess, oid_voltage_probe_reading, helper)
-    voltage_probe_location_data, voltage_probe_location_tag = walk_data(sess, oid_voltage_probe_location, helper)
+    voltage_probe_status_data, voltage_probe_status_tag = attempt_walk_data(sess, oid_voltage_probe_status)
+    voltage_probe_reading_data, voltage_probe_reading_tag = attempt_walk_data(sess, oid_voltage_probe_reading)
+    voltage_probe_location_data, voltage_probe_location_tag = attempt_walk_data(sess, oid_voltage_probe_location)
     
     voltage_probe_summary_output, voltage_probe_long_output = voltage_probe_check(voltage_probe_status_data, voltage_probe_status_tag, voltage_probe_reading_data, voltage_probe_reading_tag, voltage_probe_location_data)
     
     add_output(voltage_probe_summary_output, voltage_probe_long_output, helper)
-    
     
     helper.check_all_metrics()
     # Print out plugin information and exit nagios-style
