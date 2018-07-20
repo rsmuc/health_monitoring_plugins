@@ -21,19 +21,25 @@ import netsnmp
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data, state_summary, add_output
+from snmpSessionBaseClass import add_common_options, add_snmpv3_options, get_common_options, verify_host, get_data, walk_data, state_summary, add_output
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
 
 # Define the command line options
 add_common_options(helper)
+add_snmpv3_options(helper)
 helper.parse_arguments()
 
 # Get the options
 host, version, community = get_common_options(helper)
-
-
+secname, seclevel, authproto, authpass, privproto, privpass  = helper.options.secname, \
+    helper.options.seclevel, \
+    helper.options.authproto, \
+    helper.options.authpass, \
+    helper.options.privproto, \
+    helper.options.privpass
+    
 # States definitions
 normal_state = {
             1 : 'other',
@@ -204,9 +210,20 @@ if __name__ == '__main__':
     
     # The default return value should be always OK
     helper.status(ok)
+
+    version = 3
+    secname = "snmpuser"
+    #seclevel = "authPriv"
+    seclevel = "noAuthNoPriv"
+    #community = "public"
+
+    authproto = "SHA"
+    authpass = "snmppassword"
+    privproto = "AES"
+    privpass = "snmppassword"    
     
-    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
-    
+    sess = netsnmp.Session(Version=version, DestHost=host, SecLevel = seclevel,  SecName = secname, AuthProto = authproto, AuthPass = authpass, PrivProto = privproto, PrivPass = privpass)       
+
     user_assigned_name_data = get_data(sess, oid_user_assigned_name, helper)
     product_type_data = get_data(sess, oid_product_type, helper)
     service_tag_data = get_data(sess, oid_service_tag, helper)

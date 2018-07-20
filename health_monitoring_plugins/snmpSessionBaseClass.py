@@ -39,7 +39,7 @@ def add_common_options(helper):
     # Define the common command line parameters
     helper.parser.add_option('-H', help="Hostname or ip address", dest="hostname")
     helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')
-    helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1 or 2)', default=2, type='int')
+    helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1, 2 or 3)', default=2, type='int')
 
 def get_common_options(helper):
     # get the common options
@@ -47,6 +47,16 @@ def get_common_options(helper):
     version = helper.options.version
     community = helper.options.community
     return host, version, community
+
+
+def add_snmpv3_options(helper):
+    # Define the common command line parameters
+    helper.parser.add_option('-u', help="SNMPv3: security name (e.g. bert)", dest="secname")
+    helper.parser.add_option('-l', help="SNMPv3: security level (noAuthNoPriv, authNoPriv, authPriv)", dest="seclevel")
+    helper.parser.add_option('-a', help="SNMPv3: authentication protocol (MD5|SHA)", dest="authproto")
+    helper.parser.add_option('-A', help="SNMPv3: authentication protocol pass phrase", dest="authpass")
+    helper.parser.add_option('-x', help="SNMPv3:  privacy protocol (DES|AES)", dest="privproto")
+    helper.parser.add_option('-X', help="SNMPv3:   privacy protocol pass phrase", dest="privpass")
 
 def verify_host(host, helper):
     if host == "" or host is None:
@@ -77,6 +87,7 @@ def get_data(session, oid, helper, empty_allowed=False):
     var = netsnmp.Varbind(oid)
     varl = netsnmp.VarList(var)
     data = session.get(varl)
+    
     value = data[0]
     if value is None:
         helper.exit(summary="snmpget failed - no data for host "

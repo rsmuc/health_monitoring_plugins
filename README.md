@@ -144,6 +144,12 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 
 ## Changelog
 
+###### Version 0.0.9
+
+* Added check_snmp_instadios_csm
+* Added SNMPv3 support for check_snmp_idrac
+* Fixed some bugs in check_snmp_idrac (error if sever is powered off or if the power supply is not redundant)
+
 ###### Version 0.0.8
 
 * Added check_snmp_fortinet
