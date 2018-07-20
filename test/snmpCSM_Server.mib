@@ -1,0 +1,154 @@
+INRADIOS DEFINITIONS ::= BEGIN
+IMPORTS
+   Integer32, OBJECT-TYPE, NOTIFICATION-TYPE, Counter32,
+   TimeTicks, Counter64, enterprises, MODULE-IDENTITY,
+   Gauge32, IpAddress, DisplayString
+       FROM SNMPv2-SMI;
+rsRoot MODULE-IDENTITY
+  LAST-UPDATED "201803111306Z"
+  ORGANIZATION "Rohde & Schwarz Inradios GmbH"
+  CONTACT-INFO "www.inradios.com"
+  DESCRIPTION "Inradios CSM Software Interface"
+  REVISION "201803111306Z"
+  DESCRIPTION "First release (1.00)"
+--NamesSpace MonitoringModule.Snmp
+--EnumName SnmpMibIdent
+--ClassName SnmpMonitoring
+ ::= { enterprises 2566 }
+
+rsProduct OBJECT IDENTIFIER
+--WantTreeNum 127
+ ::= { rsRoot 127 }
+
+rsProdSatelliteIntelligence OBJECT IDENTIFIER
+--WantTreeNum 6
+ ::= { rsProduct 6 }
+
+rsProdSIInradios OBJECT IDENTIFIER
+--WantTreeNum 1
+ ::= { rsProdSatelliteIntelligence 1 }
+
+software OBJECT IDENTIFIER
+--WantTreeNum 10
+ ::= { rsProdSIInradios 10 }
+
+csmMonitoring OBJECT IDENTIFIER
+--WantTreeNum 1
+ ::= { software 1 }
+
+csmMonitoringTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF CsmMonitoringTableTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION ""
+--TableRowCount 1000
+ ::= { csmMonitoring 1 }
+
+csmMonitoringTableTableEntry OBJECT-TYPE
+   SYNTAX CsmMonitoringTableTableEntry
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION ""
+   INDEX { csmMonitoringTableIndex }
+ ::= { csmMonitoringTable 1 }
+
+CsmMonitoringTableTableEntry ::= SEQUENCE {
+   mvComment DisplayString,
+   mvValue DisplayString,
+   mvValueDateTime DisplayString,
+   mvParameter DisplayString,
+   mvState INTEGER,
+   mvUnit DisplayString,
+   mvWarnThresholdUpper DisplayString,
+   mvAlarmThresholdUpper DisplayString,
+   mvWarnThresholdLower DisplayString,
+   mvAlarmThresholdLower DisplayString,
+   mvLabel DisplayString,
+   csmMonitoringTableIndex Integer32
+}
+
+mvComment OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "shows which measurement is performed"
+ ::= { csmMonitoringTableTableEntry 1 }
+
+mvValue OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "the Value of the last Measurement"
+ ::= { csmMonitoringTableTableEntry 2 }
+
+mvValueDateTime OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "the Datetime of the last Measurement"
+ ::= { csmMonitoringTableTableEntry 3 }
+
+mvParameter OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "describes the used parameters for the measurement"
+ ::= { csmMonitoringTableTableEntry 4 }
+
+mvState OBJECT-TYPE
+   SYNTAX INTEGER { notReady (0), notAvailable (1), OK (2), Warn (3), Alarm (4) }
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "the current State of the MonitoringItem(notReady,notAvailable,OK,Warn,Alarm)"
+ ::= { csmMonitoringTableTableEntry 5 }
+
+mvUnit OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "the Unit of the value"
+ ::= { csmMonitoringTableTableEntry 6 }
+
+mvWarnThresholdUpper OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "the upper Warn Threshold for the value"
+ ::= { csmMonitoringTableTableEntry 7 }
+
+mvAlarmThresholdUpper OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "the upper Alarm Threshold for the value"
+ ::= { csmMonitoringTableTableEntry 8 }
+
+mvWarnThresholdLower OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "the lower Warn Threshold for the value"
+ ::= { csmMonitoringTableTableEntry 9 }
+
+mvAlarmThresholdLower OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "the lower Alarm Threshold for the value"
+ ::= { csmMonitoringTableTableEntry 10 }
+
+mvLabel OBJECT-TYPE
+   SYNTAX DisplayString
+   MAX-ACCESS read-only
+   STATUS     current
+   DESCRIPTION "short Information Text"
+ ::= { csmMonitoringTableTableEntry 11 }
+
+csmMonitoringTableIndex OBJECT-TYPE
+   SYNTAX Integer32
+   MAX-ACCESS not-accessible
+   STATUS     current
+   DESCRIPTION "csmMonitoringTableIndex"
+ ::= { csmMonitoringTableTableEntry 12 }
+
+END
