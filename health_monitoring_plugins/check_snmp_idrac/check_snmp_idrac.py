@@ -211,17 +211,6 @@ if __name__ == '__main__':
     # The default return value should be always OK
     helper.status(ok)
 
-    version = 3
-    secname = "snmpuser"
-    #seclevel = "authPriv"
-    seclevel = "noAuthNoPriv"
-    #community = "public"
-
-    authproto = "SHA"
-    authpass = "snmppassword"
-    privproto = "AES"
-    privpass = "snmppassword"    
-    
     sess = netsnmp.Session(Version=version, DestHost=host, SecLevel = seclevel,  SecName = secname, AuthProto = authproto, AuthPass = authpass, PrivProto = privproto, PrivPass = privpass)       
 
     user_assigned_name_data = get_data(sess, oid_user_assigned_name, helper)

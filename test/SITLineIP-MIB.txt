@@ -1,0 +1,376 @@
+SITLineIP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    enterprises
+        FROM RFC1155-SMI
+    -- OBJECT-TYPE
+    --      FROM RFC-1212
+        TRAP-TYPE
+            FROM RFC-1215
+    ifIndex
+        FROM IF-MIB
+    -- InterfaceIndex
+    --     FROM IF-MIB;
+    MODULE-IDENTITY, OBJECT-TYPE, IpAddress
+        FROM SNMPv2-SMI
+
+    DisplayString
+        FROM SNMPv2-TC
+    Counter
+        FROM RFC1155-SMI
+    NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+;
+
+sitLine MODULE-IDENTITY
+    LAST-UPDATED "201801151015Z"
+    ORGANIZATION
+        "Rohde & Schwarz Cybersecurity GmbH"
+    CONTACT-INFO
+        "         Andreas Graubner
+         Postal:  Rohde & Schwarz Cybersecurity GmbH
+                  Am Studio 3
+                  12489 Berlin
+         Tel:     +49 30 65884-272
+         Fax:     +49 30 65884-183
+         E-mail:  andreas.graubner@rohde-schwarz.com"
+    DESCRIPTION
+        "This is the MIB module of the SITLine IP family of
+         IP broadband encryptor devices."
+    REVISION "201801151015Z"
+    DESCRIPTION
+             "Last Revision"
+
+    ::= { enterprises 2566 107 }
+
+sitlineIp                    OBJECT IDENTIFIER ::= { sitLine 31 }
+sitLineIpInfo                OBJECT IDENTIFIER ::= { sitlineIp 1 }
+sitLineIpStatus              OBJECT IDENTIFIER ::= { sitlineIp 2 }
+sitLineIpNet                 OBJECT IDENTIFIER ::= { sitlineIp 3 }
+sitLineIpTraps               OBJECT IDENTIFIER ::= { sitlineIp 200 }
+
+-- ****************************************************************************
+-- SITLine IP (sitLineIpInfo)
+-- ****************************************************************************
+
+slIpInfoVersion OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The textual identification of the SITLine IP crypto software version
+                information."
+    ::= { sitLineIpInfo 1 }
+
+slIpInfoComponentTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SlIpInfoComponentEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Table of SITLine IP component information."
+    ::= { sitLineIpInfo 2 }
+
+slIpInfoComponentEntry OBJECT-TYPE
+    SYNTAX      SlIpInfoComponentEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry in the table containing information about a structural component of SITLine IP's hardware."
+    INDEX { slIpInfoComponentIndex }
+    ::= { slIpInfoComponentTable 1 }
+
+SlIpInfoComponentEntry ::=
+    SEQUENCE {
+        slIpInfoComponentIndex          INTEGER,
+        slIpInfoComponentDescription    DisplayString,
+        slIpInfoComponentPartNumber     DisplayString,
+        slIpInfoComponentSerialNumber   DisplayString,
+        slIpInfoComponentChangeIndex    DisplayString
+    }
+
+slIpInfoComponentIndex OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    device(1),
+                    cryptoMainBoard(2),
+                    cryptoModule(3),
+                    interfaceBoard(4),
+                    lowSpeedInterfaceBoard(5),
+                    highSpeedInterfaceBoard(6)
+                }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+                "Index to the corresponding hardware component."
+    ::= { slIpInfoComponentEntry 1 }
+
+slIpInfoComponentDescription OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "A textual string containing information about the type of the hardware component."
+    ::= { slIpInfoComponentEntry 2 }
+
+slIpInfoComponentPartNumber OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "A textual string containing information about the part number of the hardware component."
+    ::= { slIpInfoComponentEntry 3 }
+
+slIpInfoComponentSerialNumber OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "A textual string containing information about the serial number of the hardware component."
+    ::= { slIpInfoComponentEntry 4 }
+
+slIpInfoComponentChangeIndex OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "A textual string containing information about the change index of the hardware component."
+    ::= { slIpInfoComponentEntry 5 }
+
+-- ****************************************************************************
+-- SITLine IP (sitLineIpStatus)
+-- ****************************************************************************
+
+slIpStatusLogFillLevel OBJECT-TYPE
+    SYNTAX      INTEGER (0..100)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Fill level of internal log memory in percent."
+    ::= { sitLineIpStatus 1 }
+
+slIpStatusPowerSupplyUnit1 OBJECT-TYPE
+    SYNTAX      INTEGER { ok(1), failure(2), absent(3), acOff(4) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of power supply unit 1"
+    ::= { sitLineIpStatus 2 }
+
+slIpStatusPowerSupplyUnit2 OBJECT-TYPE
+    SYNTAX      INTEGER { ok(1), failure(2), absent(3), acOff(4) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of power supply unit 2"
+    ::= { sitLineIpStatus 3 }
+
+slIpStatusFanUnit1 OBJECT-TYPE
+    SYNTAX      INTEGER { ok(1), failure(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of fan unit 1"
+    ::= { sitLineIpStatus 4 }
+
+slIpStatusFanUnit2 OBJECT-TYPE
+    SYNTAX      INTEGER { ok(1), failure(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of fan unit 2"
+    ::= { sitLineIpStatus 5 }
+
+slIpStatusBatteryVoltage OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Battery voltage (mV)"
+    ::= { sitLineIpStatus 6 }
+
+slIpStatusInternalVoltage OBJECT-TYPE
+    SYNTAX      INTEGER { ok(1), failure(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of internal voltage"
+    ::= { sitLineIpStatus 7 }
+
+slIpStatusInternalTemperature OBJECT-TYPE
+    SYNTAX      INTEGER { ok(1), failure(2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Status of internal temperature"
+    ::= { sitLineIpStatus 8 }
+
+slIpStatusTransceiverTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SlIpStatusTransceiverEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Information about plugged in transceivers."
+    ::= { sitLineIpStatus 9 }
+
+slIpStatusTransceiverEntry OBJECT-TYPE
+    SYNTAX      SlIpStatusTransceiverEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "An entry in the table containing information about the SFP transceiver at a SITLine IP port
+    using the same interface index as in the MIB-II interface table."
+    INDEX { ifIndex }
+    ::= { slIpStatusTransceiverTable 1 }
+
+SlIpStatusTransceiverEntry ::=
+    SEQUENCE {
+        slIpStatusTransceiverType                  INTEGER,
+        slIpStatusTransceiverConnectorType         INTEGER,
+        slIpStatusTransceiverVendorName            DisplayString,
+        slIpStatusTransceiverVendorPartNumber      DisplayString,
+        slIpStatusTransceiverVendorSerialNumber    DisplayString
+    }
+
+slIpStatusTransceiverType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    unknownOrUnspecified(1),
+                    sfp(2)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+                "Type of transceiver."
+    ::= { slIpStatusTransceiverEntry 1 }
+
+slIpStatusTransceiverConnectorType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    unknownOrUnspecified(1),
+                    lc(7)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+                "Code for connector type."
+    ::= { slIpStatusTransceiverEntry 2 }
+
+slIpStatusTransceiverVendorName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "A textual string containing the vendor name."
+    ::= { slIpStatusTransceiverEntry 3 }
+
+slIpStatusTransceiverVendorPartNumber OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "A textual string containing the part number provided by transceiver vendor."
+    ::= { slIpStatusTransceiverEntry 4 }
+
+slIpStatusTransceiverVendorSerialNumber OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "A textual string containing the serial number provided by transceiver vendor."
+    ::= { slIpStatusTransceiverEntry 5 }
+
+-- ****************************************************************************
+-- SITLine IP (sitLineIpNet)
+-- ****************************************************************************
+
+slIpNetErrorPropagation OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    -- Link loss is not propagated to the opposite ports
+                    netErrorPropagationOff(1),
+                    -- Link loss on both WAN ports is followed by a link loss on the LAN port
+                    netErrorLanFollowsWan(2),
+                    -- Link loss on the LAN port is followed by link loss on both WAN ports
+                    netErrorWanFollowsLan(3),
+                    -- Link loss in both directions, WAN propagates towards LAN and vice versa
+                    netErrorBothDirections(4)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION "Propagation of ethernet link loss towards the opposite ports of the device.
+                Used to provide fast error notification for peripheral network devices."
+    ::= { sitLineIpNet 1 }
+
+-- ****************************************************************************
+-- SITLine IP (sitLineIpTraps)
+-- ****************************************************************************
+
+transceiverDetected NOTIFICATION-TYPE
+    OBJECTS { ifIndex }
+    STATUS current
+    DESCRIPTION "New transceiver detected."
+::= { sitLineIpTraps 4 }
+
+transceiverRemoved NOTIFICATION-TYPE
+    OBJECTS { ifIndex }
+    STATUS current
+    DESCRIPTION "Transceiver removed."
+ ::= { sitLineIpTraps 5 }
+
+primaryPowerSupplyUp NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "Primary power supply up."
+::= { sitLineIpTraps 11 }
+
+primaryPowerSupplyDown NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "Primary power supply down."
+::= { sitLineIpTraps 12 }
+
+secondaryPowerSupplyUp NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "Secondary power supply up."
+::= { sitLineIpTraps 13 }
+
+secondaryPowerSupplyDown NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "Secondary power supply down."
+::= { sitLineIpTraps 14 }
+
+fanUnitFailure NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "At least one fan unit failed."
+::= { sitLineIpTraps 24 }
+
+fanUnitOK NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "All fan units OK."
+::= { sitLineIpTraps 25 }
+
+logFillLevelWarning NOTIFICATION-TYPE
+    OBJECTS { slIpStatusLogFillLevel }
+    STATUS current
+    DESCRIPTION "Fill level of internal log memory is high."
+::= { sitLineIpTraps 26 }
+
+outOfLogMemory NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "Log memory is full, oldest log entries will be overwritten."
+::= { sitLineIpTraps 27 }
+
+batteryVoltageFailure NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "Battery low/absent."
+::= { sitLineIpTraps 28 }
+
+batteryVoltageOk NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "Battery Ok."
+::= { sitLineIpTraps 29 }
+
+internalVoltageFailure NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "At least one measured internal voltage is out of range."
+::= { sitLineIpTraps 30 }
+
+internalVoltageOk NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "All internal voltages in range again."
+::= { sitLineIpTraps 31 }
+
+internalTemperatureFailure NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "At least one measured internal temperature is out of range."
+::= { sitLineIpTraps 32 }
+
+internalTemperatureOk NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION "All internal temperatures in range again."
+::= { sitLineIpTraps 33 }
+
+END
+

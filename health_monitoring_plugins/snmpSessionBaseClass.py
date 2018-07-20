@@ -55,8 +55,8 @@ def add_snmpv3_options(helper):
     helper.parser.add_option('-l', help="SNMPv3: security level (noAuthNoPriv, authNoPriv, authPriv)", dest="seclevel")
     helper.parser.add_option('-a', help="SNMPv3: authentication protocol (MD5|SHA)", dest="authproto")
     helper.parser.add_option('-A', help="SNMPv3: authentication protocol pass phrase", dest="authpass")
-    helper.parser.add_option('-x', help="SNMPv3:  privacy protocol (DES|AES)", dest="privproto")
-    helper.parser.add_option('-X', help="SNMPv3:   privacy protocol pass phrase", dest="privpass")
+    helper.parser.add_option('-x', help="SNMPv3: privacy protocol (DES|AES)", dest="privproto")
+    helper.parser.add_option('-X', help="SNMPv3: privacy protocol pass phrase", dest="privpass")
 
 def verify_host(host, helper):
     if host == "" or host is None:
