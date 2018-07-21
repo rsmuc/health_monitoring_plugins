@@ -83,7 +83,7 @@ def verify_host(host, helper):
            
 
 def verify_seclevel(seclevel, helper):
-    if seclevel != "authPriv" and seclevel != "noAuthNoPriv" and seclevel != "authNoPriv" and seclevel != "":
+    if seclevel != "authPriv" and seclevel != "noAuthNoPriv" and seclevel != "authNoPriv" and seclevel != "" and seclevel != None:
         helper.exit(summary="security level is incorrect: %s. Check -l parameter." % (seclevel)
                         , exit_code=pynag.Plugins.unknown
                         , perfdata='')
