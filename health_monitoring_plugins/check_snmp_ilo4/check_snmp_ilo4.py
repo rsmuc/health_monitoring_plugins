@@ -406,7 +406,7 @@ if __name__ == '__main__':
     # verify that seclevel is correctly used, otherwise there will be an exception
     verify_seclevel(seclevel, helper)
 
-    sess = netsnmp.Session(Version=version, DestHost=host, SecLevel = seclevel,  SecName = secname, AuthProto = authproto, AuthPass = authpass, PrivProto = privproto, PrivPass = privpass)       
+    sess = netsnmp.Session(Version=version, DestHost=host, SecLevel = seclevel,  SecName = secname, AuthProto = authproto, AuthPass = authpass, PrivProto = privproto, PrivPass = privpass, Community = community)
     
     # If the --scan option is set, we show all components and end the script
     if scan:
