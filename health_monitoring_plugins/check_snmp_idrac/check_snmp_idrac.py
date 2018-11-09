@@ -29,10 +29,12 @@ helper = PluginHelper()
 # Define the command line options
 add_common_options(helper)
 add_snmpv3_options(helper)
+helper.parser.add_option('--noPowerRedundancy', help='Do not check powersupply redundancy', default=True, action='store_false', dest='no_pwr_redund')
 helper.parse_arguments()
 
 # Get the options
 host, version, community = get_common_options(helper)
+power_redundancy_flag = helper.options.no_pwr_redund
 secname, seclevel, authproto, authpass, privproto, privpass  = helper.options.secname, \
     helper.options.seclevel, \
     helper.options.authproto, \
@@ -126,15 +128,16 @@ def power_unit_check(power_unit_redundancy_data, power_unit_name_data, power_uni
         #we always want to show the information in the long output, independend from the status
         power_unit_long_output += 'Power unit "%s": %s. ' % (power_unit_name_data[x], normal_state[int(power_unit_status_data[x])])
     
-   
-    if power_unit_redundancy_data != []: 
-        if power_unit_redundancy_state[int(power_unit_redundancy_data[0])] != "full":
-            # redundancy is not full
-            helper.status(critical)
-            power_unit_summary_output += 'Power redundancy status: %s. ' % (power_unit_redundancy_state[int(power_unit_redundancy_data[0])])
-        
-        #we always want to show the information in the long output, independend from the status
-        power_unit_long_output += 'Power redundancy status: %s\n' % (power_unit_redundancy_state[int(power_unit_redundancy_data[0])])
+    # skip the check if --noPowerRedundancy is set
+    if power_redundancy_flag:   
+        if power_unit_redundancy_data != []: 
+            if power_unit_redundancy_state[int(power_unit_redundancy_data[0])] != "full":
+                # redundancy is not full
+                helper.status(critical)
+                power_unit_summary_output += 'Power redundancy status: %s. ' % (power_unit_redundancy_state[int(power_unit_redundancy_data[0])])
+
+            #we always want to show the information in the long output, independend from the status
+            power_unit_long_output += 'Power redundancy status: %s\n' % (power_unit_redundancy_state[int(power_unit_redundancy_data[0])])
 
         
    # erase the last '.' for a prettier summary output    
