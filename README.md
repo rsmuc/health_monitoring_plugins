@@ -19,6 +19,10 @@ A detailed description can be found in the README in the doc folder.
 
 Monitor the jobs in the Jenkins job queue
 
+#### [check_local_cpu_temp](doc/check_local_cpu_temp/README.md)
+
+Check the local CPU temperature without the usage of "lm-sensors"
+
 #### [check_snmp_fortinet](doc/check_snmp_fortinet/README.md)
 
 Monitor Fortinet Wifi Controllers via SNMP
@@ -143,6 +147,9 @@ To run the unittests just execute:
 The unittests require pytest. For the unittests we use the testagent from [haxtibal](https://github.com/haxtibal).
 
 ## Changelog
+
+###### Version 0.1.0
+* Added check_local_cpu_temperature.py
 
 ###### Version 0.0.9
 
