@@ -150,6 +150,7 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 
 ###### Version 0.1.0
 * Added check_local_cpu_temperature.py
+* fixed snmp v2 community for check_snmp_idrac and check_snmp_ilo4
 
 ###### Version 0.0.9
 
