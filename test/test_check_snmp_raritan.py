@@ -1,17 +1,12 @@
-
-
 import context
 import subprocess
 import testagent
-import sys
-import os
-sys.path.insert(0, os.path.abspath('health_monitoring_plugins'))
-import raritan
+import health_monitoring_plugins.raritan
 
 
 # unit tests
 def test_raritan_real_value():
-    assert raritan.real_value(100, 2) == "1.0"
+    assert health_monitoring_plugins.raritan.real_value(100, 2) == "1.0"
 
 
 # integration tests
