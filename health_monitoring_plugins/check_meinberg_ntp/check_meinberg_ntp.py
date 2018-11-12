@@ -21,7 +21,7 @@ import sys
 import os
 import netsnmp
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, add_snmpv3_options
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
 
 
@@ -32,11 +32,18 @@ helper = PluginHelper()
 add_common_options(helper)
 # define the specific command line options
 helper.parser.add_option('-m', help="Version of the Firmware (v5 or NG) (NG = MBG-LANTIME-NG-MIB.mib used in Firmware 6 and newer)", dest="mib")
+add_snmpv3_options(helper)
 helper.parse_arguments()
 
 # get the options
 mib = helper.options.mib
 host, version, community = get_common_options(helper)
+secname, seclevel, authproto, authpass, privproto, privpass = helper.options.secname, \
+    helper.options.seclevel, \
+    helper.options.authproto, \
+    helper.options.authpass, \
+    helper.options.privproto, \
+    helper.options.privpass
 
 # use the correct oids depending on the version of the firmware / MIB
 if mib == "NG":
@@ -53,37 +60,37 @@ if mib == "NG":
         }
 
     gps_mode = {
-        "-1" : "mrsRefNone",
-        "0" : "notAvailable",
-        "1" : "gpsSync",
-        "2" : "gpsTracking",
-        "3" : "gpsAntennaDisconnected",
-        "4" : "gpsWarmBoot",
-        "5" : "gpsColdBoot",
-        "6" : "gpsAntennaShortCircuit",
-        "50" : "lwNeverSync",
-        "51" : "lwNotSync",
-        "52" : "lwSync",
-        "100" : "tcrNotSync",
-        "101" : "tcrSync",
-        "150" : "mrsGpsSync",
-        "151" : "mrs10MhzSync",
-        "152" : "mrsPpsInSync",
-        "153" : "mrs10MhzPpsInSync",
-        "154" : "mrsIrigSync",
-        "155" : "mrsNtpSync",
-        "156" : "mrsPtpIeee1588Sync",
-        "157" : "mrsPtpOverE1Sync",
-        "158" : "mrsFixedFreqInSync",
-        "159" : "mrsPpsStringSync",
-        "160" : "mrsVarFreqGpioSync",
-        "161" : "mrsReserved",
-        "162" : "mrsDcf77PzfSync",
-        "163" : "mrsLongwaveSync",
-        "164" : "mrsGlonassGpsSync",
-        "165" : "mrsHavequickSync",
-        "166" : "mrsExtOscSync",
-        "167" : "mrsIntOscSync"
+        "-1": "mrsRefNone",
+        "0": "notAvailable",
+        "1": "gpsSync",
+        "2": "gpsTracking",
+        "3": "gpsAntennaDisconnected",
+        "4": "gpsWarmBoot",
+        "5": "gpsColdBoot",
+        "6": "gpsAntennaShortCircuit",
+        "50": "lwNeverSync",
+        "51": "lwNotSync",
+        "52": "lwSync",
+        "100": "tcrNotSync",
+        "101": "tcrSync",
+        "150": "mrsGpsSync",
+        "151": "mrs10MhzSync",
+        "152": "mrsPpsInSync",
+        "153": "mrs10MhzPpsInSync",
+        "154": "mrsIrigSync",
+        "155": "mrsNtpSync",
+        "156": "mrsPtpIeee1588Sync",
+        "157": "mrsPtpOverE1Sync",
+        "158": "mrsFixedFreqInSync",
+        "159": "mrsPpsStringSync",
+        "160": "mrsVarFreqGpioSync",
+        "161": "mrsReserved",
+        "162": "mrsDcf77PzfSync",
+        "163": "mrsLongwaveSync",
+        "164": "mrsGlonassGpsSync",
+        "165": "mrsHavequickSync",
+        "166": "mrsExtOscSync",
+        "167": "mrsIntOscSync"
         }
 
 else:
@@ -94,24 +101,25 @@ else:
     oid_gps_mode_int = ".1.3.6.1.4.1.5597.3.2.16.0" 
 
     ntp_status = {
-        "0" : "notSynchronized",
-        "1" : "noGoodRefclock",
-        "2" : "syncToExtRefclock",
-        "3" : "syncToSerialRefclock",
-        "4" : "normalOperationPPS",
-        "5" : "normalOperationRefclock",
-        "99" : "unkown"
+        "0": "notSynchronized",
+        "1": "noGoodRefclock",
+        "2": "syncToExtRefclock",
+        "3": "syncToSerialRefclock",
+        "4": "normalOperationPPS",
+        "5": "normalOperationRefclock",
+        "99": "unkown"
         }
 
     gps_mode = {
-        "0" : "notavailable",
-        "1" : "normalOperation",
-        "2" : "trackingSearching",
-        "3" : "antennaFaulty",
-        "4" : "warmBoot",
-        "5" : "coldBoot",
-        "6" : "antennaShortcircuit"
+        "0": "notavailable",
+        "1": "normalOperation",
+        "2": "trackingSearching",
+        "3": "antennaFaulty",
+        "4": "warmBoot",
+        "5": "coldBoot",
+        "6": "antennaShortcircuit"
         }
+
 
 def check_gps_position():
     """
@@ -119,6 +127,7 @@ def check_gps_position():
     """
     gps_position = get_data(sess, oid_gps_position, helper)
     helper.add_summary(gps_position)
+
 
 def check_ntp_status():
     """
@@ -139,6 +148,7 @@ def check_ntp_status():
         helper.status(critical)
         helper.add_summary("NTP status: " + ntp_status_string)
 
+
 def check_gps_status():
     """
     check and show the current GPS status
@@ -156,6 +166,7 @@ def check_gps_status():
         helper.status(warning)
         helper.add_summary("GPS status: " + gps_mode_string)
 
+
 def check_satellites():
     """
     check and show the good satellites
@@ -167,6 +178,7 @@ def check_satellites():
     helper.add_summary("Good satellites: %s" % good_satellites)
     helper.add_metric(label='satellites',value=good_satellites) 
 
+
 if __name__ == "__main__":
 
     # verify that a hostname is set
@@ -175,7 +187,8 @@ if __name__ == "__main__":
     # The default return value should be always OK
     helper.status(ok)
 
-    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
+    sess = netsnmp.Session(Version=version, DestHost=host, SecLevel=seclevel, SecName=secname, AuthProto=authproto,
+                           AuthPass=authpass, PrivProto=privproto, PrivPass=privpass, Community=community)
 
     check_gps_position()
     check_ntp_status()
