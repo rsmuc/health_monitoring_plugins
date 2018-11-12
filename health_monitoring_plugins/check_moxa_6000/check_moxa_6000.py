@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import sys, netsnmp
 from pynag.Plugins import PluginHelper, ok, warning, critical, unknown
+from snmpSessionBaseClass import add_snmpv3_options
 
 class CHECK_TYPE(enumerate):
     CTS = 0
@@ -69,6 +70,7 @@ if __name__ == '__main__':
                                                                 ErrorCount = Show error counts of Frame, Break, Overrun and Parity.""" , type='str')
     helper.parser.add_option('-c', '--critical', dest='critical', help='Return CRITICAL if any ErrorCount >= this parameter.', default=sys.maxint, type='int')
     helper.parser.add_option('-w', '--warning', dest='warning', help='Return WARNING if any ErrorCount >= this parameter.', default=1, type='int')
+    add_snmpv3_options(helper)
     helper.parse_arguments()
 
     if not helper.options.hostname:
@@ -76,8 +78,16 @@ if __name__ == '__main__':
     if not helper.options.port:
         helper.parser.error('You must specifiy moxa rs232 port in order to run this plugin.')
 
+    secname, seclevel, authproto, authpass, privproto, privpass = helper.options.secname, \
+                                                                  helper.options.seclevel, \
+                                                                  helper.options.authproto, \
+                                                                  helper.options.authpass, \
+                                                                  helper.options.privproto, \
+                                                                  helper.options.privpass
+
     # create a netsnmp session object that is used for all following snmp operations
-    session = netsnmp.Session(DestHost=helper.options.hostname, Community=helper.options.community, Version=helper.options.snmpversion)
+    session = netsnmp.Session(Version=version, DestHost=host, SecLevel=seclevel, SecName=secname, AuthProto=authproto,
+                              AuthPass=authpass, PrivProto=privproto, PrivPass=privpass, Community=community)
 
     # send OIDs and get results
     moxaRS232VarList = genMoxaRS232VarList(helper.options.port)
