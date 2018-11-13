@@ -180,7 +180,10 @@ class Raritan(object):
         except health_monitoring_plugins.SnmpException as e:
             helper.exit(summary=str(e), exit_code=unknown, perfdata='')
 
-        sensor_state_string = states[int(sensor_state)]
+        try:
+            sensor_state_string = states[int(sensor_state)]
+        except KeyError as e:
+            helper.exit(summary="Invalid sensor response " + sensor_state, exit_code=unknown, perfdata='')
         sensor_unit = "" # if it's a onOff Sensor or something like that, we need an empty string for the summary
         sensor_unit_string = ""
         sensor_value = ""

@@ -150,9 +150,9 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 * Added noPowerRedundancy option to idrac plugin (thanks to ironbishop)
 * Added SNMPv3 support to all plugins for devices supporting SNMPv3
 * **Verified support of Eaton XYZ**
-* **Fixed exception in check_snmp_raritan if sensor does not return a valid value.**
+* Fixed exception in check_snmp_raritan if sensor does not return a valid value.
 * **Added common test for SNMPv3.**
-* Some PEP8 im
+* Some PEP8 improvements
 
 ###### Version 0.0.9
 

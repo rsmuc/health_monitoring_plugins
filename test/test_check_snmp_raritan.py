@@ -121,6 +121,7 @@ def test_start_snmp_simulation():
                 iso.3.6.1.4.1.13742.6.3.6.3.1.4.1.6 = STRING: "Humidity 1"
                 iso.3.6.1.4.1.13742.6.3.6.3.1.4.1.7 = STRING: "Temperature 2"
                 iso.3.6.1.4.1.13742.6.3.6.3.1.4.1.8 = STRING: "Air Pressure 1"
+                iso.3.6.1.4.1.13742.6.3.6.3.1.4.1.9 = STRING: "Broken"
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.2 = INTEGER: 11
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.3 = INTEGER: 4
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.4 = INTEGER: 11
@@ -128,6 +129,7 @@ def test_start_snmp_simulation():
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.6 = INTEGER: 6
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.7 = INTEGER: 3
                 iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.8 = INTEGER: 4
+                iso.3.6.1.4.1.13742.6.5.5.3.1.3.1.9 = INTEGER: 999
                 iso.3.6.1.4.1.13742.6.3.6.3.1.16.1.2 = INTEGER: -1
                 iso.3.6.1.4.1.13742.6.3.6.3.1.16.1.3 = INTEGER: -1
                 iso.3.6.1.4.1.13742.6.3.6.3.1.16.1.4 = INTEGER: -1
@@ -250,7 +252,15 @@ def test_sensor_alarmed():
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == "Critical - Sensor 2 - 'Tuerkontakt'  is: alarmed\n"
 
-def test_sensor_normal():    
+
+def test_sensor_invalid():
+    # Sensor 3 - Door contact - invalid value
+    p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 9",
+                       shell=True, stdout=subprocess.PIPE, env=context.testenv)
+    assert p.stdout.read() == "Unknown - Invalid sensor response 999\n"
+
+
+def test_sensor_normal():
     # Sensor 3 - external Sensor - normal
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 3",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
