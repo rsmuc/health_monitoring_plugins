@@ -24,6 +24,7 @@ import sys
 dev_null = os.open(os.devnull, os.O_WRONLY)
 tmp_stdout = os.dup(sys.stdout.fileno())
 
+
 def dev_null_wrapper(func, *a, **kwargs):
     """
     Temporarily swap stdout with /dev/null, and execute given function while stdout goes to /dev/null.
@@ -35,11 +36,13 @@ def dev_null_wrapper(func, *a, **kwargs):
     os.dup2(tmp_stdout, sys.stdout.fileno())
     return return_object
 
+
 def add_common_options(helper):
     # Define the common command line parameters
     helper.parser.add_option('-H', help="Hostname or ip address", dest="hostname")
     helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')
     helper.parser.add_option('-V', '--snmpversion', dest='version', help='SNMP version. (1, 2 or 3)', default=2, type='int')
+
 
 def get_common_options(helper):
     # get the common options
@@ -51,12 +54,13 @@ def get_common_options(helper):
 
 def add_snmpv3_options(helper):
     # Define the common command line parameters
-    helper.parser.add_option('-u', help="SNMPv3: security name (e.g. bert)", dest="secname")
-    helper.parser.add_option('-l', help="SNMPv3: security level (noAuthNoPriv, authNoPriv, authPriv)", dest="seclevel")
-    helper.parser.add_option('-a', help="SNMPv3: authentication protocol (MD5|SHA)", dest="authproto")
-    helper.parser.add_option('-A', help="SNMPv3: authentication protocol pass phrase", dest="authpass")
-    helper.parser.add_option('-x', help="SNMPv3: privacy protocol (DES|AES)", dest="privproto")
-    helper.parser.add_option('-X', help="SNMPv3: privacy protocol pass phrase", dest="privpass")
+    helper.parser.add_option('-U', '--securityname', help="SNMPv3: security name (e.g. bert)", dest="secname")
+    helper.parser.add_option('-L', '--securitylevel', help="SNMPv3: security level (noAuthNoPriv, authNoPriv, authPriv)", dest="seclevel")
+    helper.parser.add_option('-a', '--authprotocol', help="SNMPv3: authentication protocol (MD5|SHA)", dest="authproto")
+    helper.parser.add_option('-A', '--authpass', help="SNMPv3: authentication protocol pass phrase", dest="authpass")
+    helper.parser.add_option('-x', '--privproto', help="SNMPv3: privacy protocol (DES|AES)", dest="privproto")
+    helper.parser.add_option('-X', '--privpass',  help="SNMPv3: privacy protocol pass phrase", dest="privpass")
+
 
 def verify_host(host, helper):
     if host == "" or host is None:

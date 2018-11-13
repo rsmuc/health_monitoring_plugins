@@ -35,7 +35,7 @@ helper.parse_arguments()
 # Get the options
 host, version, community = get_common_options(helper)
 power_redundancy_flag = helper.options.no_pwr_redund
-secname, seclevel, authproto, authpass, privproto, privpass  = helper.options.secname, \
+secname, seclevel, authproto, authpass, privproto, privpass = helper.options.secname, \
     helper.options.seclevel, \
     helper.options.authproto, \
     helper.options.authpass, \

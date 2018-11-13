@@ -33,8 +33,10 @@ import snmpSessionBaseClass
 def calc_frequency_from_snmpvalue(the_snmp_value):
     return int(the_snmp_value)/10
 
+
 def calc_output_current_from_snmpvalue(the_snmp_value):
     return int(the_snmp_value)/10
+
 
 def check_ups_seconds_on_battery(the_session, the_helper, the_snmp_value):
     """
@@ -373,13 +375,12 @@ def check_upsmg_battery_low_battery(the_session, the_helper, the_snmp_value):
         '2' : 'Battery is not in low state '}
     a_state = apc_states.get(the_snmp_value, "Unknown battery low state!")
 
-    if (the_snmp_value == '2'):
+    if the_snmp_value == '2':
         the_helper.add_status(pynag.Plugins.ok)
     else:
         the_helper.add_status(pynag.Plugins.critical)
 
     the_helper.set_summary(a_state)
-
 
 
 # Eaton OIDS
@@ -471,7 +472,8 @@ def setup_plugin_helper():
         type='str')
     a_helper.parser.add_option('-c', '--critical', dest='critical', help='Critical thresholds in Icinga range format.', type='str')
     a_helper.parser.add_option('-w', '--warning', dest='warning', help='Warning thresholds in Icinga range format.', type='str')
-    
+    snmpSessionBaseClass.add_snmpv3_options(a_helper)
+
     a_helper.parse_arguments()
     
     return a_helper
@@ -479,14 +481,21 @@ def setup_plugin_helper():
 
 if __name__ == "__main__":
     a_helper = setup_plugin_helper()
+    secname, seclevel, authproto, authpass, privproto, privpass = a_helper.options.secname, \
+                                                                  a_helper.options.seclevel, \
+                                                                  a_helper.options.authproto, \
+                                                                  a_helper.options.authpass, \
+                                                                  a_helper.options.privproto, \
+                                                                  a_helper.options.privpass
 
-    snmpSessionBaseClass.verify_host(a_helper.options.hostname, a_helper)     
+    host, version, community = snmpSessionBaseClass.get_common_options(a_helper)
+
+    snmpSessionBaseClass.verify_host(host, a_helper)
     verify_type(a_helper.options.type, a_helper)
 
-    snmp_session = netsnmp.Session(
-        Version=1,
-        DestHost=a_helper.options.hostname,
-        Community=a_helper.options.community)
+    snmp_session = netsnmp.Session(Version=version, DestHost=host, SecLevel=seclevel, SecName=secname,
+                                   AuthProto=authproto,
+                                   AuthPass=authpass, PrivProto=privproto, PrivPass=privpass, Community=community)
 
     # The default return value should be always OK
     a_helper.status(pynag.Plugins.ok)
@@ -498,5 +507,5 @@ if __name__ == "__main__":
     a_snmp_value = snmpSessionBaseClass.get_data(snmp_session, eaton_oid, a_helper, allow_empty)
     eaton_check(snmp_session, a_helper, a_snmp_value)
     
-    ## Print out plugin information and exit nagios-style
+    # Print out plugin information and exit nagios-style
     a_helper.exit()

@@ -1,4 +1,5 @@
 # health monitoring plugins:
+
 ---
 
 This is the main readme file for the health montiroing plugins project. In this project we pubish all our plugins we write for icinga / nagios.
@@ -56,16 +57,13 @@ Tested with firmware version 5.30 and 6.18 (NG).
 Check the status of a Moxa NPORT 6000 RS232 to LAN converter.  
 You can check each port for the CTS, DSR, DTR and Error count.
 
-
 #### [check_snmp_ilo4](doc/check_snmp_ilo4/README.md)
 
 This plugin checks the health of HP servers with iLo 4 interface via SNMP.
 
-
 #### [check_snmp_janitza](doc/check_snmp_janitza/README.md)
+
 Check the status of a Janitza 604 device.
-
-
 
 #### [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
 
@@ -76,10 +74,10 @@ There are already script doing that like http://nagios.manubulon.com/snmp_storag
 
 Check the status of a tcp/udp port via SNMP. For TCP ports also the status is checked (e.g listen, established).
 
-
 #### [check_snmp_raritan](doc/check_snmp_raritan/README.md)
 
 Check a Raritan Dominition PX PDU (Power Distribution Unit):
+
 * outlets (On, Off)
 * inlet (Power, Current, Voltage)
 * connected sensors
@@ -87,7 +85,6 @@ Check a Raritan Dominition PX PDU (Power Distribution Unit):
 #### [check_snmp_service](doc/check_snmp_service/README.md)
 
 Icinga / Nagios plugin to check if a Windows service is in running state via SNMP.
-
 
 #### [check_snmp_time2](doc/check_snmp_time2/README.md)
 
@@ -97,11 +94,9 @@ This plugin compares the time of the icinga/nagios machine with the time of a re
 
 This plugin checks the health of Dell iDRAC.
 
-
 #### [check_snmp_teledyne](doc/check_snmp_teledyne/README.md)
 
 This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
-
 
 #### [check_snmp_ubiquiti](doc/check_snmp_ubiquiti/README.md)
 
@@ -109,7 +104,7 @@ Check the status of a Ubiquiti airMax device.
 
 ## Installation
 
-###  pip (recommended)
+### pip (recommended)
 
 The complete plugin package is available at [PyPI](https://pypi.python.org/pypi/health_monitoring_plugins)
 
@@ -117,13 +112,13 @@ If your Linux machine is directly connected to the internet, you can use pip to 
 Just run:
 
     pip install health_monitoring_plugins
-    
+
 The plugins will be installed in your PATH. So the scripts can be executed directly.
 
 If you are behind a firewall or not connected to the internet, you can download the tar.hz from PyPI and install it with
 
     health_monitoring_plugins-<version>.tar.gz
-    
+
 To uninstall the package you can run:
 
     pip uninstall health_monitoring_plugins
@@ -149,13 +144,17 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 ## Changelog
 
 ###### Version 0.1.0
+
 * Added check_local_cpu_temperature.py
 * Fixed snmp v2 community for check_snmp_idrac and check_snmp_ilo4 (thanks to nb85)
 * Added noPowerRedundancy option to idrac plugin (thanks to ironbishop)
-* Added SNMPv3 support to all plugins
+* Added SNMPv3 support to all plugins for devices supporting SNMPv3
+* **Verified support of Eaton XYZ**
+* **Fixed exception in check_snmp_raritan if sensor does not return a valid value.**
+* **Added common test for SNMPv3.**
+* Some PEP8 im
 
 ###### Version 0.0.9
-
 
 * Added check_snmp_instadios_csm
 * Added SNMPv3 support for check_snmp_idrac
@@ -173,7 +172,6 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 * Added check_snmp_eaton_ups
 * Added check_snmp_apc_ups
 * Several bugfixes and code improvements
-
 
 ###### Version 0.0.6
 
