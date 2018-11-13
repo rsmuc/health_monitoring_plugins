@@ -50,6 +50,7 @@ def test_walk(capsys):
     # check if we receive the system uptime via snmp and compare it with the local uptime from /proc/uptime (except the last digit)
     assert walk_data(session, '.1.3.6.1.2.1.25.1.1', helper)[0][0][:-3] == get_system_uptime()[:-3]
 
+
 def test_start():
  # start the testagent
     # Gauge32 are not working - So I replaced them by INTEGER
@@ -89,6 +90,7 @@ def test_start():
     
     start_server()
 
+
 def test_system_test_idrac():
     # with -H 1.2.3.4 (unknown host)
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_idrac/check_snmp_idrac.py -H 1.2.3.4', shell=True, stdout=subprocess.PIPE)
@@ -107,7 +109,18 @@ def test_system_test_idrac():
     cmd_output = p.stdout.read()
     print '--help:\n' + cmd_output
     assert 'Options:\n  -h, --help' in cmd_output
-    
+
+
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen('health_monitoring_plugins/check_snmp_idrac/check_snmp_idrac.py' + " -H 1.2.3.4 -V 3 "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpget failed - no data for host 1.2.3.4" in p.stdout.read()
+
+
 def test_everything_not_ok():
     """
     every status is not ok

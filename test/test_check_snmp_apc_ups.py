@@ -170,6 +170,18 @@ def test_system_call_apc_ups(capsys):
     assert "Options:" in p.stdout.read()
 
 
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen(apc_ups_check_plugin_path + " -H 1.2.3.4 -V 3 -t TIME_ON_BATTERY "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpget failed - no data for host 1.2.3.4" in p.stdout.read()
+
+
+
+
 def test_checks_within_range(capsys):
 #    pydevd.settrace('172.29.153.190') # replace IP with address of Eclipse host machine
     for a_check_type, a_expected_value in check_configs_range.items():

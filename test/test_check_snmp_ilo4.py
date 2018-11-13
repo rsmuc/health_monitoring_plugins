@@ -136,6 +136,17 @@ def test_with_host_ok():
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=2 --drives=2 --fan=3', shell=True, stdout=subprocess.PIPE)
     assert 'OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567 | \'Environment Temperature\'=20Celsius;;:42;;\nGlobal storage status: ok \n\nGlobal system status: ok \n\nGloba' in p.stdout.read()
 
+
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py' + " -H 1.2.3.4 -V 3 --scan "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpwalk failed - no data for host" in p.stdout.read()
+
+
 def test_with_everything_disabled():
     p=subprocess.Popen('health_monitoring_plugins/check_snmp_ilo4/check_snmp_ilo4.py -H localhost:1234 --ps=0 --drives=0 --fan=0 --noStorage --noSystem --noPowerSupply --noPowerState --noTemp --noTempSens --noDriveTemp --noFan --noMemory --noController --noPowerRedundancy', shell=True, stdout=subprocess.PIPE)
     assert 'OK - ProLiant DL380 Gen9 - Serial number:CZJ1234567 | \'Environment Temperature\'=20Celsius;;:42;;\nTemperatu' in p.stdout.read()

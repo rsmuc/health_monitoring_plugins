@@ -203,6 +203,17 @@ def test_raritan_cmdline():
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert "Options:" in p.stdout.read()
 
+
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen('health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py' + " -H 1.2.3.4 -V 3 -t outlet -i 1 "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpwalk failed - no data for host" in p.stdout.read()
+
+
 def test_outlet1_on():
     # Outlet 1 ON
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t outlet -i 1",

@@ -54,6 +54,15 @@ def test_help():
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py --help", shell=True, stdout=subprocess.PIPE)
     assert "Options:" in p.stdout.read()
 
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen('health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py' + " -H 1.2.3.4 -V 3 "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpget failed - no data for host" in p.stdout.read()
+
 def test_linux_no_threshold():    
     # high offset, but no threshold is set
      p=subprocess.Popen("health_monitoring_plugins/check_snmp_time2/check_snmp_time2.py -H 127.0.0.1:1234", shell=True, stdout=subprocess.PIPE)

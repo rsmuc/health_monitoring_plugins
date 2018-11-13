@@ -70,6 +70,16 @@ def test_system_test_meinberg(capsys):
     p=subprocess.Popen("health_monitoring_plugins/check_meinberg_ntp/check_meinberg_ntp.py --help", shell=True, stdout=subprocess.PIPE)
     assert "Options:" in p.stdout.read()
 
+
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen("health_monitoring_plugins/check_meinberg_ntp/check_meinberg_ntp.py" + " -H 1.2.3.4 -V 3 "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpget failed - no data for host 1.2.3.4" in p.stdout.read()
+
 def test_with_host_ok():
     # everything ok
     p=subprocess.Popen("health_monitoring_plugins/check_meinberg_ntp/check_meinberg_ntp.py -H localhost:1234", shell=True, stdout=subprocess.PIPE)
