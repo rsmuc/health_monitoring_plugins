@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # check_snmp_apc_ups.py - Check a Eaton APC UPS health state via SNMP
+# implementing upsMIB and xupsMIB
 
 # Copyright (C) 2016 rsmuc <rsmuc@mailbox.org>
 # 
@@ -14,7 +15,7 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with check_snmp_raritan.py.  If not, see <http://www.gnu.org/licenses/>.
+# along with check_snmp_eaton_ups.py.  If not, see <http://www.gnu.org/licenses/>.
 
 
 # Import PluginHelper and some utility constants from the Plugins module
