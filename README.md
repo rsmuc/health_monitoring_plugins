@@ -150,7 +150,9 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 
 ###### Version 0.1.0
 * Added check_local_cpu_temperature.py
-* fixed snmp v2 community for check_snmp_idrac and check_snmp_ilo4
+* Fixed snmp v2 community for check_snmp_idrac and check_snmp_ilo4 (thanks to nb85)
+* Added noPowerRedundancy option to idrac plugin (thanks to ironbishop)
+* Added SNMPv3 support to all plugins
 
 ###### Version 0.0.9
 
@@ -207,13 +209,3 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 ###### Version 0.0.1
 
 * The first testing release including all developed check plugins
-
-## TODO
-
-* Implement SNMPv3 support for all plugins
-
-Maybe:
-
-* add a default threshold to check_snmp_time2
-* check_snmp_raritan: It should be possible to monitor all outlets / sensors in one service
-* check_snmp_large_stroage: Check a list of storages
