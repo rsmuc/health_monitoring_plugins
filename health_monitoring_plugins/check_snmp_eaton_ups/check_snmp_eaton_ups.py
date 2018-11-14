@@ -385,23 +385,23 @@ def check_upsmg_battery_low_battery(the_session, the_helper, the_snmp_value):
 
 
 # Eaton OIDS
-eaton_oid_ups_seconds_on_battery           = ".1.3.6.1.2.1.33.1.2.2.0"
-eaton_oid_ups_estimated_minutes_remaining  = ".1.3.6.1.2.1.33.1.2.3.0"
-eaton_oid_ups_input_frequency              = ".1.3.6.1.2.1.33.1.3.3.1.2.1"
-eaton_oid_ups_input_voltage                = ".1.3.6.1.2.1.33.1.3.3.1.3.1"
-eaton_oid_ups_output_voltage               = ".1.3.6.1.2.1.33.1.4.4.1.2.1"
-eaton_oid_ups_output_current               = ".1.3.6.1.2.1.33.1.4.4.1.3.1"
-eaton_oid_ups_output_power                 = ".1.3.6.1.2.1.33.1.4.4.1.4.1"
-eaton_oid_ups_output_percent_load          = ".1.3.6.1.2.1.33.1.4.4.1.5.1"
-eaton_oid_ups_alarms_present               = ".1.3.6.1.2.1.33.1.6.1.0"
-eaton_oid_ups_test_results_summary         = ".1.3.6.1.2.1.33.1.7.3.0"
-eaton_oid_ups_test_results_detail          = ".1.3.6.1.2.1.33.1.7.4.0"
-eaton_oid_xups_bat_capacity                = ".1.3.6.1.4.1.534.1.2.4.0"
-eaton_oid_xups_env_ambient_temp            = ".1.3.6.1.4.1.534.1.6.1.0"
-eaton_oid_xups_env_remote_temp             = ".1.3.6.1.4.1.534.1.6.5.0"
-eaton_oid_upsmg_battery_fault_battery      = ".1.3.6.1.4.1.705.1.5.9.0"
-eaton_oid_upsmg_battery_replacement        = ".1.3.6.1.4.1.705.1.5.11.0"
-eaton_oid_upsmg_battery_low_battery        = ".1.3.6.1.4.1.705.1.5.14.0"
+eaton_oid_ups_seconds_on_battery           = ".1.3.6.1.2.1.33.1.2.2"
+eaton_oid_ups_estimated_minutes_remaining  = ".1.3.6.1.2.1.33.1.2.3"
+eaton_oid_ups_input_frequency              = ".1.3.6.1.2.1.33.1.3.3.1.2"
+eaton_oid_ups_input_voltage                = ".1.3.6.1.2.1.33.1.3.3.1.3"
+eaton_oid_ups_output_voltage               = ".1.3.6.1.2.1.33.1.4.4.1.2"
+eaton_oid_ups_output_current               = ".1.3.6.1.2.1.33.1.4.4.1.3"
+eaton_oid_ups_output_power                 = ".1.3.6.1.2.1.33.1.4.4.1.4"
+eaton_oid_ups_output_percent_load          = ".1.3.6.1.2.1.33.1.4.4.1.5"
+eaton_oid_ups_alarms_present               = ".1.3.6.1.2.1.33.1.6.1"
+eaton_oid_ups_test_results_summary         = ".1.3.6.1.2.1.33.1.7.3"
+eaton_oid_ups_test_results_detail          = ".1.3.6.1.2.1.33.1.7.4"
+eaton_oid_xups_bat_capacity                = ".1.3.6.1.4.1.534.1.2.4"
+eaton_oid_xups_env_ambient_temp            = ".1.3.6.1.4.1.534.1.6.1"
+eaton_oid_xups_env_remote_temp             = ".1.3.6.1.4.1.534.1.6.5"
+eaton_oid_upsmg_battery_fault_battery      = ".1.3.6.1.4.1.705.1.5.9"
+eaton_oid_upsmg_battery_replacement        = ".1.3.6.1.4.1.705.1.5.11"
+eaton_oid_upsmg_battery_low_battery        = ".1.3.6.1.4.1.705.1.5.14"
 
 # Define available check types for this plugin
 # Keys are the allowed -t arguments for this script
@@ -426,9 +426,9 @@ eaton_check_configs = {
                                            "check" : check_ups_output_percent_load},               
     "ALARMS"                            : {"oid" : eaton_oid_ups_alarms_present,
                                            "check" : check_ups_alarms_present},
-    "BATTERY_TEST_SUMMARY"              : {"oid" : eaton_oid_ups_test_results_summary,
+    "BATTERY_TEST_SUMMARY"              : {"oid" : eaton_oid_ups_test_results_summary,          # not available in 9SX
                                            "check" : check_ups_test_results_summary},          
-    "BATTERY_TEST_DETAIL"               : {"oid" : eaton_oid_ups_test_results_detail,
+    "BATTERY_TEST_DETAIL"               : {"oid" : eaton_oid_ups_test_results_detail,           # not available in 9SX
                                            "check" : check_ups_test_results_detail,
                                            "allow_snmp_empty" : True},          
     "BATTERY_CAPACITY"                  : {"oid" : eaton_oid_xups_bat_capacity,
@@ -437,11 +437,11 @@ eaton_check_configs = {
                                            "check" : check_xups_env_ambient_temp},   
     "EXTERNAL_ENVIRONMENT_TEMPERATURE"  : {"oid" : eaton_oid_xups_env_remote_temp,
                                            "check" : check_xups_env_remote_temp},   
-    "BATTERY_LOW_WARNING"               : {"oid" : eaton_oid_upsmg_battery_low_battery,
+    "BATTERY_LOW_WARNING"               : {"oid" : eaton_oid_upsmg_battery_low_battery,         # not available in 9SX
                                            "check" : check_upsmg_battery_low_battery},      
-    "BATTERY_REPLACEMENT_WARNING"       : {"oid" : eaton_oid_upsmg_battery_replacement,
+    "BATTERY_REPLACEMENT_WARNING"       : {"oid" : eaton_oid_upsmg_battery_replacement,         # not available in 9SX
                                            "check" : check_upsmg_battery_replacement},      
-    "BATTERY_FAULT_WARNING"             : {"oid" : eaton_oid_upsmg_battery_fault_battery,
+    "BATTERY_FAULT_WARNING"             : {"oid" : eaton_oid_upsmg_battery_fault_battery,       # not available in 9SX
                                            "check" : check_upsmg_battery_fault_battery}      
     }
 
@@ -505,7 +505,7 @@ if __name__ == "__main__":
     eaton_oid = eaton_check_configs[a_helper.options.type]["oid"]
     allow_empty = eaton_check_configs[a_helper.options.type].get("allow_snmp_empty", False)
     
-    a_snmp_value = snmpSessionBaseClass.get_data(snmp_session, eaton_oid, a_helper, allow_empty)
+    a_snmp_value = snmpSessionBaseClass.walk_data(snmp_session, eaton_oid, a_helper)[0][0]
     eaton_check(snmp_session, a_helper, a_snmp_value)
     
     # Print out plugin information and exit nagios-style
