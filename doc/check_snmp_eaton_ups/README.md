@@ -3,7 +3,7 @@
 ---
 
 Check state of an Eaton UPS.
-The plugin checks various characteristics of an Eaton UPS. It gets an SNMP value according to 
+The plugin checks various characteristics of an Eaton UPS. It gets a SNMP value according to 
 the defined check type and compares the returned value against the set thresholds. 
 
 Checkable values:
@@ -27,6 +27,16 @@ Checkable values:
 => 
 
 OK - Remaining Battery Capacity 100 % | 'battery_capacity'=100%;20:;10:;;
+
+#### Check UPS alarms
+
+```
+./check_snmp_eaton_ups.py -H 172.29.1.118 -t alarms
+```
+
+=>
+
+OK - 0 active alarms
 
 ## Parameters
 
