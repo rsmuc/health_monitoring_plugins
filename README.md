@@ -8,9 +8,10 @@ The plugins are provided on pypi as python package.
 All plugins are released under the GPLv2.
 
 [![Code Health](https://landscape.io/github/rsmuc/health_monitoring_plugins/master/landscape.svg?style=flat)](https://landscape.io/github/rsmuc/health_monitoring_plugins/master)
-[![Code Climate](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/gpa.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
-[![Issue Count](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/issue_count.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
+
 [![PyPI version](https://badge.fury.io/py/health_monitoring_plugins.svg)](https://badge.fury.io/py/health_monitoring_plugins)
+
+
 
 ## Plugins
 
@@ -141,17 +142,23 @@ To run the unittests just execute:
 
 The unittests require pytest. For the unittests we use the testagent from [haxtibal](https://github.com/haxtibal).
 
+## Troubleshooting
+
+### When calling the plugin, I receive an error like "ImportError: No module named health_monitoring_plugins.raritan"
+
+Seems that you did not install the python package. The plugins can not be called directly. Check the Installation section.
+
 ## Changelog
 
 ###### Version 0.1.0
 
-* Added check_local_cpu_temperature.py
+* Added check_local_cpu_temp.py
 * Fixed snmp v2 community for check_snmp_idrac and check_snmp_ilo4 (thanks to nb85)
 * Added noPowerRedundancy option to idrac plugin (thanks to ironbishop)
 * Added SNMPv3 support to all plugins for devices supporting SNMPv3
-* **Verified support of Eaton XYZ**
+* Verified support of Eaton 9SX series
 * Fixed exception in check_snmp_raritan if sensor does not return a valid value.
-* **Added common test for SNMPv3.**
+* Added common test for SNMPv3.
 * Some PEP8 improvements
 
 ###### Version 0.0.9

@@ -14,6 +14,7 @@ def test_raritan_real_value():
 testagent.configure(agent_address = "localhost:1234",
     rocommunity='public', rwcommunity='private')
 
+
 def test_start_snmp_simulation():
     # start the testagent (Raritan walk)
     # Gauge32 are not working - So I replaced them by INTEGER
@@ -189,6 +190,17 @@ def test_start_snmp_simulation():
     testagent.register_snmpwalk_ouput(walk)
     testagent.start_server()
 
+
+# def test_raritan_local():
+#     # run test against a real Raritan device
+#     p = subprocess.Popen('health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py ' +
+#                          "-H 172.29.12.18 -t outlet -i 2 -V 3 "
+#                          "-U snmpv3 -L authPriv -a MD5 "
+#                          "-A snmpv3snmpv3 -x DES -X snmpv3snmpv3",
+#                          shell=True, stdout=subprocess.PIPE)
+#     assert "Critical - Outlet 2" in p.stdout.read()
+
+
 def test_raritan_cmdline():
     # without options
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py",
@@ -206,11 +218,23 @@ def test_raritan_cmdline():
     assert "Options:" in p.stdout.read()
 
 
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen('health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py ' +
+                         "-H 127.0.0.1:1234 -t outlet -i 1 -V 3 "
+                         "-U nothinguseful -L authNoPriv -a MD5 "
+                         "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - SNMP get response incomplete" in p.stdout.read()
+
+
 def test_outlet1_on():
     # Outlet 1 ON
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t outlet -i 1",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
-    assert p.stdout.read() == "OK - Outlet 1 - 'frei' is: ON\n" 
+    assert p.stdout.read() == "OK - Outlet 1 - 'frei' is: ON\n"
+
 
 def test_outlet1_without_ID():
     # Outlet Check without ID option
@@ -218,11 +242,13 @@ def test_outlet1_without_ID():
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == "OK - Outlet 1 - 'frei' is: ON\n"
 
+
 def test_outlet2_off():
     # Outlet 2 OFF
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t outlet -i 2",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == "Critical - Outlet 2 - 'Switch' is: OFF\n"
+
 
 def test_outlet3_unavailable():
     # Outlet 3 in unavailable state (-1)
@@ -230,11 +256,13 @@ def test_outlet3_unavailable():
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == "Critical - Outlet 3 - 'frei' is: UNAVAILABLE\n"
 
+
 def test_outlet_without_name():
     # Outlet 3 in unavailable state (-1)
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t outlet -i 24",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == "OK - Outlet 24 - '' is: ON\n" 
+
 
 def test_sensor_alarmed():    
     # Sensor 2 - Door contact - alarmed
@@ -256,11 +284,13 @@ def test_sensor_normal():
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == "OK - Sensor 3 - 'External Sensor 3'  is: normal\n"
 
+
 def test_sensor_temp_normal():    
     # Sensor 5 - Temperature - normal
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 5",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == "OK - Sensor 5 - 'Temperature Rack 3' 21.5C is: normal | 'Temperature Rack 3'=21.5C;18.0:27.0;15.0:31.0;;\n"
+
 
 def test_sensor_humid_above():     
     # Sensor 6 - Humidity - aboveupperCritical
@@ -268,11 +298,13 @@ def test_sensor_humid_above():
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == "Critical - Sensor 6 - 'Humidity 1' 45.0% is: aboveUpperCritical | 'Humidity 1'=45.0%;15.0:70.0;10.0:80.0;;\n"
 
+
 def test_sensor_temp_below():     
     # Sensor 7 - Temperature - belowLowerCritical
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 7",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == "Warning - Sensor 7 - 'Temperature 2' 22.1C is: belowLowerWarning | 'Temperature 2'=22.1C;20.0:28.0;15.0:32.0;;\n"
+
 
 def test_inlet_ok():    
     # Inlet all OK
@@ -289,6 +321,7 @@ def test_inlet_ok():
         "1400.0 VA: normal\n"
         "0.97 : normal\n"
         "8574135.0 Wh: normal\n")
+
 
 def test_inlet_critical():    
     # For a Critical Inlet, we need to change the values of the corresponding OIDs
@@ -462,7 +495,7 @@ def test_inlet_critical():
     testagent.register_snmpwalk_ouput(walk)
 
     # Inlet Critical
-    p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t inlet",
+    p = subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t inlet",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == (
         "Critical - Inlet. 6.1 A is belowLowerCritical. 6.1 A. 230.0 V is belowLowerWarning. "
@@ -476,6 +509,7 @@ def test_inlet_critical():
         "1400.0 VA: aboveUpperWarning\n"
         "0.97 : aboveUpperCritical\n"
         "8574135.0 Wh: normal\n")
+
 
 def test_stop():
     # stop the testagent

@@ -3,6 +3,7 @@ import netsnmp
 
 netsnmp.verbose = 0
 
+
 class SnmpException(Exception):
     """SNMP Errors being detected:
     -DNS resolution for host name during Session.__init__ fails
@@ -12,13 +13,24 @@ class SnmpException(Exception):
     """
     pass
 
+
 class SnmpHelper(pynag.Plugins.PluginHelper):
     def __init__(self, *args, **kwargs):
         pynag.Plugins.PluginHelper.__init__(self, *args, **kwargs)
         self.parser.add_option('-H', '--hostname', help="Hostname or ip address")
-        self.parser.add_option('-C', '--community', help='SNMP community of the SNMP service on target host.', default='public')
+        self.parser.add_option('-C', '--community', help='SNMP community of the SNMP service on target host.',
+                               default='public')
         self.parser.add_option('-V', '--snmpversion', help='SNMP version. (1 or 2)', default=2, type='int')
         self.parser.add_option('--retries', help='Number of SNMP retries.', default=0, type='int')
+        self.parser.add_option('-U', '--securityname', help="SNMPv3: security name (e.g. bert)", dest="secname")
+        self.parser.add_option('-L', '--securitylevel',
+                               help="SNMPv3: security level (noAuthNoPriv, authNoPriv, authPriv)", dest="seclevel")
+        self.parser.add_option('-a', '--authprotocol', help="SNMPv3: authentication protocol (MD5|SHA)",
+                               dest="authproto")
+        self.parser.add_option('-A', '--authpass', help="SNMPv3: authentication protocol pass phrase",
+                               dest="authpass")
+        self.parser.add_option('-x', '--privproto', help="SNMPv3: privacy protocol (DES|AES)", dest="privproto")
+        self.parser.add_option('-X', '--privpass', help="SNMPv3: privacy protocol pass phrase", dest="privpass")
 
     def parse_arguments(self):
         pynag.Plugins.PluginHelper.parse_arguments(self)
@@ -29,11 +41,19 @@ class SnmpHelper(pynag.Plugins.PluginHelper):
     def get_snmp_args(self):
         args = {'DestHost': self.options.hostname,
                 'Version': self.options.snmpversion,
+                'SecName': self.options.secname,
+                'SecLevel': self.options.seclevel,
+                'AuthProto': self.options.authproto,
+                'AuthPass': self.options.authpass,
+                'PrivProto': self.options.privproto,
+                'PrivPass': self.options.privpass,
                 'Community': self.options.community,
                 'Retries': self.options.retries}
         if self.options.timeout:
             args['Timeout'] = self.options.timeout * 1000
+
         return args
+
 
 class SnmpSession(netsnmp.Session):
     """Wrap netsnmp.Session to workaround some shortcomings there"""
@@ -46,7 +66,7 @@ class SnmpSession(netsnmp.Session):
     def get_oids(self, *oids):
         varlist = netsnmp.VarList(*oids)
         response = self.get(varlist)
-        if not response or len(response) != len(oids):
+        if not response or len(response) != len(oids) or response == (None, None):
             raise SnmpException("SNMP get response incomplete")
         return response
 
