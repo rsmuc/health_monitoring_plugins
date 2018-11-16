@@ -146,6 +146,12 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 
 Seems that you did not install the python package. The plugins can not be called directly. Check the Installation section.
 
+"Workaround:"
+
+```
+PYTHONPATH=~/PycharmProjects/health_monitoring_plugins/ health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py
+```
+
 ## Changelog
 
 ###### Version 0.1.0
