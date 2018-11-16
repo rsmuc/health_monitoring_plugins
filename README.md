@@ -11,8 +11,6 @@ All plugins are released under the GPLv2.
 
 [![PyPI version](https://badge.fury.io/py/health_monitoring_plugins.svg)](https://badge.fury.io/py/health_monitoring_plugins)
 
-
-
 ## Plugins
 
 A detailed description can be found in the README in the doc folder.
@@ -160,6 +158,7 @@ Seems that you did not install the python package. The plugins can not be called
 * Fixed exception in check_snmp_raritan if sensor does not return a valid value.
 * Added common test for SNMPv3.
 * Some PEP8 improvements
+* Changed threshold options for check_snmp_eaton_ups
 
 ###### Version 0.0.9
 

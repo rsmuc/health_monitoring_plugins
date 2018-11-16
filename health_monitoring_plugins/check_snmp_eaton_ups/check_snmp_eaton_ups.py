@@ -52,12 +52,8 @@ def check_ups_seconds_on_battery(the_session, the_helper, the_snmp_value):
     the_helper.add_metric(
         label=the_helper.options.type,
         value=the_snmp_value,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom="Seconds")
-    
-    the_helper.check_all_metrics()
-    # if the_helper.status() is not pynag.Plugins.ok:
+
     the_helper.set_summary(
         "{} seconds already running on battery".format(the_snmp_value))
 
@@ -74,10 +70,8 @@ def check_ups_estimated_minutes_remaining(the_session, the_helper, the_snmp_valu
     the_helper.add_metric(
         label=the_helper.options.type,
         value=the_snmp_value,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom="minutes")
-    the_helper.check_all_metrics()
+
     the_helper.set_summary("Remaining runtime on battery is {} minutes".format(the_snmp_value))
 
 
@@ -91,10 +85,8 @@ def check_ups_input_frequency(the_session, the_helper, the_snmp_value):
     the_helper.add_metric(
         label=the_helper.options.type,
         value=a_frequency,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom='Hz')
-    the_helper.check_all_metrics()
+
     the_helper.set_summary("Input Frequency is {} Hz".format(a_frequency))
 
 
@@ -107,10 +99,8 @@ def check_ups_input_voltage(the_session, the_helper, the_snmp_value):
     the_helper.add_metric(
         label=the_helper.options.type,
         value=the_snmp_value,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom='VAC')
-    the_helper.check_all_metrics()
+
     the_helper.set_summary("Input Voltage is {} VAC".format(the_snmp_value))
 
 
@@ -123,10 +113,8 @@ def check_ups_output_voltage(the_session, the_helper, the_snmp_value):
     the_helper.add_metric(
         label=the_helper.options.type,
         value=the_snmp_value,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom='VAC')
-    the_helper.check_all_metrics()
+
     the_helper.set_summary("Output Voltage is {} VAC".format(the_snmp_value))
 
 
@@ -141,10 +129,8 @@ def check_ups_output_current(the_session, the_helper, the_snmp_value):
     the_helper.add_metric(
         label=the_helper.options.type,
         value=a_current,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom='A')
-    the_helper.check_all_metrics()
+
     the_helper.set_summary("Output Current is {} A".format(a_current))
 
 
@@ -157,11 +143,8 @@ def check_ups_output_power(the_session, the_helper, the_snmp_value):
     the_helper.add_metric(
         label=the_helper.options.type,
         value=the_snmp_value,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom='W')
 
-    the_helper.check_all_metrics()
     the_helper.set_summary("Output Power is {} W".format(the_snmp_value))
 
 
@@ -177,10 +160,8 @@ def check_ups_output_percent_load(the_session, the_helper, the_snmp_value):
     the_helper.add_metric(
         label=the_helper.options.type,
         value=the_snmp_value,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom='%')
-    the_helper.check_all_metrics()
+
     the_helper.set_summary("Output Load is {} %".format(the_snmp_value))
 
 
@@ -225,12 +206,12 @@ def check_ups_test_results_summary(the_session, the_helper, the_snmp_value):
     noTestsInitiated (6)
     """
     snmp_test_result = {
-        '1' : 'pass',
-        '2' : 'warning',
-        '3' : 'error',
-        '4' : 'aborted',
-        '5' : 'in progress',
-        '6' : 'no test initiated'
+        '1': 'pass',
+        '2': 'warning',
+        '3': 'error',
+        '4': 'aborted',
+        '5': 'in progress',
+        '6': 'no test initiated'
         }
     
     a_test_result = snmp_test_result.get(the_snmp_value, 'unknown SNMP value')
@@ -252,8 +233,6 @@ def check_ups_test_results_detail(the_session, the_helper, the_snmp_value):
     Additional information about upsTestResultsSummary.
     If no additional information available, a zero length
     string is returned.
-    
-    TODO Performance data does not make any sense here. How to handle this? 
     """
     
     the_helper.set_summary("Details of last UPS diagnostic test: {}".format(the_snmp_value))
@@ -269,11 +248,8 @@ def check_xups_bat_capacity(the_session, the_helper, the_snmp_value):
     the_helper.add_metric(
         label=the_helper.options.type,
         value=a_snmp_value,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom='%')
-    
-    the_helper.check_all_metrics()
+
     the_helper.set_summary("Remaining Battery Capacity {} %".format(the_snmp_value))
 
 
@@ -288,11 +264,8 @@ def check_xups_env_ambient_temp(the_session, the_helper, the_snmp_value, the_uni
     the_helper.add_metric(
         label=the_helper.options.type,
         value=the_snmp_value,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom='degree')
-    
-    the_helper.check_all_metrics()
+
     the_helper.set_summary("Environment Temperature is {} degree".format(the_snmp_value))
 
 
@@ -307,11 +280,8 @@ def check_xups_env_remote_temp(the_session, the_helper, the_snmp_value, the_unit
     the_helper.add_metric(
         label=the_helper.options.type,
         value=the_snmp_value,
-        warn=the_helper.options.warning,
-        crit=the_helper.options.critical,
         uom='degree')
-    
-    the_helper.check_all_metrics()
+
     the_helper.set_summary("External Environment Temperature is {} degree".format(the_snmp_value))
 
 
@@ -326,11 +296,11 @@ def check_upsmg_battery_fault_battery(the_session, the_helper, the_snmp_value):
     """
     
     apc_states = {
-        '1' : 'Battery is in fault state ',
-        '2' : 'Battery is not in fault state '}
+        '1': 'Battery is in fault state ',
+        '2': 'Battery is not in fault state '}
     a_state = apc_states.get(the_snmp_value, "Unknown battery state!")
 
-    if (the_snmp_value == '2'):
+    if the_snmp_value == '2':
         the_helper.add_status(pynag.Plugins.ok)
     else:
         the_helper.add_status(pynag.Plugins.critical)
@@ -349,11 +319,11 @@ def check_upsmg_battery_replacement(the_session, the_helper, the_snmp_value):
     """
     
     apc_states = {
-        '1' : 'Battery needs to be replaced ',
-        '2' : 'Battery does not need to be replaced '}
+        '1': 'Battery needs to be replaced ',
+        '2': 'Battery does not need to be replaced '}
     a_state = apc_states.get(the_snmp_value, "Unknown battery replacement state!")
 
-    if (the_snmp_value == '2'):
+    if the_snmp_value == '2':
         the_helper.add_status(pynag.Plugins.ok)
     else:
         the_helper.add_status(pynag.Plugins.critical)
@@ -372,8 +342,8 @@ def check_upsmg_battery_low_battery(the_session, the_helper, the_snmp_value):
     """
     
     apc_states = {
-        '1' : 'Battery is in low state ',
-        '2' : 'Battery is not in low state '}
+        '1': 'Battery is in low state ',
+        '2': 'Battery is not in low state '}
     a_state = apc_states.get(the_snmp_value, "Unknown battery low state!")
 
     if the_snmp_value == '2':
@@ -384,65 +354,46 @@ def check_upsmg_battery_low_battery(the_session, the_helper, the_snmp_value):
     the_helper.set_summary(a_state)
 
 
-# Eaton OIDS
-eaton_oid_ups_seconds_on_battery           = ".1.3.6.1.2.1.33.1.2.2"
-eaton_oid_ups_estimated_minutes_remaining  = ".1.3.6.1.2.1.33.1.2.3"
-eaton_oid_ups_input_frequency              = ".1.3.6.1.2.1.33.1.3.3.1.2"
-eaton_oid_ups_input_voltage                = ".1.3.6.1.2.1.33.1.3.3.1.3"
-eaton_oid_ups_output_voltage               = ".1.3.6.1.2.1.33.1.4.4.1.2"
-eaton_oid_ups_output_current               = ".1.3.6.1.2.1.33.1.4.4.1.3"
-eaton_oid_ups_output_power                 = ".1.3.6.1.2.1.33.1.4.4.1.4"
-eaton_oid_ups_output_percent_load          = ".1.3.6.1.2.1.33.1.4.4.1.5"
-eaton_oid_ups_alarms_present               = ".1.3.6.1.2.1.33.1.6.1"
-eaton_oid_ups_test_results_summary         = ".1.3.6.1.2.1.33.1.7.3"
-eaton_oid_ups_test_results_detail          = ".1.3.6.1.2.1.33.1.7.4"
-eaton_oid_xups_bat_capacity                = ".1.3.6.1.4.1.534.1.2.4"
-eaton_oid_xups_env_ambient_temp            = ".1.3.6.1.4.1.534.1.6.1"
-eaton_oid_xups_env_remote_temp             = ".1.3.6.1.4.1.534.1.6.5"
-eaton_oid_upsmg_battery_fault_battery      = ".1.3.6.1.4.1.705.1.5.9"
-eaton_oid_upsmg_battery_replacement        = ".1.3.6.1.4.1.705.1.5.11"
-eaton_oid_upsmg_battery_low_battery        = ".1.3.6.1.4.1.705.1.5.14"
-
 # Define available check types for this plugin
 # Keys are the allowed -t arguments for this script
 # The etries define which OID to use for the SNMP get
 # and which check function to call.
 eaton_check_configs = {
-    "ON_BATTERY"                        : {"oid" : eaton_oid_ups_seconds_on_battery,
-                                           "check" : check_ups_seconds_on_battery},
-    "REMAINING_BATTERY_TIME"            : {"oid" : eaton_oid_ups_estimated_minutes_remaining,
-                                           "check" : check_ups_estimated_minutes_remaining},
-    "INPUT_FREQUENCY"                   : {"oid" : eaton_oid_ups_input_frequency,
-                                           "check" : check_ups_input_frequency},           
-    "INPUT_VOLTAGE"                     : {"oid" : eaton_oid_ups_input_voltage,
-                                           "check" : check_ups_input_voltage},             
-    "OUTPUT_VOLTAGE"                    : {"oid" : eaton_oid_ups_output_voltage,
-                                           "check" : check_ups_output_voltage},            
-    "OUTPUT_CURRENT"                    : {"oid" : eaton_oid_ups_output_current,
-                                           "check" : check_ups_output_current},            
-    "OUTPUT_POWER"                      : {"oid" : eaton_oid_ups_output_power,
-                                           "check" : check_ups_output_power},              
-    "OUTPUT_LOAD"                       : {"oid" : eaton_oid_ups_output_percent_load,
-                                           "check" : check_ups_output_percent_load},               
-    "ALARMS"                            : {"oid" : eaton_oid_ups_alarms_present,
-                                           "check" : check_ups_alarms_present},
-    "BATTERY_TEST_SUMMARY"              : {"oid" : eaton_oid_ups_test_results_summary,          # not available in 9SX
-                                           "check" : check_ups_test_results_summary},          
-    "BATTERY_TEST_DETAIL"               : {"oid" : eaton_oid_ups_test_results_detail,           # not available in 9SX
-                                           "check" : check_ups_test_results_detail,
+    "on_battery"                        : {"oid": ".1.3.6.1.2.1.33.1.2.2",
+                                           "check": check_ups_seconds_on_battery},
+    "remaining_battery_time"            : {"oid": ".1.3.6.1.2.1.33.1.2.3",
+                                           "check": check_ups_estimated_minutes_remaining},
+    "input_frequency"                   : {"oid": ".1.3.6.1.2.1.33.1.3.3.1.2",
+                                           "check": check_ups_input_frequency},
+    "input_voltage"                     : {"oid": ".1.3.6.1.2.1.33.1.3.3.1.3",
+                                           "check": check_ups_input_voltage},
+    "output_voltage"                    : {"oid": ".1.3.6.1.2.1.33.1.4.4.1.2",
+                                           "check": check_ups_output_voltage},
+    "output_current"                    : {"oid": ".1.3.6.1.2.1.33.1.4.4.1.3",
+                                           "check": check_ups_output_current},
+    "output_power"                      : {"oid": ".1.3.6.1.2.1.33.1.4.4.1.4",
+                                           "check": check_ups_output_power},
+    "output_load"                       : {"oid": ".1.3.6.1.2.1.33.1.4.4.1.5",
+                                           "check": check_ups_output_percent_load},
+    "alarms"                            : {"oid": ".1.3.6.1.2.1.33.1.6.1",
+                                           "check": check_ups_alarms_present},
+    "battery_test_summary"              : {"oid": ".1.3.6.1.2.1.33.1.7.3",             # not available in 9SX
+                                           "check": check_ups_test_results_summary},
+    "battery_test_detail"               : {"oid": ".1.3.6.1.2.1.33.1.7.4",             # not available in 9SX
+                                           "check": check_ups_test_results_detail,
                                            "allow_snmp_empty" : True},          
-    "BATTERY_CAPACITY"                  : {"oid" : eaton_oid_xups_bat_capacity,
-                                           "check" : check_xups_bat_capacity},
-    "ENVIRONMENT_TEMPERATURE"           : {"oid" : eaton_oid_xups_env_ambient_temp,
-                                           "check" : check_xups_env_ambient_temp},   
-    "EXTERNAL_ENVIRONMENT_TEMPERATURE"  : {"oid" : eaton_oid_xups_env_remote_temp,
-                                           "check" : check_xups_env_remote_temp},   
-    "BATTERY_LOW_WARNING"               : {"oid" : eaton_oid_upsmg_battery_low_battery,         # not available in 9SX
-                                           "check" : check_upsmg_battery_low_battery},      
-    "BATTERY_REPLACEMENT_WARNING"       : {"oid" : eaton_oid_upsmg_battery_replacement,         # not available in 9SX
-                                           "check" : check_upsmg_battery_replacement},      
-    "BATTERY_FAULT_WARNING"             : {"oid" : eaton_oid_upsmg_battery_fault_battery,       # not available in 9SX
-                                           "check" : check_upsmg_battery_fault_battery}      
+    "battery_capacity"                  : {"oid": ".1.3.6.1.4.1.534.1.2.4",
+                                           "check": check_xups_bat_capacity},
+    "environment_temperature"           : {"oid": ".1.3.6.1.4.1.534.1.6.1",
+                                           "check": check_xups_env_ambient_temp},
+    "external_environment_temperature"  : {"oid": ".1.3.6.1.4.1.534.1.6.5",
+                                           "check": check_xups_env_remote_temp},
+    "battery_low_warning"               : {"oid": ".1.3.6.1.4.1.705.1.5.14",            # not available in 9SX
+                                           "check": check_upsmg_battery_low_battery},
+    "battery_replacement_warning"       : {"oid": ".1.3.6.1.4.1.705.1.5.11",           # not available in 9SX
+                                           "check": check_upsmg_battery_replacement},
+    "battery_fault_warning"             : {"oid": ".1.3.6.1.4.1.705.1.5.9",           # not available in 9SX
+                                           "check": check_upsmg_battery_fault_battery}
     }
 
 
@@ -468,14 +419,16 @@ def setup_plugin_helper():
 
     # Add all defined check types (dictionary keys) as help text 
     a_helper.parser.add_option('-t', '--type', dest='type',
-        help = "Check type to execute. Available types are: {}".format(
+        help="Check type to execute. Available types are: {}".format(
             ", ".join(eaton_check_configs.keys())),
         type='str')
-    a_helper.parser.add_option('-c', '--critical', dest='critical', help='Critical thresholds in Icinga range format.', type='str')
-    a_helper.parser.add_option('-w', '--warning', dest='warning', help='Warning thresholds in Icinga range format.', type='str')
+
     snmpSessionBaseClass.add_snmpv3_options(a_helper)
 
     a_helper.parse_arguments()
+
+    if a_helper.options.type:
+        a_helper.options.type = a_helper.options.type.lower()
     
     return a_helper
     
@@ -507,6 +460,8 @@ if __name__ == "__main__":
     
     a_snmp_value = snmpSessionBaseClass.walk_data(snmp_session, eaton_oid, a_helper)[0][0]
     eaton_check(snmp_session, a_helper, a_snmp_value)
-    
+
+    a_helper.check_all_metrics()
+
     # Print out plugin information and exit nagios-style
     a_helper.exit()
