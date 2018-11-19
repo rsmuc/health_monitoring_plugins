@@ -1,5 +1,6 @@
 import pynag
 import netsnmp
+from pynag.Plugins import unknown
 
 netsnmp.verbose = 0
 
@@ -54,6 +55,16 @@ class SnmpHelper(pynag.Plugins.PluginHelper):
 
         return args
 
+    @staticmethod
+    def get_snmp_value(sess, helper, oid):
+        """ return a snmp value or exits the plugin with unknown"""
+        snmp_result = sess.get_oids(oid)[0]
+        if snmp_result is None:
+            helper.exit(summary="No response from device for oid " + oid, exit_code=unknown, perfdata='')
+
+        else:
+            return snmp_result
+
 
 class SnmpSession(netsnmp.Session):
     """Wrap netsnmp.Session to workaround some shortcomings there"""
@@ -66,7 +77,7 @@ class SnmpSession(netsnmp.Session):
     def get_oids(self, *oids):
         varlist = netsnmp.VarList(*oids)
         response = self.get(varlist)
-        if not response or len(response) != len(oids) or response == (None, None):
+        if not response or len(response) != len(oids):
             raise SnmpException("SNMP get response incomplete")
         return response
 
