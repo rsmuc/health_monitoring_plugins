@@ -165,6 +165,7 @@ PYTHONPATH=~/PycharmProjects/health_monitoring_plugins/ health_monitoring_plugin
 * Added common test for SNMPv3.
 * Some PEP8 improvements
 * Changed threshold options for check_snmp_eaton_ups
+* Refactored check_meinberg_ntp plugin
 
 ###### Version 0.0.9
 

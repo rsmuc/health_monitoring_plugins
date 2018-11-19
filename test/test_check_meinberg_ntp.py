@@ -1,11 +1,8 @@
 #!/usr/bin/python
-import sys
 import context
 import health_monitoring_plugins.meinberg
 import subprocess
 from testagent import *
-
-#sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_meinberg_ntp'))
 
 
 #############
