@@ -10,13 +10,15 @@ if sys.argv[-1] == 'test':
         err_msg = e.message.replace("No module named ", "")
         msg = "%s is not installed. Install your test requirments." % err_msg
         raise ImportError(msg)
-    #os.system('py.test')
-    # the current testagent does not support starting and stopping the agent within one testrun, so we need to call the script
+    # the current testagent does not support starting and stopping the agent within one testrun,
+    # so we need to call the script
     os.system('./run_unittest.sh')
     sys.exit()
 
+
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
 
 setup(name='health_monitoring_plugins',
       version='0.1.0',
