@@ -3,7 +3,7 @@ import sys
 import os
 
 if sys.argv[-1] == 'test':
-    test_requirements = ['pytest',]
+    test_requirements = ['pytest']
     try:
         modules = map(__import__, test_requirements)
     except ImportError as e:
