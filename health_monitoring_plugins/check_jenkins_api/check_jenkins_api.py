@@ -19,7 +19,9 @@
 # Import PluginHelper and some utility constants from the Plugins module
 import sys
 import os
-import urllib2, json, base64
+import urllib2
+import json
+import base64
 from datetime import datetime
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
 from pynag.Plugins import PluginHelper, ok, critical, unknown, warning
@@ -86,7 +88,7 @@ if __name__ == "__main__":
     
     elif shutdown:
         helper.add_summary("shutdown status:")
-         # query the data from the Jenkins JSON API
+        # query the data from the Jenkins JSON API
         url = "http://%s/api/json?pretty=true:%s" % (host, port)
 
         request = urllib2.Request(url)
@@ -95,13 +97,13 @@ if __name__ == "__main__":
         response = urllib2.urlopen(request)
         data = json.loads(response.read())
 
-        if data["quietingDown"] == True:
+        if data["quietingDown"] is True:
             helper.status(warning)
             helper.add_summary("JENKINS IS IN SHUTDOWN MODE")
 
     elif disconnect:
         helper.add_summary("executor status:")
-         # query the data from the Jenkins JSON API
+        # query the data from the Jenkins JSON API
         url = "http://%s/computer/api/json?pretty=true:%s" % (host, port)
 
         request = urllib2.Request(url)
@@ -112,11 +114,11 @@ if __name__ == "__main__":
 
         for computer in data['computer']:
             
-            if computer["temporarilyOffline"] == True:
+            if computer["temporarilyOffline"] is True:
                 helper.status(warning)
                 helper.add_summary("Jenkins executor temporarily offline")
 
-            if computer["offline"] == True:
+            if computer["offline"] is True:
                 helper.status(critical)
                 helper.add_summary("Jenkins executor temporarily offline")
                 
