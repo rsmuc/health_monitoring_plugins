@@ -1,6 +1,3 @@
-"""
-Monitor the Meinberg NTP Server M300.
-"""
 #!/usr/bin/env python
 # check_meinberg_ntp.py - Monitor the Meinberg NTP Server M300.
 
@@ -23,38 +20,38 @@ from pynag.Plugins import ok
 import health_monitoring_plugins.meinberg
 
 if __name__ == "__main__":
-    helper = health_monitoring_plugins.SnmpHelper()
-    helper.parser.add_option('-m',
+    HELPER = health_monitoring_plugins.SnmpHelper()
+    HELPER.parser.add_option('-m',
                              help="Version of the Firmware (v5 or NG) "
                                   "(NG = MBG-LANTIME-NG-MIB.mib used in Firmware 6 and newer)",
                              dest="mibversion")
-    helper.parse_arguments()
-    sess = health_monitoring_plugins.SnmpSession(**helper.get_snmp_args())
+    HELPER.parse_arguments()
+    SESS = health_monitoring_plugins.SnmpSession(**HELPER.get_snmp_args())
 
     # The default return value should be always OK
-    helper.status(ok)
+    HELPER.status(ok)
 
-    meinberg = health_monitoring_plugins.meinberg.Meinberg(sess, helper.options.mibversion)
+    MEINBERG = health_monitoring_plugins.meinberg.Meinberg(SESS, HELPER.options.mibversion)
 
     # GPSPosition
 
-    snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_gps_position'])
-    meinberg.check_gps_position(helper, snmp_result)
+    SNMP_RESULT = HELPER.get_snmp_value(SESS, HELPER, MEINBERG.oids['oid_gps_position'])
+    MEINBERG.check_gps_position(HELPER, SNMP_RESULT)
 
     # NTP Status
-    snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_ntp_current_state_int'])
-    meinberg.update_status(helper, meinberg.check_ntp_status(snmp_result))
+    SNMP_RESULT = HELPER.get_snmp_value(SESS, HELPER, MEINBERG.oids['oid_ntp_current_state_int'])
+    MEINBERG.update_status(HELPER, MEINBERG.check_ntp_status(SNMP_RESULT))
 
     # GPS Status
-    snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_gps_mode_int'])
-    meinberg.update_status(helper, meinberg.check_gps_status(snmp_result))
+    SNMP_RESULT = HELPER.get_snmp_value(SESS, HELPER, MEINBERG.oids['oid_gps_mode_int'])
+    MEINBERG.update_status(HELPER, MEINBERG.check_gps_status(SNMP_RESULT))
 
     # Satellites
-    snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_gps_satellites_good'])
-    meinberg.check_satellites(helper, snmp_result)
+    SNMP_RESULT = HELPER.get_snmp_value(SESS, HELPER, MEINBERG.oids['oid_gps_satellites_good'])
+    MEINBERG.check_satellites(HELPER, SNMP_RESULT)
 
     # there is only the satellites metric, but we will check all available
-    helper.check_all_metrics()
+    HELPER.check_all_metrics()
 
     # Print out plugin information and exit nagios-style
-    helper.exit()
+    HELPER.exit()

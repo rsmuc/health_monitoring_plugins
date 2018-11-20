@@ -1,10 +1,13 @@
+"""
+Module for check_meinberg_ntp
+"""
 # Copyright (C) 2018 rsmuc <rsmuc@mailbox.org>
 
-import health_monitoring_plugins
-from pynag.Plugins import unknown, warning, critical, ok
+from pynag.Plugins import unknown, warning, critical
 
 
 class Meinberg(object):
+    """Class for check_meinberg_ntp"""
     def __init__(self, session, mibversion):
         self.mibversion = mibversion
         self.sess = session
@@ -14,7 +17,7 @@ class Meinberg(object):
 
     @staticmethod
     def get_oids(mibversion):
-        # use the correct oids depending on the version of the firmware / MIB
+        """use the correct oids depending on the version of the firmware / MIB"""
         if mibversion == "NG":
             # OIDs from MBG-LANTIME-NG-MIB.mib
             return {
@@ -24,17 +27,17 @@ class Meinberg(object):
                 "oid_gps_mode_int": ".1.3.6.1.4.1.5597.30.0.1.2.1.5.1"
             }
 
-        else:
-            # OIDs from MBG-LANTIME-MIB.mib
-            return {
-                "oid_ntp_current_state_int": ".1.3.6.1.4.1.5597.3.1.2.0",
-                "oid_gps_position": ".1.3.6.1.4.1.5597.3.2.7.0",
-                "oid_gps_satellites_good": ".1.3.6.1.4.1.5597.3.2.9.0",
-                "oid_gps_mode_int": ".1.3.6.1.4.1.5597.3.2.16.0"
-            }
+        # OIDs from MBG-LANTIME-MIB.mib
+        return {
+            "oid_ntp_current_state_int": ".1.3.6.1.4.1.5597.3.1.2.0",
+            "oid_gps_position": ".1.3.6.1.4.1.5597.3.2.7.0",
+            "oid_gps_satellites_good": ".1.3.6.1.4.1.5597.3.2.9.0",
+            "oid_gps_mode_int": ".1.3.6.1.4.1.5597.3.2.16.0"
+        }
 
     @staticmethod
     def get_ntp_status(mibversion):
+        """return the correct ntp status depending on the firmware"""
         if mibversion == "NG":
             # from MBG-LANTIME-NG-MIB.mib
             return {
@@ -43,20 +46,21 @@ class Meinberg(object):
                 "2": "synchronized"
             }
 
-        else:
-            # from MBG-LANTIME-MIB.mib
-            return {
-                "0": "notSynchronized",
-                "1": "noGoodRefclock",
-                "2": "syncToExtRefclock",
-                "3": "syncToSerialRefclock",
-                "4": "normalOperationPPS",
-                "5": "normalOperationRefclock",
-                "99": "unkown"
+
+        # from MBG-LANTIME-MIB.mib
+        return {
+            "0": "notSynchronized",
+            "1": "noGoodRefclock",
+            "2": "syncToExtRefclock",
+            "3": "syncToSerialRefclock",
+            "4": "normalOperationPPS",
+            "5": "normalOperationRefclock",
+            "99": "unkown"
             }
 
     @staticmethod
     def get_gps_mode(mibversion):
+        """return the correct gps mode depending on the firmware"""
         if mibversion == "NG":
             # from MBG-LANTIME-NG-MIB.mib
             return {
@@ -92,17 +96,17 @@ class Meinberg(object):
                 "166": "mrsExtOscSync",
                 "167": "mrsIntOscSync"
             }
-        else:
-            # from MBG-LANTIME-MIB.mib
-            return {
-                "0": "notavailable",
-                "1": "normalOperation",
-                "2": "trackingSearching",
-                "3": "antennaFaulty",
-                "4": "warmBoot",
-                "5": "coldBoot",
-                "6": "antennaShortcircuit"
-            }
+
+        # from MBG-LANTIME-MIB.mib
+        return {
+            "0": "notavailable",
+            "1": "normalOperation",
+            "2": "trackingSearching",
+            "3": "antennaFaulty",
+            "4": "warmBoot",
+            "5": "coldBoot",
+            "6": "antennaShortcircuit"
+        }
 
     @staticmethod
     def update_status(helper, status):
@@ -137,6 +141,8 @@ class Meinberg(object):
             # that is a warning condition, NTP could still work without the GPS antenna
             return warning, ("GPS status: " + gps_mode_string)
 
+        return None
+
     def check_ntp_status(self, ntp_status_int):
         """
         check and show the current NTP status
@@ -152,6 +158,8 @@ class Meinberg(object):
                 and ntp_status_string != "normalOperationPPS":
             # that is a critical condition, because the time reference will not be reliable anymore
             return critical, ("NTP status: " + ntp_status_string)
+
+        return None
 
     @staticmethod
     def check_satellites(helper, good_satellites):
