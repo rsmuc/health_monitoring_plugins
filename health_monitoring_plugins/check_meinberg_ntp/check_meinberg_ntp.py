@@ -1,28 +1,32 @@
+"""
+Monitor the Meinberg NTP Server M300.
+"""
 #!/usr/bin/env python
 # check_meinberg_ntp.py - Monitor the Meinberg NTP Server M300.
 
 # Copyright (C) 2016-2018 rsmuc <rsmuc@mailbox.org>
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with check_meinberg_ntp.py.  If not, see <http://www.gnu.org/licenses/>.
 
-import health_monitoring_plugins.meinberg
 from pynag.Plugins import ok
+import health_monitoring_plugins.meinberg
 
 if __name__ == "__main__":
     helper = health_monitoring_plugins.SnmpHelper()
     helper.parser.add_option('-m',
-                             help="Version of the Firmware (v5 or NG) (NG = MBG-LANTIME-NG-MIB.mib used in Firmware 6 and newer)",
+                             help="Version of the Firmware (v5 or NG) "
+                                  "(NG = MBG-LANTIME-NG-MIB.mib used in Firmware 6 and newer)",
                              dest="mibversion")
     helper.parse_arguments()
     sess = health_monitoring_plugins.SnmpSession(**helper.get_snmp_args())
@@ -48,7 +52,7 @@ if __name__ == "__main__":
     # Satellites
     snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_gps_satellites_good'])
     meinberg.check_satellites(helper, snmp_result)
-    
+
     # there is only the satellites metric, but we will check all available
     helper.check_all_metrics()
 
