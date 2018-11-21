@@ -1,306 +1,160 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2016 - 2018 rsmuc <rsmuc@mailbox.org>
-# 
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with check_snmp_idrac.py.  If not, see <http://www.gnu.org/licenses/>.
 
-# Import PluginHelper and some utility constants from the Plugins module
-from pynag.Plugins import PluginHelper,ok,critical
-import netsnmp
-import sys
-import os
-sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
-from snmpSessionBaseClass import add_common_options, verify_seclevel, add_snmpv3_options, get_common_options, verify_host, get_data, walk_data, state_summary, add_output, attempt_walk_data
+from pynag.Plugins import ok
+import health_monitoring_plugins.idrac
 
-# Create an instance of PluginHelper()
-helper = PluginHelper()
-
-# Define the command line options
-add_common_options(helper)
-add_snmpv3_options(helper)
-helper.parser.add_option('--noPowerRedundancy', help='Do not check powersupply redundancy', default=True, action='store_false', dest='no_pwr_redund')
-helper.parse_arguments()
-
-# Get the options
-host, version, community = get_common_options(helper)
-power_redundancy_flag = helper.options.no_pwr_redund
-secname, seclevel, authproto, authpass, privproto, privpass = helper.options.secname, \
-    helper.options.seclevel, \
-    helper.options.authproto, \
-    helper.options.authpass, \
-    helper.options.privproto, \
-    helper.options.privpass
-    
-# States definitions
-normal_state = {
-            1 : 'other',
-            2 : 'unknown',
-            3 : 'ok',
-            4 : 'nonCritical',
-            5 : 'critical',
-            6 : 'nonRecoverable'
-            }
-
-system_power_state = {
-            1 : 'other',
-            2 : 'unknown',
-            3 : 'off',
-            4 : 'on'
-            }
-
-power_unit_redundancy_state = {
-            1 : 'other',
-            2 : 'unknown',
-            3 : 'full',
-            4 : 'degraded',
-            5 : 'lost',
-            6 : 'notRedundant',
-            7 : 'redundancyOffline'
-            }
-
-probe_state = {
-            1 : 'other',
-            2 : 'unknown',
-            3 : 'ok',
-            4 : 'nonCriticalUpper',
-            5 : 'criticalUpper',
-            6 : 'nonRecoverableUpper',
-            7 : 'nonCriticalLower',
-            8 : 'criticalLower',
-            9 : 'nonRecoverableLower',
-            10 : 'failed'
-            }
-
-
-### from IDRAC-MIB-SMIv2
-oid_user_assigned_name         = '.1.3.6.1.4.1.674.10892.5.4.300.10.1.7.1'
-oid_product_type               = '.1.3.6.1.4.1.674.10892.5.4.300.10.1.9.1'
-oid_service_tag                = '.1.3.6.1.4.1.674.10892.5.4.300.10.1.11.1'
-
-# Global state OIDs
-oid_global_system              = '.1.3.6.1.4.1.674.10892.5.2.1.0'
-oid_system_lcd                 = '.1.3.6.1.4.1.674.10892.5.2.2.0'
-oid_global_storage             = '.1.3.6.1.4.1.674.10892.5.2.3.0'
-oid_system_power               = '.1.3.6.1.4.1.674.10892.5.2.4.0'
-
-
-oid_power_unit_redundancy      = '.1.3.6.1.4.1.674.10892.5.4.600.10.1.5'
-oid_power_unit_name            = '.1.3.6.1.4.1.674.10892.5.4.600.12.1.8'
-oid_power_unit_status          = '.1.3.6.1.4.1.674.10892.5.4.600.12.1.5'
-
-oid_chassis_intrusion          = '.1.3.6.1.4.1.674.10892.5.4.300.70.1.5'
-oid_chassis_intrusion_location = '.1.3.6.1.4.1.674.10892.5.4.300.70.1.8'
-
-oid_cooling_unit_name          = '.1.3.6.1.4.1.674.10892.5.4.700.10.1.7'
-oid_cooling_unit_status        = '.1.3.6.1.4.1.674.10892.5.4.700.10.1.8'
-
-oid_temperature_probe_status   = '.1.3.6.1.4.1.674.10892.5.4.700.20.1.5'
-oid_temperature_probe_reading  = '.1.3.6.1.4.1.674.10892.5.4.700.20.1.6'
-oid_temperature_probe_location = '.1.3.6.1.4.1.674.10892.5.4.700.20.1.8'
-
-oid_voltage_probe_status       = '.1.3.6.1.4.1.674.10892.5.4.600.20.1.5'
-oid_voltage_probe_reading      = '.1.3.6.1.4.1.674.10892.5.4.600.20.1.6'
-oid_voltage_probe_location     = '.1.3.6.1.4.1.674.10892.5.4.600.20.1.8'
-
-
-# check the power unit
-def power_unit_check(power_unit_redundancy_data, power_unit_name_data, power_unit_status_data):
-    power_unit_summary_output = ''
-    power_unit_long_output = ''
-    
-    for x in range(len(power_unit_status_data)):
-        if  normal_state[int(power_unit_status_data[x])] != 'ok':
-            # status is of PS is not OK:
-            helper.status(critical)
-            power_unit_summary_output += 'Power unit "%s": %s. ' % (power_unit_name_data[x], normal_state[int(power_unit_status_data[x])])
-            
-        #we always want to show the information in the long output, independend from the status
-        power_unit_long_output += 'Power unit "%s": %s. ' % (power_unit_name_data[x], normal_state[int(power_unit_status_data[x])])
-    
-    # skip the check if --noPowerRedundancy is set
-    if power_redundancy_flag:   
-        if power_unit_redundancy_data != []: 
-            if power_unit_redundancy_state[int(power_unit_redundancy_data[0])] != "full":
-                # redundancy is not full
-                helper.status(critical)
-                power_unit_summary_output += 'Power redundancy status: %s. ' % (power_unit_redundancy_state[int(power_unit_redundancy_data[0])])
-
-            #we always want to show the information in the long output, independend from the status
-            power_unit_long_output += 'Power redundancy status: %s\n' % (power_unit_redundancy_state[int(power_unit_redundancy_data[0])])
-
-        
-   # erase the last '.' for a prettier summary output    
-    power_unit_summary_output = power_unit_summary_output[:-2]
-    return power_unit_summary_output, power_unit_long_output
-
-# check the chassis intrusion
-def chassis_intrusion_check(chassis_intrusion_data, chassis_intrusion_location_data):
-    chassis_intrusion_summary_output = ''
-    chassis_intrusion_long_output = ''
-    
-    for x in range(len(chassis_intrusion_data)):
-        if normal_state[int(chassis_intrusion_data[x])] != 'ok':
-            # status is not OK
-            helper.status(critical)
-            chassis_intrusion_summary_output += 'Chassis intrusion sensor "%s" is %s. ' % (chassis_intrusion_location_data[x], normal_state[int(chassis_intrusion_data[x])])
-        chassis_intrusion_long_output += 'Chassis intrusion sensor "%s" is %s\n' % (chassis_intrusion_location_data[x], normal_state[int(chassis_intrusion_data[x])])
-    # erase the last '.' for a prettier summary output
-    chassis_intrusion_summary_output = chassis_intrusion_summary_output[:-2]
-    return chassis_intrusion_summary_output, chassis_intrusion_long_output
-
-# check the cooling unit
-def cooling_unit_check(cooling_unit_name_data, cooling_unit_status_data):
-    cooling_unit_summary_output = ''
-    cooling_unit_long_output = ''
-    
-    for x in range(len(cooling_unit_status_data)):
-        if normal_state[int(cooling_unit_status_data[x])] != 'ok':
-            # status is not OK
-            helper.status(critical)
-            cooling_unit_summary_output += 'Cooling unit "%s" status: %s. ' % (cooling_unit_name_data[x], normal_state[int(cooling_unit_status_data[x])])
-        # we always want to show the information in the long output, independend from the status
-        cooling_unit_long_output += 'Cooling unit "%s" status: %s\n' % (cooling_unit_name_data[x], normal_state[int(cooling_unit_status_data[x])])
-    # erase the last '.' for a prettier summary output
-    cooling_unit_summary_output = cooling_unit_summary_output[:-2]
-    return cooling_unit_summary_output, cooling_unit_long_output
-
-# check the temperature probes
-def temperature_probe_check(temperature_probe_status_data, temperature_probe_status_tag, temperature_probe_reading_data, temperature_probe_reading_tag, temperature_probe_location_data):
-    temperature_probe_summary_output = ''
-    temperature_probe_long_output = ''
-    
-    for x in range(0, len(temperature_probe_reading_data)):
-        temperature_probe_reading_data[x] = int(temperature_probe_reading_data[x])/10
-        for y in range(0, len(temperature_probe_status_data)):
-            # wheen the oids have the same ending, they belong together (they are organised in a table)
-            if temperature_probe_reading_tag[x][39:] == temperature_probe_status_tag[y][39:]:
-                temperature_probe_location_data[y] = temperature_probe_location_data[y].lower()
-                helper.add_metric(label = '%s' % temperature_probe_location_data[y], value = temperature_probe_reading_data[x])
-                if probe_state[int(temperature_probe_status_data[y])] != 'ok':
-                    # status is not OK
-                    helper.status(critical)
-                    temperature_probe_summary_output += 'Temperature probe at "%s" is %s. ' % (temperature_probe_location_data[y], probe_state[int(temperature_probe_status_data[y])])
-                # we always want to show the information in the long output, independend from the status
-                temperature_probe_long_output += 'Status of temperature probe at "%s" is %s with %sC\n' % (temperature_probe_location_data[y], probe_state[int(temperature_probe_status_data[y])], temperature_probe_reading_data[x])
-        # erase the last '.' for a prettier summary output
-        temperature_probe_summary_output = temperature_probe_summary_output[:-2]
-    return temperature_probe_summary_output, temperature_probe_long_output
-
-# check the voltage probes
-def voltage_probe_check(voltage_probe_status_data, voltage_probe_status_tag, voltage_probe_reading_data, voltage_probe_reading_tag , voltage_probe_location_data):
-    voltage_probe_summary_output = ''
-    voltage_probe_long_output = ''
-    
-    for x in range(0, len(voltage_probe_reading_data)):
-        voltage_probe_reading_data[x] = int(voltage_probe_reading_data[x])/1000
-        for y in range(0, len(voltage_probe_status_data)):
-            # when the oids have the same ending, they belong together (they are organised in a table)
-            if voltage_probe_reading_tag[x][39:] == voltage_probe_status_tag[y][39:]:
-                # location name has to be lowercase, otherwise we would get a problem with add_metric
-                voltage_probe_location_data[y] = voltage_probe_location_data[y].lower()
-                helper.add_metric(label = '%s' % voltage_probe_location_data[y], value = voltage_probe_reading_data[x])
-                if probe_state[int(voltage_probe_status_data[y])] != 'ok':
-                    # status is not OK
-                    helper.status(critical)
-                    voltage_probe_summary_output += 'Voltage probe at "%s" is %s. ' % (voltage_probe_location_data[y], probe_state[int(voltage_probe_status_data[y])])
-                # we always want to show the information in the long output, independend from the status
-                voltage_probe_long_output += 'Status of voltage probe at "%s" is %s with %s V\n' % (voltage_probe_location_data[y], probe_state[int(voltage_probe_status_data[y])], voltage_probe_reading_data[x])
-    #erase the last '.'for a prettier summary output
-    voltage_probe_summary_output = voltage_probe_summary_output[:-2]
-    return voltage_probe_summary_output, voltage_probe_long_output
-
-if __name__ == '__main__':    
-    # verify that a hostname is set
-    verify_host(host, helper)
-    
-    # verify that seclevel is correctly used, otherwise there will be an exception
-    verify_seclevel(seclevel, helper)
+if __name__ == '__main__':
+    HELPER = health_monitoring_plugins.SnmpHelper()
+    HELPER.parser.add_option('--noPowerRedundancy', help='Do not check powersupply redundancy',
+                             default=True,
+                             action='store_false', dest='no_pwr_redund')
+    HELPER.parse_arguments()
+    SESS = health_monitoring_plugins.SnmpSession(**HELPER.get_snmp_args())
 
     # The default return value should be always OK
-    helper.status(ok)
+    HELPER.status(ok)
 
-    sess = netsnmp.Session(Version=version, DestHost=host, SecLevel=seclevel, SecName=secname, AuthProto=authproto,
-                           AuthPass=authpass, PrivProto=privproto, PrivPass=privpass, Community=community)
+    IDRAC = health_monitoring_plugins.idrac.Idrac(SESS)
 
-    user_assigned_name_data = get_data(sess, oid_user_assigned_name, helper)
-    product_type_data = get_data(sess, oid_product_type, helper)
-    service_tag_data = get_data(sess, oid_service_tag, helper)
-    
-    helper.add_summary('User assigned name: %s - Typ: %s - Service tag: %s' % (user_assigned_name_data, product_type_data, service_tag_data))
-    
-    
-    global_system_data = get_data(sess, oid_global_system, helper)
-    system_lcd_data = get_data(sess, oid_system_lcd, helper)
-    global_storage_data = get_data(sess, oid_global_storage, helper)
-    system_power_data = get_data(sess, oid_system_power, helper)
-    
-    global_system_summary, global_system_long = state_summary(global_system_data, 'Global System', normal_state, helper)
-    system_lcd_summary, system_lcd_long = state_summary(system_lcd_data, 'System LCD', normal_state, helper)
-    global_storage_summary, global_storage_long = state_summary(global_storage_data, 'Global Storage', normal_state, helper)
-    system_power_summary, system_power_long = state_summary(system_power_data, 'System Power', system_power_state, helper, 'on')
-    
-    add_output(global_system_summary, global_system_long, helper)
-    add_output(system_lcd_summary, system_lcd_long, helper)
-    add_output(global_storage_summary, global_storage_long, helper)
-    add_output(system_power_summary, system_power_long, helper)
-    
-    # power unit    
-    power_unit_redundancy_data = attempt_walk_data(sess, oid_power_unit_redundancy)[0]
-    power_unit_name_data = attempt_walk_data(sess, oid_power_unit_name)[0]
-    power_unit_status_data = attempt_walk_data(sess, oid_power_unit_status)[0]
-    
-    power_unit_summary_output, power_unit_long_output = power_unit_check(power_unit_redundancy_data, power_unit_name_data, power_unit_status_data)
-    
-    add_output(power_unit_summary_output, power_unit_long_output, helper)
-    
-    # chassis
-    chassis_intrusion_data = walk_data(sess, oid_chassis_intrusion, helper)[0]
-    chassis_intrusion_location_data = walk_data(sess, oid_chassis_intrusion_location, helper)[0]
-    
-    chassis_intrusion_summary_output, chassis_intrusion_long_output = chassis_intrusion_check(chassis_intrusion_data, chassis_intrusion_location_data)
-    
-    add_output(chassis_intrusion_summary_output, chassis_intrusion_long_output, helper)
-    
-    # cooling unit
-    cooling_unit_name_data = walk_data(sess, oid_cooling_unit_name, helper)[0]
-    cooling_unit_status_data = walk_data(sess, oid_cooling_unit_status, helper)[0]
-    
-    cooling_unit_summary_output, cooling_unit_long_output = cooling_unit_check(cooling_unit_name_data, cooling_unit_status_data)
-    
-    add_output(cooling_unit_summary_output, cooling_unit_long_output, helper)
-    
-    # temperature probes
-    temperature_probe_status_data, temperature_probe_status_tag = walk_data(sess, oid_temperature_probe_status, helper)
-    temperature_probe_reading_data, temperature_probe_reading_tag = walk_data(sess, oid_temperature_probe_reading, helper)
-    temperature_probe_location_data = walk_data(sess, oid_temperature_probe_location, helper)[0]
-    
-    temperature_probe_summary_output, temperature_probe_long_output = temperature_probe_check(temperature_probe_status_data, temperature_probe_status_tag, temperature_probe_reading_data, temperature_probe_reading_tag, temperature_probe_location_data)
-    
-    add_output(temperature_probe_summary_output, temperature_probe_long_output, helper)
-    
-    # voltage probes
-    voltage_probe_summary_output = ''
-    voltage_probe_long_output = ''
-    
-    voltage_probe_status_data, voltage_probe_status_tag = attempt_walk_data(sess, oid_voltage_probe_status)
-    voltage_probe_reading_data, voltage_probe_reading_tag = attempt_walk_data(sess, oid_voltage_probe_reading)
-    voltage_probe_location_data, voltage_probe_location_tag = attempt_walk_data(sess, oid_voltage_probe_location)
-    
-    voltage_probe_summary_output, voltage_probe_long_output = voltage_probe_check(voltage_probe_status_data, voltage_probe_status_tag, voltage_probe_reading_data, voltage_probe_reading_tag, voltage_probe_location_data)
-    
-    add_output(voltage_probe_summary_output, voltage_probe_long_output, helper)
-    
-    helper.check_all_metrics()
+    # Device information
+    IDRAC.add_device_information(HELPER, SESS)
+
+    # SYSTEM POWER STATUS
+    SNMP_RESULT_SYSTEM_STATUS = HELPER.get_snmp_value(SESS, HELPER, IDRAC.oids['oid_global_system'])
+    IDRAC.update_status(
+        HELPER, IDRAC.check_system_status(SNMP_RESULT_SYSTEM_STATUS))
+
+    # SYSTEM POWER STATUS
+    SNMP_RESULT_POWER_STATUS = HELPER.get_snmp_value(SESS, HELPER, IDRAC.oids['oid_system_power'])
+    IDRAC.update_status(
+        HELPER, IDRAC.check_system_power_status(SNMP_RESULT_POWER_STATUS))
+
+    # SYSTEM STORAGE STATUS
+    SNMP_RESULT_STORAGE_STATUS = HELPER.get_snmp_value(SESS, HELPER, IDRAC.oids[
+        'oid_global_storage'])
+    IDRAC.update_status(
+        HELPER, IDRAC.check_system_storage_status(SNMP_RESULT_STORAGE_STATUS))
+
+    # LCD STATUS
+    SNMP_RESULT_LCD_STATUS = HELPER.get_snmp_value(SESS, HELPER, IDRAC.oids[
+        'oid_global_system'])
+    IDRAC.update_status(
+        HELPER, IDRAC.check_system_lcd_status(SNMP_RESULT_LCD_STATUS))
+
+    # DISK STATES
+    SNMP_RESULT_DRIVE_STATUS = HELPER.walk_snmp_values(SESS, HELPER,
+                                                       IDRAC.oids['oid_drive_status'])
+    SNMP_RESULT_DRIVE_NAMES = HELPER.walk_snmp_values(SESS, HELPER,
+                                                      IDRAC.oids['oid_drive_names'])
+    for i, result in enumerate(SNMP_RESULT_DRIVE_STATUS):
+        IDRAC.update_status(
+            HELPER, IDRAC.check_drives(SNMP_RESULT_DRIVE_NAMES[i],
+                                       SNMP_RESULT_DRIVE_STATUS[i]))
+
+
+    # POWER UNIT Status
+    SNMP_RESULT_POWER_STATUS = HELPER.walk_snmp_values(SESS, HELPER,
+                                                       IDRAC.oids['oid_power_unit_status'])
+    SNMP_RESULT_POWER_NAMES = HELPER.walk_snmp_values(SESS, HELPER,
+                                                      IDRAC.oids['oid_power_unit_name'])
+    for i, result in enumerate(SNMP_RESULT_POWER_STATUS):
+        IDRAC.update_status(
+            HELPER, IDRAC.check_power_units(SNMP_RESULT_POWER_NAMES[i],
+                                            SNMP_RESULT_POWER_STATUS[i]))
+
+    # POWER UNIT Redundancy Status
+    SNMP_RESULT_POWER_REDUNDANCY_STATUS = HELPER.walk_snmp_values(
+        SESS, HELPER, IDRAC.oids['oid_power_unit_redundancy'])
+    SNMP_RESULT_POWER_NAMES = HELPER.walk_snmp_values(
+        SESS, HELPER, IDRAC.oids['oid_power_unit_name'])
+
+    for i, result in enumerate(SNMP_RESULT_POWER_REDUNDANCY_STATUS):
+        IDRAC.update_status(
+            HELPER, IDRAC.check_power_unit_redundancy(SNMP_RESULT_POWER_NAMES[i],
+                                                      SNMP_RESULT_POWER_REDUNDANCY_STATUS[i]))
+
+    # CHASSIS INTRUSION Status
+    SNMP_RESULT_CHASSIS_INTRUSION_STATUS = HELPER.walk_snmp_values(
+        SESS, HELPER, IDRAC.oids['oid_chassis_intrusion'])
+    SNMP_RESULT_CHASSIS_LOCATION = HELPER.walk_snmp_values(
+        SESS, HELPER, IDRAC.oids['oid_chassis_intrusion_location'])
+
+    for i, result in enumerate(SNMP_RESULT_CHASSIS_INTRUSION_STATUS):
+        IDRAC.update_status(
+            HELPER, IDRAC.check_chassis_intrusion(SNMP_RESULT_CHASSIS_INTRUSION_STATUS[i],
+                                                  SNMP_RESULT_CHASSIS_LOCATION[i]))
+
+    # COOLING UNIT Status
+    SNMP_RESULT_COOLING_UNIT_STATES = HELPER.walk_snmp_values(
+        SESS, HELPER, IDRAC.oids['oid_cooling_unit_status'])
+    SNMP_RESULT_COOLING_UNIT_NAMES = HELPER.walk_snmp_values(
+        SESS, HELPER, IDRAC.oids['oid_cooling_unit_name'])
+
+    for i, result in enumerate(SNMP_RESULT_COOLING_UNIT_STATES):
+        IDRAC.update_status(
+            HELPER, IDRAC.check_cooling_unit(SNMP_RESULT_COOLING_UNIT_NAMES[i],
+                                             SNMP_RESULT_COOLING_UNIT_STATES[i]))
+
+    # Temperature Sensors
+    SNMP_RESULT_TEMP_SENSOR_NAMES = HELPER.walk_snmp_values(
+        SESS, HELPER, IDRAC.oids['oid_temperature_probe_location'])
+    SNMP_RESULT_TEMP_SENSOR_STATES = HELPER.walk_snmp_values(
+        SESS, HELPER, IDRAC.oids['oid_temperature_probe_status'])
+    SNMP_RESULT_TEMP_SENSOR_VALUES = HELPER.walk_snmp_values(
+        SESS, HELPER, IDRAC.oids['oid_temperature_probe_reading'])
+
+    for i, result in enumerate(SNMP_RESULT_TEMP_SENSOR_STATES):
+        IDRAC.update_status(
+            HELPER, IDRAC.check_temperature_sensor(SNMP_RESULT_TEMP_SENSOR_NAMES[i],
+                                                   SNMP_RESULT_TEMP_SENSOR_STATES[i]))
+        if i < len(SNMP_RESULT_TEMP_SENSOR_VALUES):
+            HELPER.add_metric(label=SNMP_RESULT_TEMP_SENSOR_NAMES[i],
+                              value=float(SNMP_RESULT_TEMP_SENSOR_VALUES[i]) / 10,
+                              uom='Celsius')
+
+
+    # TODO: add harddrives
+
+    # # we need to refresh the session here ... i don't know why...
+    #
+    # SESS = health_monitoring_plugins.SnmpSession(**HELPER.get_snmp_args())
+    # # Voltage Probe
+    # SNMP_RESULT_VOLTAGE_PROBE_STATES = HELPER.walk_snmp_values(
+    #     SESS, HELPER, IDRAC.oids['oid_voltage_probe_status'])
+    #
+    # SNMP_RESULT_VOLTAGE_PROBE_VALUES = HELPER.walk_snmp_values(
+    #     SESS, HELPER, IDRAC.oids['oid_voltage_probe_reading'])
+    #
+    # SNMP_RESULT_VOLTAGE_PROBE_NAMES = HELPER.walk_snmp_values(
+    #     SESS, HELPER, IDRAC.oids['oid_voltage_probe_location'])
+    #
+    # for i, result in enumerate(SNMP_RESULT_VOLTAGE_PROBE_STATES):
+    #     IDRAC.update_status(
+    #         HELPER, IDRAC.check_voltage_probe(SNMP_RESULT_VOLTAGE_PROBE_NAMES[i],
+    #                                           SNMP_RESULT_VOLTAGE_PROBE_STATES[i]))
+    #
+    #     if i < len(SNMP_RESULT_VOLTAGE_PROBE_VALUES):
+    #         HELPER.add_metric(label=SNMP_RESULT_VOLTAGE_PROBE_NAMES[i],
+    #                           value=float(SNMP_RESULT_VOLTAGE_PROBE_VALUES[i]) / 1000,
+    #                           uom='Volt')
+
+    # check all metrics we added
+    HELPER.check_all_metrics()
+
     # Print out plugin information and exit nagios-style
-    helper.exit()
+    HELPER.exit()

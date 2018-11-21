@@ -3,9 +3,12 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_idrac'))
 
-from check_snmp_idrac import *
+import context
+import netsnmp
+#from check_snmp_idrac import *
 
 import pytest
+
 import subprocess
 from testagent import *
 
@@ -89,6 +92,18 @@ def test_start():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.4.600.20.1.8.1.1 = STRING: "PS 1 Voltage"''')# location name of the voltage probe
     
     start_server()
+
+
+    # with -H 127.0.0.1:1234 (known host)
+    p = subprocess.Popen('health_monitoring_plugins/check_snmp_idrac/check_snmp_idrac.py -H localhost:1234', shell=True,
+                     stdout=subprocess.PIPE)
+    cmd_output = p.stdout.read()
+    print 'With known host:\n' + cmd_output
+
+    test_stop()
+    assert 'OK - User assigned name: Main System Chassis - Typ: PowerEdge R420xr - Service tag: ABCD123' in cmd_output
+
+
 
 
 def test_system_test_idrac():
@@ -182,7 +197,7 @@ def test_overall_state_critical():
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.2.3.0 = INTEGER: 5''')# overall storage status
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.2.4.0 = INTEGER: 3''')# power state of the system
     
-    register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.4.600.10.1.5.1 = INTEGER: 3''')# redundancy status of the power unit
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.4.600.10.1.5.1 = INTEGER: 333''')# redundancy status of the power unit
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.4.600.10.1.7.1 = STRING: "System Board PS Redundancy"''')# name of the power unit
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.4.600.10.1.8.1 = INTEGER: 3''')# status of the power unit
     

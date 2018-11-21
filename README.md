@@ -7,7 +7,9 @@ The plugins are provided on pypi as python package.
 
 All plugins are released under the GPLv2.
 
-[![Code Health](https://landscape.io/github/rsmuc/health_monitoring_plugins/master/landscape.svg?style=flat)](https://landscape.io/github/rsmuc/health_monitoring_plugins/master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/56d2e53efd76cc85fecb/maintainability)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/maintainability)
+
+[![CodeFactor](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/badge/0.1.0)](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/overview/0.1.0)
 
 [![PyPI version](https://badge.fury.io/py/health_monitoring_plugins.svg)](https://badge.fury.io/py/health_monitoring_plugins)
 
@@ -124,7 +126,7 @@ To uninstall the package you can run:
 
 ### setup.py
 
-You can download the source package from [PyPI](https://pypi.python.org/pypi/health_monitoring_plugins)
+You can download the source package from [PyPI] (https://pypi.python.org/pypi/health_monitoring_plugins) or just clone this repository. To run setup.py you will need the python-setuptools.
 
 To install the package from source with setup.py, you can run
 
