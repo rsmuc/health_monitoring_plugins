@@ -20,10 +20,38 @@ import health_monitoring_plugins.idrac
 
 if __name__ == '__main__':
     HELPER = health_monitoring_plugins.SnmpHelper()
+
     HELPER.parser.add_option('--noPowerRedundancy', help='Do not check powersupply redundancy',
                              default=True,
                              action='store_false', dest='no_pwr_redund')
+    HELPER.parser.add_option('--no-system', help='Do not check the global system status',
+                             default=True, action='store_false', dest='system')
+    HELPER.parser.add_option('--no-power', help='Do not check the power status',
+                             default=True, action='store_false', dest='power')
+    HELPER.parser.add_option('--no-storage', help='Do not check the storage status',
+                             default=True, action='store_false', dest='storage')
+    HELPER.parser.add_option('--no-disks', help='Do not check the disks',
+                             default=True, action='store_false', dest='disks')
+    HELPER.parser.add_option('--no-lcd', help='Do not check the lcd status',
+                             default=True, action='store_false', dest='lcd')
+    HELPER.parser.add_option('--no-power_unit', help='Do not check the power unit',
+                             default=True, action='store_false', dest='power_unit')
+    HELPER.parser.add_option('--no-redundancy', help='Do not check the power unit redundancy',
+                             default=True, action='store_false', dest='power_unit_redundancy')
+    HELPER.parser.add_option('--no-intrusion', help='Do not check the intrusion sensor',
+                             default=True, action='store_false', dest='intrusion')
+    HELPER.parser.add_option('--no-cooling', help='Do not check the cooling unit',
+                             default=True, action='store_false', dest='cooling_unit')
+    HELPER.parser.add_option('--no-temperature', help='Do not check the temperature',
+                             default=True, action='store_false', dest='temperature')
+
+
     HELPER.parse_arguments()
+
+    # TODO: we need to increase the default timeout. the snmp session takes too long.
+    if HELPER.options.timeout < 2000:
+        HELPER.options.timeout = 2000
+
     SESS = health_monitoring_plugins.SnmpSession(**HELPER.get_snmp_args())
 
     # The default return value should be always OK
@@ -34,124 +62,45 @@ if __name__ == '__main__':
     # Device information
     IDRAC.add_device_information(HELPER, SESS)
 
-    # SYSTEM POWER STATUS
-    SNMP_RESULT_SYSTEM_STATUS = HELPER.get_snmp_value(SESS, HELPER, IDRAC.oids['oid_global_system'])
-    IDRAC.update_status(
-        HELPER, IDRAC.check_system_status(SNMP_RESULT_SYSTEM_STATUS))
+    # SYSTEM STATUS
+    if HELPER.options.system:
+        IDRAC.process_system_status(HELPER, SESS)
 
     # SYSTEM POWER STATUS
-    SNMP_RESULT_POWER_STATUS = HELPER.get_snmp_value(SESS, HELPER, IDRAC.oids['oid_system_power'])
-    IDRAC.update_status(
-        HELPER, IDRAC.check_system_power_status(SNMP_RESULT_POWER_STATUS))
+    if HELPER.options.power:
+        IDRAC.process_power_status(HELPER, SESS)
 
     # SYSTEM STORAGE STATUS
-    SNMP_RESULT_STORAGE_STATUS = HELPER.get_snmp_value(SESS, HELPER, IDRAC.oids[
-        'oid_global_storage'])
-    IDRAC.update_status(
-        HELPER, IDRAC.check_system_storage_status(SNMP_RESULT_STORAGE_STATUS))
+    if HELPER.options.storage:
+        IDRAC.process_storage_status(HELPER, SESS)
 
     # LCD STATUS
-    SNMP_RESULT_LCD_STATUS = HELPER.get_snmp_value(SESS, HELPER, IDRAC.oids[
-        'oid_global_system'])
-    IDRAC.update_status(
-        HELPER, IDRAC.check_system_lcd_status(SNMP_RESULT_LCD_STATUS))
+    if HELPER.options.lcd:
+        IDRAC.process_lcd_status(HELPER, SESS)
 
     # DISK STATES
-    SNMP_RESULT_DRIVE_STATUS = HELPER.walk_snmp_values(SESS, HELPER,
-                                                       IDRAC.oids['oid_drive_status'])
-    SNMP_RESULT_DRIVE_NAMES = HELPER.walk_snmp_values(SESS, HELPER,
-                                                      IDRAC.oids['oid_drive_names'])
-    for i, result in enumerate(SNMP_RESULT_DRIVE_STATUS):
-        IDRAC.update_status(
-            HELPER, IDRAC.check_drives(SNMP_RESULT_DRIVE_NAMES[i],
-                                       SNMP_RESULT_DRIVE_STATUS[i]))
-
+    if HELPER.options.disks:
+        IDRAC.process_disk_states(HELPER, SESS)
 
     # POWER UNIT Status
-    SNMP_RESULT_POWER_STATUS = HELPER.walk_snmp_values(SESS, HELPER,
-                                                       IDRAC.oids['oid_power_unit_status'])
-    SNMP_RESULT_POWER_NAMES = HELPER.walk_snmp_values(SESS, HELPER,
-                                                      IDRAC.oids['oid_power_unit_name'])
-    for i, result in enumerate(SNMP_RESULT_POWER_STATUS):
-        IDRAC.update_status(
-            HELPER, IDRAC.check_power_units(SNMP_RESULT_POWER_NAMES[i],
-                                            SNMP_RESULT_POWER_STATUS[i]))
+    if HELPER.options.power_unit:
+        IDRAC.process_power_unit_states(HELPER, SESS)
 
     # POWER UNIT Redundancy Status
-    SNMP_RESULT_POWER_REDUNDANCY_STATUS = HELPER.walk_snmp_values(
-        SESS, HELPER, IDRAC.oids['oid_power_unit_redundancy'])
-    SNMP_RESULT_POWER_NAMES = HELPER.walk_snmp_values(
-        SESS, HELPER, IDRAC.oids['oid_power_unit_name'])
-
-    for i, result in enumerate(SNMP_RESULT_POWER_REDUNDANCY_STATUS):
-        IDRAC.update_status(
-            HELPER, IDRAC.check_power_unit_redundancy(SNMP_RESULT_POWER_NAMES[i],
-                                                      SNMP_RESULT_POWER_REDUNDANCY_STATUS[i]))
+    if HELPER.options.power_unit_redundancy:
+        IDRAC.process_power_redundancy_status(HELPER, SESS)
 
     # CHASSIS INTRUSION Status
-    SNMP_RESULT_CHASSIS_INTRUSION_STATUS = HELPER.walk_snmp_values(
-        SESS, HELPER, IDRAC.oids['oid_chassis_intrusion'])
-    SNMP_RESULT_CHASSIS_LOCATION = HELPER.walk_snmp_values(
-        SESS, HELPER, IDRAC.oids['oid_chassis_intrusion_location'])
-
-    for i, result in enumerate(SNMP_RESULT_CHASSIS_INTRUSION_STATUS):
-        IDRAC.update_status(
-            HELPER, IDRAC.check_chassis_intrusion(SNMP_RESULT_CHASSIS_INTRUSION_STATUS[i],
-                                                  SNMP_RESULT_CHASSIS_LOCATION[i]))
+    if HELPER.options.intrusion:
+        IDRAC.process_chassis_intrusion(HELPER, SESS)
 
     # COOLING UNIT Status
-    SNMP_RESULT_COOLING_UNIT_STATES = HELPER.walk_snmp_values(
-        SESS, HELPER, IDRAC.oids['oid_cooling_unit_status'])
-    SNMP_RESULT_COOLING_UNIT_NAMES = HELPER.walk_snmp_values(
-        SESS, HELPER, IDRAC.oids['oid_cooling_unit_name'])
-
-    for i, result in enumerate(SNMP_RESULT_COOLING_UNIT_STATES):
-        IDRAC.update_status(
-            HELPER, IDRAC.check_cooling_unit(SNMP_RESULT_COOLING_UNIT_NAMES[i],
-                                             SNMP_RESULT_COOLING_UNIT_STATES[i]))
+    if HELPER.options.cooling_unit:
+        IDRAC.process_cooling_unit_states(HELPER, SESS)
 
     # Temperature Sensors
-    SNMP_RESULT_TEMP_SENSOR_NAMES = HELPER.walk_snmp_values(
-        SESS, HELPER, IDRAC.oids['oid_temperature_probe_location'])
-    SNMP_RESULT_TEMP_SENSOR_STATES = HELPER.walk_snmp_values(
-        SESS, HELPER, IDRAC.oids['oid_temperature_probe_status'])
-    SNMP_RESULT_TEMP_SENSOR_VALUES = HELPER.walk_snmp_values(
-        SESS, HELPER, IDRAC.oids['oid_temperature_probe_reading'])
-
-    for i, result in enumerate(SNMP_RESULT_TEMP_SENSOR_STATES):
-        IDRAC.update_status(
-            HELPER, IDRAC.check_temperature_sensor(SNMP_RESULT_TEMP_SENSOR_NAMES[i],
-                                                   SNMP_RESULT_TEMP_SENSOR_STATES[i]))
-        if i < len(SNMP_RESULT_TEMP_SENSOR_VALUES):
-            HELPER.add_metric(label=SNMP_RESULT_TEMP_SENSOR_NAMES[i],
-                              value=float(SNMP_RESULT_TEMP_SENSOR_VALUES[i]) / 10,
-                              uom='Celsius')
-
-
-    # TODO: add harddrives
-
-    # # we need to refresh the session here ... i don't know why...
-    #
-    # SESS = health_monitoring_plugins.SnmpSession(**HELPER.get_snmp_args())
-    # # Voltage Probe
-    # SNMP_RESULT_VOLTAGE_PROBE_STATES = HELPER.walk_snmp_values(
-    #     SESS, HELPER, IDRAC.oids['oid_voltage_probe_status'])
-    #
-    # SNMP_RESULT_VOLTAGE_PROBE_VALUES = HELPER.walk_snmp_values(
-    #     SESS, HELPER, IDRAC.oids['oid_voltage_probe_reading'])
-    #
-    # SNMP_RESULT_VOLTAGE_PROBE_NAMES = HELPER.walk_snmp_values(
-    #     SESS, HELPER, IDRAC.oids['oid_voltage_probe_location'])
-    #
-    # for i, result in enumerate(SNMP_RESULT_VOLTAGE_PROBE_STATES):
-    #     IDRAC.update_status(
-    #         HELPER, IDRAC.check_voltage_probe(SNMP_RESULT_VOLTAGE_PROBE_NAMES[i],
-    #                                           SNMP_RESULT_VOLTAGE_PROBE_STATES[i]))
-    #
-    #     if i < len(SNMP_RESULT_VOLTAGE_PROBE_VALUES):
-    #         HELPER.add_metric(label=SNMP_RESULT_VOLTAGE_PROBE_NAMES[i],
-    #                           value=float(SNMP_RESULT_VOLTAGE_PROBE_VALUES[i]) / 1000,
-    #                           uom='Volt')
+    if HELPER.options.temperature:
+        IDRAC.process_temperature_sensors(HELPER, SESS)
 
     # check all metrics we added
     HELPER.check_all_metrics()
