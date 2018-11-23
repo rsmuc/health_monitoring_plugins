@@ -349,7 +349,8 @@ def check_power_redundancy():
     The check is skipped if --noPowerRedundancy is set
     """
     # skip the check if --noPowerRedundancy is set
-    if power_redundancy_flag:
+    # Also a 1-supply configuration can never be redundant...
+    if power_redundancy_flag and int(input_pwr_sply) > 1:
         # walk the data        
         ps_redundant_data = walk_data(sess, oid_ps_redundant, helper)[0]
         
