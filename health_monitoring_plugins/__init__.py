@@ -66,19 +66,23 @@ class SnmpHelper(pynag.Plugins.PluginHelper):
             return snmp_result
 
     @staticmethod
-    def walk_snmp_values(sess, helper, oid):
+    def walk_snmp_values(sess, helper, oid, check):
         """ return a snmp value or exits the plugin with unknown"""
-        snmp_walk = sess.walk_oid(oid)
+        try:
+            snmp_walk = sess.walk_oid(oid)
 
-        result_list = []
-        for x in range(len(snmp_walk)):
-            result_list.append(snmp_walk[x].val)
+            result_list = []
+            for x in range(len(snmp_walk)):
+                result_list.append(snmp_walk[x].val)
 
-        if result_list != []:
-            return result_list
+            if result_list != []:
+                return result_list
 
-        else:
-            helper.exit(summary="No response from device for oid " + oid, exit_code=unknown, perfdata='')
+            else:
+                raise SnmpException("No content")
+        except SnmpException:
+            helper.exit(summary="No response from device for %s (%s)" % (check, oid), \
+                        exit_code=unknown, perfdata='')
 
 
 class SnmpSession(netsnmp.Session):
