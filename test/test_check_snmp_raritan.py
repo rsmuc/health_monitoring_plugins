@@ -289,21 +289,21 @@ def test_sensor_temp_normal():
     # Sensor 5 - Temperature - normal
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 5",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
-    assert p.stdout.read() == "OK - Sensor 5 - 'Temperature Rack 3' 21.5C is: normal | 'Temperature Rack 3'=21.5C;18.0:27.0;15.0:31.0;;\n"
+    assert p.stdout.read() == "OK - Sensor 5 - 'Temperature Rack 3' 21.5C is: normal | 'Temperature Rack 3 -C- '=21.5;18.0:27.0;15.0:31.0;;\n"
 
 
 def test_sensor_humid_above():     
     # Sensor 6 - Humidity - aboveupperCritical
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 6",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
-    assert p.stdout.read() == "Critical - Sensor 6 - 'Humidity 1' 45.0% is: aboveUpperCritical | 'Humidity 1'=45.0%;15.0:70.0;10.0:80.0;;\n"
+    assert p.stdout.read() == "Critical - Sensor 6 - 'Humidity 1' 45.0% is: aboveUpperCritical | 'Humidity 1 -%- '=45.0;15.0:70.0;10.0:80.0;;\n"
 
 
 def test_sensor_temp_below():     
     # Sensor 7 - Temperature - belowLowerCritical
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t sensor -i 7",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
-    assert p.stdout.read() == "Warning - Sensor 7 - 'Temperature 2' 22.1C is: belowLowerWarning | 'Temperature 2'=22.1C;20.0:28.0;15.0:32.0;;\n"
+    assert p.stdout.read() == "Warning - Sensor 7 - 'Temperature 2' 22.1C is: belowLowerWarning | 'Temperature 2 -C- '=22.1;20.0:28.0;15.0:32.0;;\n"
 
 
 def test_inlet_ok():    
@@ -311,10 +311,7 @@ def test_inlet_ok():
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py -H 127.0.0.1:1234 -t inlet",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
     assert p.stdout.read() == (
-        "OK - Inlet. 6.1 A. 230.0 V. 1357.0 W. 1400.0 VA. 0.97. 8574135.0 Wh | "
-        "'Sensor 0'=6.1A;0.0:10.4;0.0:12.8;; 'Sensor 1'=230.0V;194.0:247.0;188.0:254.0;; "
-        "'Sensor 2'=1357.0W;0.0:0.0;0.0:0.0;; 'Sensor 3'=1400.0VA;0.0:0.0;0.0:0.0;; "
-        "'Sensor 4'=0.97;0.0:0.0;0.0:0.0;; 'Sensor 5'=8574135.0Wh;0.0:0.0;0.0:0.0;;\n"
+        "OK - Inlet. 6.1 A. 230.0 V. 1357.0 W. 1400.0 VA. 0.97. 8574135.0 Wh | 'Sensor 0 -A-'=6.1;0.0:10.4;0.0:12.8;; 'Sensor 1 -V-'=230.0;194.0:247.0;188.0:254.0;; 'Sensor 2 -W-'=1357.0;0.0:0.0;0.0:0.0;; 'Sensor 3 -VA-'=1400.0;0.0:0.0;0.0:0.0;; 'Sensor 4 --'=0.97;0.0:0.0;0.0:0.0;; 'Sensor 5 -Wh-'=8574135.0;0.0:0.0;0.0:0.0;;\n"
         "6.1 A: normal\n"
         "230.0 V: normal\n"
         "1357.0 W: normal\n"
@@ -500,9 +497,10 @@ def test_inlet_critical():
     assert p.stdout.read() == (
         "Critical - Inlet. 6.1 A is belowLowerCritical. 6.1 A. 230.0 V is belowLowerWarning. "
         "230.0 V. 1357.0 W. 1400.0 VA is aboveUpperWarning. 1400.0 VA. 0.97  is aboveUpperCritical. "
-        "0.97. 8574135.0 Wh | 'Sensor 0'=6.1A;0.0:10.4;0.0:12.8;; 'Sensor 1'=230.0V;194.0:247.0;188.0:254.0;; "
-        "'Sensor 2'=1357.0W;0.0:0.0;0.0:0.0;; 'Sensor 3'=1400.0VA;0.0:0.0;0.0:0.0;; "
-        "'Sensor 4'=0.97;0.0:0.0;0.0:0.0;; 'Sensor 5'=8574135.0Wh;0.0:0.0;0.0:0.0;;\n"
+        "0.97. 8574135.0 Wh | 'Sensor 0 -A-'=6.1;0.0:10.4;0.0:12.8;; 'Sensor 1 -V-"
+        "'=230.0;194.0:247.0;188.0:254.0;; "
+        "'Sensor 2 -W-'=1357.0;0.0:0.0;0.0:0.0;; 'Sensor 3 -VA-'=1400.0;0.0:0.0;0.0:0.0;; "
+        "'Sensor 4 --'=0.97;0.0:0.0;0.0:0.0;; 'Sensor 5 -Wh-'=8574135.0;0.0:0.0;0.0:0.0;;\n"
         "6.1 A: belowLowerCritical\n"
         "230.0 V: belowLowerWarning\n"
         "1357.0 W: normal\n"

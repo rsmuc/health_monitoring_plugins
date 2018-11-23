@@ -149,9 +149,10 @@ class Raritan(object):
             # we always want to see the values in the long output and in the perf data
             helper.add_summary("%s %s" % (inlet_value, inlet_unit))
             helper.add_long_output("%s %s: %s" % (inlet_value, inlet_unit, inlet_state))
-            helper.add_metric("Sensor " + str(x), inlet_value, inlet_warning_lower +\
+            helper.add_metric("Sensor " + str(x) + " -%s-" % inlet_unit, inlet_value,
+                              inlet_warning_lower +\
                               ":" + inlet_warning_upper, inlet_critical_lower + ":" +\
-                              inlet_critical_upper, "", "", inlet_unit)
+                              inlet_critical_upper, "", "", "")
 
     def check_outlet(self, helper):
         """
@@ -218,9 +219,10 @@ class Raritan(object):
             real_sensor_warning_lower   = real_value(sensor_warning_lower, sensor_digit)
             real_sensor_critical_lower  = real_value(sensor_critical_lower, sensor_digit)
             # metrics are only possible for these sensors
-            helper.add_metric(sensor_name, real_sensor_value, real_sensor_warning_lower +\
+            helper.add_metric(sensor_name + " -%s- " % sensor_unit_string, real_sensor_value,
+                              real_sensor_warning_lower +\
                               ":" + real_sensor_warning_upper, real_sensor_critical_lower +\
-                              ":" + real_sensor_critical_upper, "", "", sensor_unit_string)
+                              ":" + real_sensor_critical_upper, "", "", "")
 
         # "OK" state
         if sensor_state_string in ["closed", "normal", "on", "notDetected", "ok", "yes", "one", "two", "inSync"]:
