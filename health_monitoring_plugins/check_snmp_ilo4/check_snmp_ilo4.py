@@ -330,12 +330,8 @@ def check_ps():
         for x, state in enumerate(ps_data, 1):
             # human readable status
             hr_status = normal_state[int(state)]
-            if  hr_status != "ok":
-                # if the power supply is ok, we will set a critical status and add it to the summary
-                helper.add_summary('Power supply status %s: %s' % (x, hr_status))
-                helper.status(critical)
-            else:
-                # if everything is ok, we increase the ps_ok_count
+            if hr_status == "ok":
+                # if the power supply is ok, we increase the ps_ok_count
                 ps_ok_count += 1
             
             # we always want to see the status in the long output
