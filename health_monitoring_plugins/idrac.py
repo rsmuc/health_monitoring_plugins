@@ -34,14 +34,6 @@ SYSTEM_POWER_STATE = {
     }
 }
 
-# SYSTEM_POWER_STATE = {
-#     1: 'other',
-#     2: 'unknown',
-#     3: 'off',
-#     4: 'on'
-# }
-
-
 POWER_UNIT_REDUNDANCY_STATE = {
     1: {
         "result": "other",
@@ -72,16 +64,6 @@ POWER_UNIT_REDUNDANCY_STATE = {
         "icingastatus": critical
     }
 }
-
-# POWER_UNIT_REDUNDANCY_STATE = {
-#     1: 'other',
-#     2: 'unknown',
-#     3: 'full',
-#     4: 'degraded',
-#     5: 'lost',
-#     6: 'notRedundant',
-#     7: 'redundancyOffline'
-# }
 
 PROBE_STATE = {
     1: 'other',
@@ -170,8 +152,6 @@ class Idrac(object):
     def __init__(self, session):
         self.sess = session
         self.oids = self.get_oids()
-        # self.ntp_status = self.get_ntp_status(mibversion)
-        # self.gps_mode = self.get_gps_mode(mibversion)
 
     @staticmethod
     def get_oids():
@@ -242,28 +222,28 @@ class Idrac(object):
         snmp_result_system_status = helper.get_snmp_value(session, helper,
                                                           self.oids['oid_global_system'])
         self.update_status(
-            helper, self.__check_system_status(snmp_result_system_status))
+            helper, self.check_system_status(snmp_result_system_status))
 
     def process_power_status(self, helper, session):
         """ process the power status """
         snmp_result_power_status = helper.get_snmp_value(session, helper,
                                                          self.oids['oid_system_power'])
         self.update_status(
-            helper, self.__check_system_power_status(snmp_result_power_status))
+            helper, self.check_system_power_status(snmp_result_power_status))
 
     def process_storage_status(self, helper, session):
         """ process the storage status """
         snmp_result_storage_status = helper.get_snmp_value(session, helper, self.oids[
             'oid_global_storage'])
         self.update_status(
-            helper, self.__check_system_storage_status(snmp_result_storage_status))
+            helper, self.check_system_storage_status(snmp_result_storage_status))
 
     def process_lcd_status(self, helper, session):
         """"process the lcd status"""
         snmp_result_lcd_status = helper.get_snmp_value(session, helper, self.oids[
             'oid_global_system'])
         self.update_status(
-            helper, self.__check_system_lcd_status(snmp_result_lcd_status))
+            helper, self.check_system_lcd_status(snmp_result_lcd_status))
 
     def process_disk_states(self, helper, session):
         """ process the disks """
@@ -275,7 +255,7 @@ class Idrac(object):
                                                           "disk status")
         for i, _result in enumerate(snmp_result_drive_status):
             self.update_status(
-                helper, self.__check_drives(snmp_result_drive_names[i],
+                helper, self.check_drives(snmp_result_drive_names[i],
                                             snmp_result_drive_status[i]))
 
     def process_power_unit_states(self, helper, session):
@@ -288,7 +268,7 @@ class Idrac(object):
                                                           "power unit status")
         for i, _result in enumerate(snmp_result_power_status):
             self.update_status(
-                helper, self.__check_power_units(snmp_result_power_names[i],
+                helper, self.check_power_units(snmp_result_power_names[i],
                                                  snmp_result_power_status[i]))
 
     def process_power_redundancy_status(self, helper, session):
@@ -300,7 +280,7 @@ class Idrac(object):
 
         for i, _result in enumerate(power_redundancy_status):
             self.update_status(
-                helper, self.__check_power_unit_redundancy(power_names[i],
+                helper, self.check_power_unit_redundancy(power_names[i],
                                                            power_redundancy_status[i]))
 
     def process_chassis_intrusion(self, helper, session):
@@ -312,7 +292,7 @@ class Idrac(object):
 
         for i, _result in enumerate(chassis_intrusion_status):
             self.update_status(
-                helper, self.__check_chassis_intrusion(chassis_intrusion_status[i],
+                helper, self.check_chassis_intrusion(chassis_intrusion_status[i],
                                                        chassis_location[i]))
 
     def process_cooling_unit_states(self, helper, session):
@@ -324,7 +304,7 @@ class Idrac(object):
 
         for i, _result in enumerate(snmp_result_cooling_unit_states):
             self.update_status(
-                helper, self.__check_cooling_unit(snmp_result_cooling_unit_names[i],
+                helper, self.check_cooling_unit(snmp_result_cooling_unit_names[i],
                                                   snmp_result_cooling_unit_states[i]))
 
     def process_temperature_sensors(self, helper, session):
@@ -338,102 +318,66 @@ class Idrac(object):
 
         for i, _result in enumerate(snmp_result_temp_sensor_states):
             self.update_status(
-                helper, self.__check_temperature_sensor(snmp_result_temp_sensor_names[i],
+                helper, self.check_temperature_sensor(snmp_result_temp_sensor_names[i],
                                                         snmp_result_temp_sensor_states[i]))
             if i < len(snmp_result_temp_sensor_values):
                 helper.add_metric(label=snmp_result_temp_sensor_names[i] + " -Celsius-",
                                   value=float(snmp_result_temp_sensor_values[i]) / 10)
 
     @staticmethod
-    def __check_drives(drivename, drivestatus):
+    def check_drives(drivename, drivestatus):
         """ check the drive status """
-
-        # status_string = DISK_STATES.get(int(drivestatus), "unknown")
-        #
-        # if status_string == "ready" or status_string == "online":
-        #     return ok, "Drive '%s' status is': %s" % (drivename, status_string)
-        #
-        # elif status_string == "unknown":
-        #     return unknown, "Drive '%s' status is': %s" % (drivename, status_string)
-        #
-        # elif status_string == "failed" or status_string == "removed":
-        #     return critical, "Drive '%s' status is': %s" % (drivename, status_string)
-        #
-        # return warning, "Drive '%s' status is': %s" % (drivename, status_string)
 
         return DISK_STATES[int(drivestatus)]["icingastatus"], "Drive '%s': %s" % (
             drivename, DISK_STATES[int(drivestatus)]["result"])
 
     @staticmethod
-    def __check_system_status(lcd_status):
+    def check_system_status(lcd_status):
         """ check the global system status """
         return normal_check("global", lcd_status, "Device status")
 
     @staticmethod
-    def __check_system_lcd_status(lcd_status):
+    def check_system_lcd_status(lcd_status):
         """ check the LCD front panel status """
         return normal_check("global", lcd_status, "LCD status")
 
     @staticmethod
-    def __check_system_storage_status(storage_status):
+    def check_system_storage_status(storage_status):
         """ check the storage status """
         return normal_check("global", storage_status, "Storage status")
 
     @staticmethod
-    def __check_system_power_status(power_state):
+    def check_system_power_status(power_state):
         """ check the global system power state """
-        # status_string = SYSTEM_POWER_STATE.get(int(power_state), "unknown")
-        #
-        # if status_string == "on":
-        #     return ok, "System power status': %s" % status_string
-        #
-        # if status_string == "unknown":
-        #     return unknown, "System power status': %s" % status_string
-        #
-        # return critical, "System power status': %s" % status_string
-
         return SYSTEM_POWER_STATE[int(power_state)]["icingastatus"], \
                "System power status: '%s'" % SYSTEM_POWER_STATE[int(power_state)]["result"]
 
     @staticmethod
-    def __check_power_unit_redundancy(power_unit_name_data, power_unit_redundancy_data):
+    def check_power_unit_redundancy(power_unit_name_data, power_unit_redundancy_data):
         """ check the status of the power units """
-        # power_unit_redundancy_status = \
-        #     POWER_UNIT_REDUNDANCY_STATE.get(int(power_unit_redundancy_data), "unknown")
-        #
-        # if power_unit_redundancy_status == "unknown":
-        #     return unknown, "Power unit '%s' redundancy: %s" \
-        #            % (power_unit_name_data, power_unit_redundancy_status)
-        #
-        # elif power_unit_redundancy_status != "full":
-        #     return critical, "Power unit '%s' redundancy: %s" \
-        #            % (power_unit_name_data, power_unit_redundancy_status)
-        #
-        # return ok, "Power unit '%s' redundancy: %s" \
-        #        % (power_unit_name_data, power_unit_redundancy_status)
         return POWER_UNIT_REDUNDANCY_STATE[int(power_unit_redundancy_data)]["icingastatus"], \
                "Power unit '%s' redundancy: %s" % \
                (power_unit_name_data,
                 POWER_UNIT_REDUNDANCY_STATE[int(power_unit_redundancy_data)]["result"])
 
     @staticmethod
-    def __check_power_units(power_unit_name_data, power_unit_status_data):
+    def check_power_units(power_unit_name_data, power_unit_status_data):
         """ check the status of the power units """
         return normal_check(power_unit_name_data, power_unit_status_data, "Power unit")
 
     @staticmethod
-    def __check_chassis_intrusion(chassis_intrusion_data, chassis_intrusion_location_data):
+    def check_chassis_intrusion(chassis_intrusion_data, chassis_intrusion_location_data):
         """check the chassis intrusion"""
         return normal_check(chassis_intrusion_location_data, chassis_intrusion_data,
                             "Chassis intrusion sensor")
 
     @staticmethod
-    def __check_cooling_unit(cooling_unit_name_data, cooling_unit_status_data):
+    def check_cooling_unit(cooling_unit_name_data, cooling_unit_status_data):
         """ check the status of the cooling units"""
         return normal_check(cooling_unit_name_data, cooling_unit_status_data, "Cooling unit")
 
     @staticmethod
-    def __check_temperature_sensor(temperature_sensor_name, temperature_sensor_status):
+    def check_temperature_sensor(temperature_sensor_name, temperature_sensor_status):
         """ check the temperature sensors """
         return probe_check(temperature_sensor_name, temperature_sensor_status, "Temperature sensor")
 
