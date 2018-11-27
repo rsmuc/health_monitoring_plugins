@@ -15,7 +15,25 @@ class SnmpException(Exception):
     pass
 
 
-class SnmpHelper(pynag.Plugins.PluginHelper):
+class HelperExtension(pynag.Plugins.PluginHelper):
+    """some extensions for the Pynag Helper"""
+    def __init__(self):
+        pass
+
+    def update_status(self, helper, status):
+        """ update the helper """
+        if status:
+            self.status(status[0])
+
+            # if the status is ok, add it to the long output
+            if status[0] == 0:
+                self.add_long_output(status[1])
+            # if the status is not ok, add it to the summary
+            else:
+                self.add_summary(status[1])
+
+
+class SnmpHelper(pynag.Plugins.PluginHelper, HelperExtension):
     def __init__(self, *args, **kwargs):
         pynag.Plugins.PluginHelper.__init__(self, *args, **kwargs)
         self.parser.add_option('-H', '--hostname', help="Hostname or ip address")

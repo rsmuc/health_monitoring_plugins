@@ -190,23 +190,23 @@ class Idrac(object):
             "oid_drive_status": '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.4'
         }
 
-    @staticmethod
-    def update_status(helper, status):
-        """ update the helper """
-        if status:
-            helper.status(status[0])
-
-            # if the status is ok, add it to the long output
-            if status[0] == 0:
-                helper.add_long_output(status[1])
-            # if the status is not ok, add it to the summary
-            else:
-                helper.add_summary(status[1])
+    # @staticmethod
+    # def update_status(helper, status):
+    #     """ update the helper """
+    #     if status:
+    #         helper.status(status[0])
+    #
+    #         # if the status is ok, add it to the long output
+    #         if status[0] == 0:
+    #             helper.add_long_output(status[1])
+    #         # if the status is not ok, add it to the summary
+    #         else:
+    #             helper.add_summary(status[1])
 
     def add_device_information(self, helper, session):
         """ add general device information to summary """
         host_name_data = helper.get_snmp_value(session, helper,
-                                                        self.oids['oid_host_name'])
+                                               self.oids['oid_host_name'])
 
         product_type_data = helper.get_snmp_value(session, helper,
                                                   self.oids['oid_product_type'])
@@ -221,28 +221,28 @@ class Idrac(object):
         """ process the global system status """
         snmp_result_system_status = helper.get_snmp_value(session, helper,
                                                           self.oids['oid_global_system'])
-        self.update_status(
+        helper.update_status(
             helper, self.check_system_status(snmp_result_system_status))
 
     def process_power_status(self, helper, session):
         """ process the power status """
         snmp_result_power_status = helper.get_snmp_value(session, helper,
                                                          self.oids['oid_system_power'])
-        self.update_status(
+        helper.update_status(
             helper, self.check_system_power_status(snmp_result_power_status))
 
     def process_storage_status(self, helper, session):
         """ process the storage status """
         snmp_result_storage_status = helper.get_snmp_value(session, helper, self.oids[
             'oid_global_storage'])
-        self.update_status(
+        helper.update_status(
             helper, self.check_system_storage_status(snmp_result_storage_status))
 
     def process_lcd_status(self, helper, session):
         """"process the lcd status"""
         snmp_result_lcd_status = helper.get_snmp_value(session, helper, self.oids[
             'oid_global_system'])
-        self.update_status(
+        helper.update_status(
             helper, self.check_system_lcd_status(snmp_result_lcd_status))
 
     def process_disk_states(self, helper, session):
@@ -254,9 +254,9 @@ class Idrac(object):
                                                           self.oids['oid_drive_names'],
                                                           "disk status")
         for i, _result in enumerate(snmp_result_drive_status):
-            self.update_status(
+            helper.update_status(
                 helper, self.check_drives(snmp_result_drive_names[i],
-                                            snmp_result_drive_status[i]))
+                                          snmp_result_drive_status[i]))
 
     def process_power_unit_states(self, helper, session):
         """process the power units"""
@@ -267,9 +267,9 @@ class Idrac(object):
                                                           self.oids['oid_power_unit_name'],
                                                           "power unit status")
         for i, _result in enumerate(snmp_result_power_status):
-            self.update_status(
+            helper.update_status(
                 helper, self.check_power_units(snmp_result_power_names[i],
-                                                 snmp_result_power_status[i]))
+                                               snmp_result_power_status[i]))
 
     def process_power_redundancy_status(self, helper, session):
         """process the power redundancy status"""
@@ -279,9 +279,9 @@ class Idrac(object):
             session, helper, self.oids['oid_power_unit_name'], "power redundancy status")
 
         for i, _result in enumerate(power_redundancy_status):
-            self.update_status(
+            helper.update_status(
                 helper, self.check_power_unit_redundancy(power_names[i],
-                                                           power_redundancy_status[i]))
+                                                         power_redundancy_status[i]))
 
     def process_chassis_intrusion(self, helper, session):
         """process the chassis intrusion sensor"""
@@ -291,9 +291,9 @@ class Idrac(object):
             session, helper, self.oids['oid_chassis_intrusion_location'], "intrusion status")
 
         for i, _result in enumerate(chassis_intrusion_status):
-            self.update_status(
+            helper.update_status(
                 helper, self.check_chassis_intrusion(chassis_intrusion_status[i],
-                                                       chassis_location[i]))
+                                                     chassis_location[i]))
 
     def process_cooling_unit_states(self, helper, session):
         """process the cooling unit"""
@@ -303,9 +303,9 @@ class Idrac(object):
             session, helper, self.oids['oid_cooling_unit_name'], "cooling unit status")
 
         for i, _result in enumerate(snmp_result_cooling_unit_states):
-            self.update_status(
+            helper.update_status(
                 helper, self.check_cooling_unit(snmp_result_cooling_unit_names[i],
-                                                  snmp_result_cooling_unit_states[i]))
+                                                snmp_result_cooling_unit_states[i]))
 
     def process_temperature_sensors(self, helper, session):
         """process the temperature sensors"""
@@ -317,9 +317,9 @@ class Idrac(object):
             session, helper, self.oids['oid_temperature_probe_reading'], "temperature sensors")
 
         for i, _result in enumerate(snmp_result_temp_sensor_states):
-            self.update_status(
+            helper.update_status(
                 helper, self.check_temperature_sensor(snmp_result_temp_sensor_names[i],
-                                                        snmp_result_temp_sensor_states[i]))
+                                                      snmp_result_temp_sensor_states[i]))
             if i < len(snmp_result_temp_sensor_values):
                 helper.add_metric(label=snmp_result_temp_sensor_names[i] + " -Celsius-",
                                   value=float(snmp_result_temp_sensor_values[i]) / 10)
