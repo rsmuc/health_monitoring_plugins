@@ -57,50 +57,50 @@ if __name__ == '__main__':
     # The default return value should be always OK
     HELPER.status(ok)
 
-    IDRAC = health_monitoring_plugins.idrac.Idrac(SESS)
+    idrac = health_monitoring_plugins.idrac.Idrac(SESS)
 
     # Device information
-    IDRAC.add_device_information(HELPER, SESS)
+    idrac.add_device_information(HELPER, SESS)
 
     # SYSTEM STATUS
     if HELPER.options.system:
-        IDRAC.process_system_status(HELPER, SESS)
+        idrac.process_system_status(HELPER, SESS)
 
     # SYSTEM POWER STATUS
     if HELPER.options.power:
-        IDRAC.process_power_status(HELPER, SESS)
+        idrac.process_power_status(HELPER, SESS)
 
     # SYSTEM STORAGE STATUS
     if HELPER.options.storage:
-        IDRAC.process_storage_status(HELPER, SESS)
+        idrac.process_storage_status(HELPER, SESS)
 
     # LCD STATUS
     if HELPER.options.lcd:
-        IDRAC.process_lcd_status(HELPER, SESS)
+        idrac.process_lcd_status(HELPER, SESS)
 
     # DISK STATES
     if HELPER.options.disks:
-        IDRAC.process_disk_states(HELPER, SESS)
+        idrac.process_disk_states(HELPER, SESS)
 
     # POWER UNIT Status
     if HELPER.options.power_unit:
-        IDRAC.process_power_unit_states(HELPER, SESS)
+        idrac.process_power_unit_states(HELPER, SESS)
 
     # POWER UNIT Redundancy Status
     if HELPER.options.power_unit_redundancy:
-        IDRAC.process_power_redundancy_status(HELPER, SESS)
+        idrac.process_power_redundancy_status(HELPER, SESS)
 
     # CHASSIS INTRUSION Status
     if HELPER.options.intrusion:
-        IDRAC.process_chassis_intrusion(HELPER, SESS)
+        idrac.process_chassis_intrusion(HELPER, SESS)
 
     # COOLING UNIT Status
     if HELPER.options.cooling_unit:
-        IDRAC.process_cooling_unit_states(HELPER, SESS)
+        idrac.process_cooling_unit_states(HELPER, SESS)
 
     # Temperature Sensors
     if HELPER.options.temperature:
-        IDRAC.process_temperature_sensors(HELPER, SESS)
+        idrac.process_temperature_sensors(HELPER, SESS)
 
     # check all metrics we added
     HELPER.check_all_metrics()

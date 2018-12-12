@@ -108,8 +108,8 @@ DISK_STATES = {
         "icingastatus": critical
     },
     8: {
-        "result": "non-raid",
-        "icingastatus": warning
+        "result": "non-raid",  # for example an internal m.2 will be shown as non-raid
+        "icingastatus": ok
     },
     9: {
         "result": "removed",
