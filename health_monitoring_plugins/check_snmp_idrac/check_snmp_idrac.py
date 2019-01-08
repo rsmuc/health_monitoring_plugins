@@ -21,9 +21,6 @@ import health_monitoring_plugins.idrac
 if __name__ == '__main__':
     HELPER = health_monitoring_plugins.SnmpHelper()
 
-    HELPER.parser.add_option('--noPowerRedundancy', help='Do not check powersupply redundancy',
-                             default=True,
-                             action='store_false', dest='no_pwr_redund')
     HELPER.parser.add_option('--no-system', help='Do not check the global system status',
                              default=True, action='store_false', dest='system')
     HELPER.parser.add_option('--no-power', help='Do not check the power status',

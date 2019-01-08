@@ -31,6 +31,19 @@ The plugin requires [pynag]
   -x PRIVPROTO          SNMPv3:  privacy protocol (DES|AES)
   -X PRIVPASS           SNMPv3:   privacy protocol pass phrase
 
+  --noPowerRedundancy   Do not check powersupply redundancy
+  --no-system           Do not check the global system status
+  --no-power            Do not check the power status
+  --no-storage          Do not check the storage status
+  --no-disks            Do not check the disks
+  --no-lcd              Do not check the lcd status
+  --no-power_unit       Do not check the power unit
+  --no-redundancy       Do not check the power unit redundancy
+  --no-intrusion        Do not check the intrusion sensor
+  --no-cooling          Do not check the cooling unit
+  --no-temperature      Do not check the temperature
+
+
 ```
 
 #### Defaults
