@@ -124,12 +124,12 @@ def normal_check(name, status, device_type):
     status_string = NORMAL_STATE.get(int(status), "unknown")
 
     if status_string == "ok":
-        return ok, "%s '%s': %s" % (device_type, name, status_string)
+        return ok, "{} '{}': {}".format(device_type, name, status_string)
 
     elif status_string == "unknown":
-        return unknown, "%s '%s': %s" % (device_type, name, status_string)
+        return unknown, "{} '{}': {}".format(device_type, name, status_string)
 
-    return critical, "%s '%s': %s" % (device_type, name, status_string)
+    return critical, "{} '{}': {}".format(device_type, name, status_string)
 
 
 def probe_check(name, status, device_type):
@@ -138,12 +138,12 @@ def probe_check(name, status, device_type):
     status_string = PROBE_STATE.get(int(status), "unknown")
 
     if status_string == "ok":
-        return ok, "%s '%s': %s" % (device_type, name, status_string)
+        return ok, "{} '{}': {}".format(device_type, name, status_string)
 
     if status_string == "unknown":
-        return unknown, "%s '%s': %s" % (device_type, name, status_string)
+        return unknown, "{} '{}': {}".format(device_type, name, status_string)
 
-    return critical, "%s '%s': %s" % (device_type, name, status_string)
+    return critical, "{} '{}': {}".format(device_type, name, status_string)
 
 
 class Idrac(object):
@@ -190,19 +190,6 @@ class Idrac(object):
             "oid_drive_status": '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.4'
         }
 
-    # @staticmethod
-    # def update_status(helper, status):
-    #     """ update the helper """
-    #     if status:
-    #         helper.status(status[0])
-    #
-    #         # if the status is ok, add it to the long output
-    #         if status[0] == 0:
-    #             helper.add_long_output(status[1])
-    #         # if the status is not ok, add it to the summary
-    #         else:
-    #             helper.add_summary(status[1])
-
     def add_device_information(self, helper, session):
         """ add general device information to summary """
         host_name_data = helper.get_snmp_value(session, helper,
@@ -214,7 +201,7 @@ class Idrac(object):
         service_tag_data = helper.get_snmp_value(session, helper,
                                                  self.oids['oid_service_tag'])
 
-        helper.add_summary('Name: %s - Typ: %s - Service tag: %s' % (
+        helper.add_summary('Name: {} - Typ: {} - Service tag: {}'.format(
             host_name_data, product_type_data, service_tag_data))
 
     def process_system_status(self, helper, session):
@@ -328,7 +315,7 @@ class Idrac(object):
     def check_drives(drivename, drivestatus):
         """ check the drive status """
 
-        return DISK_STATES[int(drivestatus)]["icingastatus"], "Drive '%s': %s" % (
+        return DISK_STATES[int(drivestatus)]["icingastatus"], "Drive '{}': {}".format(
             drivename, DISK_STATES[int(drivestatus)]["result"])
 
     @staticmethod
@@ -349,15 +336,14 @@ class Idrac(object):
     @staticmethod
     def check_system_power_status(power_state):
         """ check the global system power state """
-        return SYSTEM_POWER_STATE[int(power_state)]["icingastatus"], \
-               "System power status: '%s'" % SYSTEM_POWER_STATE[int(power_state)]["result"]
+        return SYSTEM_POWER_STATE[int(power_state)]["icingastatus"],\
+               "System power status: '{}'".format(SYSTEM_POWER_STATE[int(power_state)]["result"])
 
     @staticmethod
     def check_power_unit_redundancy(power_unit_name_data, power_unit_redundancy_data):
         """ check the status of the power units """
         return POWER_UNIT_REDUNDANCY_STATE[int(power_unit_redundancy_data)]["icingastatus"], \
-               "Power unit '%s' redundancy: %s" % \
-               (power_unit_name_data,
+               "Power unit '{}' redundancy: {}".format(power_unit_name_data,
                 POWER_UNIT_REDUNDANCY_STATE[int(power_unit_redundancy_data)]["result"])
 
     @staticmethod

@@ -162,7 +162,7 @@ class Raritan(object):
             outlet_name, outlet_state = self.sess.get_oids(self.oids['oid_outlet_name'], self.oids['oid_outlet_state'])
         except health_monitoring_plugins.SnmpException as e:
             helper.exit(summary=str(e), exit_code=unknown, perfdata='')
-        outlet_real_state           = states[int(outlet_state)]
+        outlet_real_state = states[int(outlet_state)]
 
         # here we check if the outlet is powered on
         if outlet_real_state != "on":

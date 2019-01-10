@@ -19,88 +19,87 @@ from pynag.Plugins import ok
 import health_monitoring_plugins.idrac
 
 if __name__ == '__main__':
-    HELPER = health_monitoring_plugins.SnmpHelper()
+    # pylint: disable=C0103
+    helper = health_monitoring_plugins.SnmpHelper()
 
-    HELPER.parser.add_option('--no-system', help='Do not check the global system status',
+    helper.parser.add_option('--no-system', help='Do not check the global system status',
                              default=True, action='store_false', dest='system')
-    HELPER.parser.add_option('--no-power', help='Do not check the power status',
+    helper.parser.add_option('--no-power', help='Do not check the power status',
                              default=True, action='store_false', dest='power')
-    HELPER.parser.add_option('--no-storage', help='Do not check the storage status',
+    helper.parser.add_option('--no-storage', help='Do not check the storage status',
                              default=True, action='store_false', dest='storage')
-    HELPER.parser.add_option('--no-disks', help='Do not check the disks',
+    helper.parser.add_option('--no-disks', help='Do not check the disks',
                              default=True, action='store_false', dest='disks')
-    HELPER.parser.add_option('--no-lcd', help='Do not check the lcd status',
+    helper.parser.add_option('--no-lcd', help='Do not check the lcd status',
                              default=True, action='store_false', dest='lcd')
-    HELPER.parser.add_option('--no-power_unit', help='Do not check the power unit',
+    helper.parser.add_option('--no-power_unit', help='Do not check the power unit',
                              default=True, action='store_false', dest='power_unit')
-    HELPER.parser.add_option('--no-redundancy', help='Do not check the power unit redundancy',
+    helper.parser.add_option('--no-redundancy', help='Do not check the power unit redundancy',
                              default=True, action='store_false', dest='power_unit_redundancy')
-    HELPER.parser.add_option('--no-intrusion', help='Do not check the intrusion sensor',
+    helper.parser.add_option('--no-intrusion', help='Do not check the intrusion sensor',
                              default=True, action='store_false', dest='intrusion')
-    HELPER.parser.add_option('--no-cooling', help='Do not check the cooling unit',
+    helper.parser.add_option('--no-cooling', help='Do not check the cooling unit',
                              default=True, action='store_false', dest='cooling_unit')
-    HELPER.parser.add_option('--no-temperature', help='Do not check the temperature',
+    helper.parser.add_option('--no-temperature', help='Do not check the temperature',
                              default=True, action='store_false', dest='temperature')
 
+    helper.parse_arguments()
 
-    HELPER.parse_arguments()
+    # we need to increase the default timeout. the snmp session takes too long.
+    helper.options.timeout = max(helper.options.timeout, 2000)
 
-    # TODO: we need to increase the default timeout. the snmp session takes too long.
-    if HELPER.options.timeout < 2000:
-        HELPER.options.timeout = 2000
-
-    SESS = health_monitoring_plugins.SnmpSession(**HELPER.get_snmp_args())
+    sess = health_monitoring_plugins.SnmpSession(**helper.get_snmp_args())
 
     # The default return value should be always OK
-    HELPER.status(ok)
+    helper.status(ok)
 
-    idrac = health_monitoring_plugins.idrac.Idrac(SESS)
+    idrac = health_monitoring_plugins.idrac.Idrac(sess)
 
     # Device information
-    idrac.add_device_information(HELPER, SESS)
+    idrac.add_device_information(helper, sess)
 
     # SYSTEM STATUS
-    if HELPER.options.system:
-        idrac.process_system_status(HELPER, SESS)
+    if helper.options.system:
+        idrac.process_system_status(helper, sess)
 
     # SYSTEM POWER STATUS
-    if HELPER.options.power:
-        idrac.process_power_status(HELPER, SESS)
+    if helper.options.power:
+        idrac.process_power_status(helper, sess)
 
     # SYSTEM STORAGE STATUS
-    if HELPER.options.storage:
-        idrac.process_storage_status(HELPER, SESS)
+    if helper.options.storage:
+        idrac.process_storage_status(helper, sess)
 
     # LCD STATUS
-    if HELPER.options.lcd:
-        idrac.process_lcd_status(HELPER, SESS)
+    if helper.options.lcd:
+        idrac.process_lcd_status(helper, sess)
 
     # DISK STATES
-    if HELPER.options.disks:
-        idrac.process_disk_states(HELPER, SESS)
+    if helper.options.disks:
+        idrac.process_disk_states(helper, sess)
 
     # POWER UNIT Status
-    if HELPER.options.power_unit:
-        idrac.process_power_unit_states(HELPER, SESS)
+    if helper.options.power_unit:
+        idrac.process_power_unit_states(helper, sess)
 
     # POWER UNIT Redundancy Status
-    if HELPER.options.power_unit_redundancy:
-        idrac.process_power_redundancy_status(HELPER, SESS)
+    if helper.options.power_unit_redundancy:
+        idrac.process_power_redundancy_status(helper, sess)
 
     # CHASSIS INTRUSION Status
-    if HELPER.options.intrusion:
-        idrac.process_chassis_intrusion(HELPER, SESS)
+    if helper.options.intrusion:
+        idrac.process_chassis_intrusion(helper, sess)
 
     # COOLING UNIT Status
-    if HELPER.options.cooling_unit:
-        idrac.process_cooling_unit_states(HELPER, SESS)
+    if helper.options.cooling_unit:
+        idrac.process_cooling_unit_states(helper, sess)
 
     # Temperature Sensors
-    if HELPER.options.temperature:
-        idrac.process_temperature_sensors(HELPER, SESS)
+    if helper.options.temperature:
+        idrac.process_temperature_sensors(helper, sess)
 
     # check all metrics we added
-    HELPER.check_all_metrics()
+    helper.check_all_metrics()
 
     # Print out plugin information and exit nagios-style
-    HELPER.exit()
+    helper.exit()
