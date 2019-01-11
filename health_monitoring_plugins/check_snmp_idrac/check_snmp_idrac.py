@@ -60,39 +60,39 @@ if __name__ == '__main__':
 
     # SYSTEM STATUS
     if helper.options.system:
-        idrac.process_system_status(helper, sess)
+        idrac.process_status(helper, sess, "global_system")
 
     # SYSTEM POWER STATUS
     if helper.options.power:
-        idrac.process_power_status(helper, sess)
+        idrac.process_status(helper, sess, "system_power")
 
     # SYSTEM STORAGE STATUS
     if helper.options.storage:
-        idrac.process_storage_status(helper, sess)
+        idrac.process_status(helper, sess, "global_storage")
 
     # LCD STATUS
     if helper.options.lcd:
-        idrac.process_lcd_status(helper, sess)
+        idrac.process_status(helper, sess, "system_lcd")
 
     # DISK STATES
     if helper.options.disks:
-        idrac.process_disk_states(helper, sess)
+        idrac.process_states(helper, sess, "drive")
 
     # POWER UNIT Status
     if helper.options.power_unit:
-        idrac.process_power_unit_states(helper, sess)
+        idrac.process_states(helper, sess, "power_unit")
 
     # POWER UNIT Redundancy Status
     if helper.options.power_unit_redundancy:
-        idrac.process_power_redundancy_status(helper, sess)
+        idrac.process_states(helper, sess, "power_unit_redundancy")
 
     # CHASSIS INTRUSION Status
     if helper.options.intrusion:
-        idrac.process_chassis_intrusion(helper, sess)
+        idrac.process_states(helper, sess, "chassis_intrusion")
 
     # COOLING UNIT Status
     if helper.options.cooling_unit:
-        idrac.process_cooling_unit_states(helper, sess)
+        idrac.process_states(helper, sess, "cooling_unit")
 
     # Temperature Sensors
     if helper.options.temperature:
