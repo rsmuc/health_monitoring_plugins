@@ -298,8 +298,3 @@ class Idrac(object):
                                                        POWER_UNIT_REDUNDANCY_STATE[
                                                            int(power_unit_redundancy_data)]
                                                        ["result"])
-
-    @staticmethod
-    def check_voltage_probe(voltage_probe_name, voltage_probe_status):
-        """ check the voltage probe """
-        return probe_check(voltage_probe_name, voltage_probe_status, "Voltage probe")
