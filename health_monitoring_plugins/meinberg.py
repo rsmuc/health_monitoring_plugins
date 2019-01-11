@@ -55,7 +55,7 @@ class Meinberg(object):
             "3": "syncToSerialRefclock",
             "4": "normalOperationPPS",
             "5": "normalOperationRefclock",
-            "99": "unkown"
+            "99": "unknown"
             }
 
     @staticmethod
