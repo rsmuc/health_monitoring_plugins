@@ -167,5 +167,5 @@ class Meinberg(object):
         check and show the good satellites
         """
         # Show the summary and add the metric and afterwards check the metric
-        helper.add_summary("Good satellites: %s" % good_satellites)
+        helper.add_summary("Good satellites: {}".format(good_satellites))
         helper.add_metric(label='satellites', value=good_satellites)
