@@ -44,11 +44,11 @@ if __name__ == "__main__":
 
     # NTP Status
     snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_ntp_current_state_int'])
-    meinberg.update_status(helper, meinberg.check_ntp_status(snmp_result))
+    helper.update_status(helper, meinberg.check_ntp_status(snmp_result))
 
     # GPS Status
     snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_gps_mode_int'])
-    meinberg.update_status(helper, meinberg.check_gps_status(snmp_result))
+    helper.update_status(helper, meinberg.check_gps_status(snmp_result))
 
     # Satellites
     snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_gps_satellites_good'])

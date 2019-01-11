@@ -109,14 +109,6 @@ class Meinberg(object):
         }
 
     @staticmethod
-    def update_status(helper, status):
-        """ update the helper """
-        if status:
-            print status
-            helper.status(status[0])
-            helper.add_summary(status[1])
-
-    @staticmethod
     def check_gps_position(helper, gps_position):
         """
         just print the curret GPS position
