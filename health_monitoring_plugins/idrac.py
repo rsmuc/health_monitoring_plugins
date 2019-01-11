@@ -287,14 +287,14 @@ class Idrac(object):
     @staticmethod
     def check_system_power_status(power_state):
         """ check the global system power state """
-        return SYSTEM_POWER_STATE[int(power_state)]["icingastatus"], \
-               "System power status: '{}'".format(SYSTEM_POWER_STATE[int(power_state)]["result"])
+        return (SYSTEM_POWER_STATE[int(power_state)]["icingastatus"],
+                "System power status: '{}'".format(SYSTEM_POWER_STATE[int(power_state)]["result"]))
 
     @staticmethod
     def check_power_unit_redundancy(power_unit_name_data, power_unit_redundancy_data):
         """ check the status of the power units """
-        return POWER_UNIT_REDUNDANCY_STATE[int(power_unit_redundancy_data)]["icingastatus"],\
-               "Power unit '{}' redundancy: {}".format(power_unit_name_data,
-                                                       POWER_UNIT_REDUNDANCY_STATE[
-                                                           int(power_unit_redundancy_data)]
-                                                       ["result"])
+        return (POWER_UNIT_REDUNDANCY_STATE[int(power_unit_redundancy_data)]["icingastatus"],
+                "Power unit '{}' redundancy: {}".format(power_unit_name_data,
+                                                        POWER_UNIT_REDUNDANCY_STATE[
+                                                            int(power_unit_redundancy_data)]
+                                                        ["result"]))
