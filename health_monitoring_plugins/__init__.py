@@ -99,7 +99,7 @@ class SnmpHelper(pynag.Plugins.PluginHelper, HelperExtension):
             else:
                 raise SnmpException("No content")
         except SnmpException:
-            helper.exit(summary="No response from device for %s (%s)" % (check, oid), \
+            helper.exit(summary="No response from device for {} ({})".format(check, oid),
                         exit_code=unknown, perfdata='')
 
 
