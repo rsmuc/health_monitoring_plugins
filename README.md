@@ -168,6 +168,7 @@ PYTHONPATH=~/PycharmProjects/health_monitoring_plugins/ health_monitoring_plugin
 * Some PEP8 improvements
 * Changed threshold options for check_snmp_eaton_ups
 * Refactored check_meinberg_ntp plugin
+* Migration from github to codeberg
 
 ###### Version 0.0.9
 
