@@ -120,11 +120,17 @@ class Meinberg(object):
             helper.add_summary("Could not retrieve GPS position")
             helper.status(unknown)
 
-    def process_ntp_status(self, helper, sess):
-        """ get the snmp value for NTP status and update the helper"""
+    def process_status(self, helper, sess, check):
+        """ get the snmp value, check the status and update the helper"""
 
-        ntp_status_int = helper.get_snmp_value(sess, helper, self.oids['oid_ntp_current_state_int'])
-        result = self.check_ntp_status(ntp_status_int)
+        if check == 'ntp_current_state':
+            ntp_status_int = helper.get_snmp_value(sess, helper, self.oids['oid_ntp_current_state_int'])
+            result = self.check_ntp_status(ntp_status_int)
+        elif check == 'gps_mode':
+            gps_status_int = helper.get_snmp_value(sess, helper, self.oids['oid_gps_mode_int'])
+            result = self.check_gps_status(gps_status_int)
+        else:
+            return
 
         helper.update_status(helper, result)
 
@@ -144,13 +150,6 @@ class Meinberg(object):
             return critical, ("NTP status: " + ntp_status_string)
 
         return None
-
-    def process_gps_status(self, helper, sess):
-        """ get the snmp value for GPS status and update the helper"""
-        gps_status_int = helper.get_snmp_value(sess, helper, self.oids['oid_gps_mode_int'])
-        result = self.check_gps_status(gps_status_int)
-
-        helper.update_status(helper, result)
 
     def check_gps_status(self, gps_status_int):
         """

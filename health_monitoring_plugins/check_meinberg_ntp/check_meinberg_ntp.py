@@ -41,10 +41,10 @@ if __name__ == "__main__":
     meinberg.process_gps_position(helper, sess)
 
     # NTP Status
-    meinberg.process_ntp_status(helper, sess)
+    meinberg.process_status(helper, sess, 'ntp_current_state')
 
     # GPS Status
-    meinberg.process_gps_status(helper, sess)
+    meinberg.process_status(helper, sess, 'gps_mode')
 
     # Satellites
     meinberg.process_satellites(helper, sess)
