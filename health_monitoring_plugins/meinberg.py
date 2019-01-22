@@ -46,7 +46,6 @@ class Meinberg(object):
                 "2": "synchronized"
             }
 
-
         # from MBG-LANTIME-MIB.mib
         return {
             "0": "notSynchronized",
@@ -108,20 +107,54 @@ class Meinberg(object):
             "6": "antennaShortcircuit"
         }
 
-    @staticmethod
-    def check_gps_position(helper, gps_position):
+    def process_gps_position(self, helper, sess):
         """
-        just print the curret GPS position
+        just print the current GPS position
         """
+
+        gps_position = helper.get_snmp_value(sess, helper, self.oids['oid_gps_position'])
+
         if gps_position:
             helper.add_summary(gps_position)
         else:
             helper.add_summary("Could not retrieve GPS position")
             helper.status(unknown)
 
+    def process_ntp_status(self, helper, sess):
+        """ get the snmp value for NTP status and update the helper"""
+
+        ntp_status_int = helper.get_snmp_value(sess, helper, self.oids['oid_ntp_current_state_int'])
+        result = self.check_ntp_status(ntp_status_int)
+
+        helper.update_status(helper, result)
+
+    def check_ntp_status(self, ntp_status_int):
+        """
+        check the NTP status
+        """
+        # convert the ntp_status integer value in a human readable value
+        ntp_status_string = self.ntp_status.get(ntp_status_int, "unknown")
+
+        if ntp_status_string == "unknown":
+            return unknown, ("NTP status: " + ntp_status_string)
+
+        # the ntp status should be synchronized (new MIB) or normalOperation (old mib)
+        elif ntp_status_string != "synchronized" and ntp_status_string != "normalOperationPPS":
+            # that is a critical condition, because the time reference will not be reliable anymore
+            return critical, ("NTP status: " + ntp_status_string)
+
+        return None
+
+    def process_gps_status(self, helper, sess):
+        """ get the snmp value for GPS status and update the helper"""
+        gps_status_int = helper.get_snmp_value(sess, helper, self.oids['oid_gps_mode_int'])
+        result = self.check_gps_status(gps_status_int)
+
+        helper.update_status(helper, result)
+
     def check_gps_status(self, gps_status_int):
         """
-        check and show the current GPS status
+        check the GPS status
         """
         gps_mode_string = self.gps_mode.get(gps_status_int, "unknown")
 
@@ -135,29 +168,12 @@ class Meinberg(object):
 
         return None
 
-    def check_ntp_status(self, ntp_status_int):
-        """
-        check and show the current NTP status
-        """
-        # convert the ntp_status integer value in a human readable value
-        ntp_status_string = self.ntp_status.get(ntp_status_int, "unknown")
-
-        if ntp_status_string == "unknown":
-            return unknown, ("NTP status: " + ntp_status_string)
-
-        # the ntp status should be synchronized (new MIB) or normalOperation (old mib)
-        elif ntp_status_string != "synchronized" \
-                and ntp_status_string != "normalOperationPPS":
-            # that is a critical condition, because the time reference will not be reliable anymore
-            return critical, ("NTP status: " + ntp_status_string)
-
-        return None
-
-    @staticmethod
-    def check_satellites(helper, good_satellites):
+    def process_satellites(self, helper, sess):
         """
         check and show the good satellites
         """
+        good_satellites = helper.get_snmp_value(sess, helper, self.oids['oid_gps_satellites_good'])
+
         # Show the summary and add the metric and afterwards check the metric
         helper.add_summary("Good satellites: {}".format(good_satellites))
         helper.add_metric(label='satellites', value=good_satellites)

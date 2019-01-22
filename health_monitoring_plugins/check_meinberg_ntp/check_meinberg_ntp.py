@@ -38,21 +38,16 @@ if __name__ == "__main__":
     meinberg = health_monitoring_plugins.meinberg.Meinberg(sess, helper.options.mibversion)
 
     # GPSPosition
-
-    snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_gps_position'])
-    meinberg.check_gps_position(helper, snmp_result)
+    meinberg.process_gps_position(helper, sess)
 
     # NTP Status
-    snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_ntp_current_state_int'])
-    helper.update_status(helper, meinberg.check_ntp_status(snmp_result))
+    meinberg.process_ntp_status(helper, sess)
 
     # GPS Status
-    snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_gps_mode_int'])
-    helper.update_status(helper, meinberg.check_gps_status(snmp_result))
+    meinberg.process_gps_status(helper, sess)
 
     # Satellites
-    snmp_result = helper.get_snmp_value(sess, helper, meinberg.oids['oid_gps_satellites_good'])
-    meinberg.check_satellites(helper, snmp_result)
+    meinberg.process_satellites(helper, sess)
 
     # there is only the satellites metric, but we will check all available
     helper.check_all_metrics()
