@@ -7,6 +7,12 @@ The plugins are provided on pypi as python package.
 
 All plugins are released under the GPLv2.
 
+
+
+The project is maintained at [Codeberg](https://codeberg.org/status_monitoring_tools/health_monitoring_plugins) and mirrored to Github. If possible please open Pull Requests and Issues at Codeberg.
+
+
+
 [![Maintainability](https://api.codeclimate.com/v1/badges/56d2e53efd76cc85fecb/maintainability)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/maintainability)
 
 [![CodeFactor](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/badge/0.1.0)](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/overview/0.1.0)
@@ -159,15 +165,23 @@ PYTHONPATH=~/PycharmProjects/health_monitoring_plugins/ health_monitoring_plugin
 ###### Version 0.1.0
 
 * Added check_local_cpu_temp.py
-* Fixed snmp v2 community for check_snmp_idrac and check_snmp_ilo4 (thanks to nb85)
-* Added noPowerRedundancy option to idrac plugin (thanks to ironbishop)
+* check_snmp_ilo4: 
+  * Fixed snmp v2 community 4 (thanks to nb85)
 * Added SNMPv3 support to all plugins for devices supporting SNMPv3
-* Verified support of Eaton 9SX series
-* Fixed exception in check_snmp_raritan if sensor does not return a valid value.
 * Added common test for SNMPv3.
-* Some PEP8 improvements
-* Changed threshold options for check_snmp_eaton_ups
+* PEP8 & general code improvements
+* check_snmp_raritan:
+  * Fixed exception in check_snmp_raritan if sensor does not return a valid value.
+  * Moved units in metrics from UOM to label to avoid conflicts with Graphite
+* check_snmp_eaton:
+  * Added support of Eaton 9SX series
+  * Changed threshold options for check_snmp_eaton_ups
 * Refactored check_meinberg_ntp plugin
+* check_snmp_idrac:
+  * Refactoring
+
+  * Added noPowerRedundancy option (thanks to ironbishop)
+  * Fixed snmp v2 community
 * Migration from github to codeberg
 
 ###### Version 0.0.9
