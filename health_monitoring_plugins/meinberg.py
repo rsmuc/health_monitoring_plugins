@@ -9,8 +9,6 @@ from pynag.Plugins import unknown, warning, critical
 class Meinberg(object):
     """Class for check_meinberg_ntp"""
     def __init__(self, session, mibversion):
-        self.mibversion = mibversion
-        self.sess = session
         self.oids = self.get_oids(mibversion)
         self.ntp_status = self.get_ntp_status(mibversion)
         self.gps_mode = self.get_gps_mode(mibversion)
