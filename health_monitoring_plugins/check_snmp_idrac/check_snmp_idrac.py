@@ -227,7 +227,7 @@ if __name__ == '__main__':
     # The default return value should be always OK
     helper.status(ok)
 
-    sess = netsnmp.Session(Version=version, DestHost=host, SecLevel = seclevel,  SecName = secname, AuthProto = authproto, AuthPass = authpass, PrivProto = privproto, PrivPass = privpass)       
+    sess = netsnmp.Session(Version=version, DestHost=host, Community = community, SecLevel = seclevel,  SecName = secname, AuthProto = authproto, AuthPass = authpass, PrivProto = privproto, PrivPass = privpass)       
 
     user_assigned_name_data = get_data(sess, oid_user_assigned_name, helper)
     product_type_data = get_data(sess, oid_product_type, helper)
