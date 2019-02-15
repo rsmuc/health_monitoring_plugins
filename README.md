@@ -109,6 +109,14 @@ This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
 
 Check the status of a Ubiquiti airMax device.
 
+#### check_microwavemodem
+
+Check the status of a Microwave Modem
+
+#### check_newtecmodem
+
+Check the status of a Newtec Modem
+
 ## Installation
 
 ### pip (recommended)
@@ -179,9 +187,10 @@ PYTHONPATH=~/PycharmProjects/health_monitoring_plugins/ health_monitoring_plugin
 * Refactored check_meinberg_ntp plugin
 * check_snmp_idrac:
   * Refactoring
-
   * Added noPowerRedundancy option (thanks to ironbishop)
   * Fixed snmp v2 community
+* Added check_microwavemodem
+* Added check_newtecmodem
 * Migration from github to codeberg
 
 ###### Version 0.0.9
