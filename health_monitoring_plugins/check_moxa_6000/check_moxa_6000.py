@@ -17,8 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
-import sys, netsnmp
+import sys, netsnmp, os
 from pynag.Plugins import PluginHelper, ok, warning, critical, unknown
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
+from snmpSessionBaseClass import add_snmpv3_options, add_common_options, get_common_options, verify_host
 
 class CHECK_TYPE(enumerate):
     CTS = 0
@@ -56,9 +58,8 @@ def get_state(value, warning_threshold, critical_threshold):
 
 if __name__ == '__main__':
     helper = PluginHelper()
-    helper.parser.add_option('-H', '--hostname', dest='hostname', help='Host name or IP Adress of hte MOXA device.')
-    helper.parser.add_option('-C', '--community', dest='community', help='SNMP community of the SNMP service on target host.', default='public')
-    helper.parser.add_option('-V', '--snmpversion', dest='snmpversion', help='SNMP version.', default=2, type='int')
+    add_common_options(helper)
+    add_snmpv3_options(helper)
     helper.parser.add_option('-p', '--port', dest='port', help='Moxa RS232 port number.', type='str')
     helper.parser.add_option('-t', '--type', dest='type', help= """Available check types: CTS, DSR, DTR, ErrorCount. Example: -t CTS_ErrorCount. 
                                                                 CTS (Clear To Send): DCE (Data Communication Equipment) is ready to accept 
@@ -69,15 +70,26 @@ if __name__ == '__main__':
                                                                 ErrorCount = Show error counts of Frame, Break, Overrun and Parity.""" , type='str')
     helper.parser.add_option('-c', '--critical', dest='critical', help='Return CRITICAL if any ErrorCount >= this parameter.', default=sys.maxint, type='int')
     helper.parser.add_option('-w', '--warning', dest='warning', help='Return WARNING if any ErrorCount >= this parameter.', default=1, type='int')
+
     helper.parse_arguments()
 
-    if not helper.options.hostname:
-        helper.parser.error('You must specifiy host ip in order to run this plugin.')
     if not helper.options.port:
         helper.parser.error('You must specifiy moxa rs232 port in order to run this plugin.')
 
+    secname, seclevel, authproto, authpass, privproto, privpass = helper.options.secname, \
+                                                                  helper.options.seclevel, \
+                                                                  helper.options.authproto, \
+                                                                  helper.options.authpass, \
+                                                                  helper.options.privproto, \
+                                                                  helper.options.privpass
+
+    host, version, community = get_common_options(helper)
+
+    verify_host(host, helper)
+
     # create a netsnmp session object that is used for all following snmp operations
-    session = netsnmp.Session(DestHost=helper.options.hostname, Community=helper.options.community, Version=helper.options.snmpversion)
+    session = netsnmp.Session(Version=version, DestHost=host, SecLevel=seclevel, SecName=secname, AuthProto=authproto,
+                              AuthPass=authpass, PrivProto=privproto, PrivPass=privpass, Community=community)
 
     # send OIDs and get results
     moxaRS232VarList = genMoxaRS232VarList(helper.options.port)

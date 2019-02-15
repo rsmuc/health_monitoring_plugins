@@ -109,6 +109,17 @@ def test_system_call(capsys):
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py --help", shell=True, stdout=subprocess.PIPE)
     assert "Options:" in p.stdout.read()
 
+
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen('health_monitoring_plugins/check_snmp_port/check_snmp_port.py' + " -H 1.2.3.4 -V 3 "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpwalk failed - no data for host" in p.stdout.read()
+
+
 def test_tcp(capsys):
     # with --type=TCP
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_port/check_snmp_port.py -H localhost:1234 --type=TCP", shell=True, stdout=subprocess.PIPE)

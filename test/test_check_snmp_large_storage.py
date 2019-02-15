@@ -97,6 +97,17 @@ def test_without_options(capsys):
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_large_storage/check_snmp_large_storage.py", shell=True, stdout=subprocess.PIPE)
     assert "Unknown - Hostname must be specified" in p.stdout.read()
 
+
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen('health_monitoring_plugins/check_snmp_large_storage/check_snmp_large_storage.py' + " -H 1.2.3.4 -V 3 "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpwalk failed - no data for host" in p.stdout.read()
+
+
 def test_help():
     # with --help
     p=subprocess.Popen("health_monitoring_plugins/check_snmp_large_storage/check_snmp_large_storage.py --help", shell=True, stdout=subprocess.PIPE)

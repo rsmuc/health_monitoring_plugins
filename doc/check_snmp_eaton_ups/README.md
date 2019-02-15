@@ -1,51 +1,91 @@
 ## check_snmp_eaton_ups.py:
+
 ---
 
 Check state of an Eaton UPS.
-The plugin checks various characteristics of an Eaton UPS. It gets an SNMP value according to 
+The plugin checks various characteristics of an Eaton UPS. It gets a SNMP value according to 
 the defined check type and compares the returned value against the set thresholds. 
 
 Checkable values:
+
 * input voltage, frequency
 * output voltage, current, power, load
 * time on battery
 * remaining runtime
 * remaining battery capacity
 * alarms
-* battery test summary and details
-* battery state
+* battery test summary and details (not available for Eaton 9SX)
+* battery state (low, replacement, fault) (not available for Eaton 9SX)
 * internal and environmental temperature
 
 ### Example:
 
 #### Check remaining battery capacity
 
-    ./check_snmp_eaton_ups.py -H 172.29.1.118 -t BATTERY_CAPACITY -w 20: -c 10:
+    ./check_snmp_eaton_ups.py -H 172.29.1.118 -t battery_capacity --threshold metric=battery_capacity,warning=20:,critical=10:
 
 => 
 
-OK - Remaining Battery Capacity 100 % | 'BATTERY_CAPACITY'=100%;20:;10:;;
+OK - Remaining Battery Capacity 100 % | 'battery_capacity'=100%;20:;10:;;
 
+#### Check UPS alarms
 
-    
+```
+./check_snmp_eaton_ups.py -H 172.29.1.118 -t alarms
+```
+
+=>
+
+OK - 0 active alarms
+
 ## Parameters
- ```
-Options:
+
+```
+ Options:
   -h, --help            show this help message and exit
   -H HOSTNAME           Hostname or ip address
   -C COMMUNITY, --community=COMMUNITY
                         SNMP community of the SNMP service on target host.
   -V VERSION, --snmpversion=VERSION
-                        SNMP version. (1 or 2)
-  -t CHECKTYPE          The value you want to monitor 
-                        One out of 
-                        ON_BATTERY, REMAINING_BATTERY_TIME, INPUT_FREQUENCY,
-                        INPUT_VOLTAGE, OUTPUT_VOLTAGE, OUTPUT_CURRENT,
-                        OUTPUT_POWER, OUTPUT_LOAD, ALARMS,
-                        BATTERY_TEST_SUMMARY, BATTERY_TEST_DETAIL,
-                        BATTERY_CAPACITY, ENVIRONMENT_TEMPERATURE,
-                        EXTERNAL_ENVIRONMENT_TEMPERATURE, BATTERY_LOW_WARNING,
-                        BATTERY_REPLACEMENT_WARNING, BATTERY_FAULT_WARNING
-  -w WARNING_THRESHOLDS Thresholds in icinga threshold range syntax
-  -c CRITICAL_THRESHOLDS Thresholds in icinga threshold syntax
- ```
+                        SNMP version. (1, 2 or 3)
+  -t TYPE, --type=TYPE  Check type to execute. Available types are:
+                        input_frequency, output_power, on_battery,
+                        battery_test_detail, battery_fault_warning,
+                        battery_test_summary, battery_replacement_warning,
+                        battery_capacity, external_environment_temperature,
+                        remaining_battery_time, environment_temperature,
+                        alarms, output_load, output_voltage, output_current,
+                        battery_low_warning, input_voltage
+  -U SECNAME, --securityname=SECNAME
+                        SNMPv3: security name (e.g. bert)
+  -L SECLEVEL, --securitylevel=SECLEVEL
+                        SNMPv3: security level (noAuthNoPriv, authNoPriv,
+                        authPriv)
+  -a AUTHPROTO, --authprotocol=AUTHPROTO
+                        SNMPv3: authentication protocol (MD5|SHA)
+  -A AUTHPASS, --authpass=AUTHPASS
+                        SNMPv3: authentication protocol pass phrase
+  -x PRIVPROTO, --privproto=PRIVPROTO
+                        SNMPv3: privacy protocol (DES|AES)
+  -X PRIVPASS, --privpass=PRIVPASS
+                        SNMPv3: privacy protocol pass phrase
+
+  Generic Options:
+    --timeout=50        Exit plugin with unknown status after x seconds
+    --threshold=range   Thresholds in standard nagios threshold format
+    --th=range          Same as --threshold
+    --extra-opts=@file  Read options from an ini file. See
+                        http://nagiosplugins.org/extra-opts
+    -d, --debug         Print debug info
+
+  Display Options:
+    -v, --verbose       Print more verbose info
+    --no-perfdata       Dont show any performance data
+    --no-longoutput     Hide longoutput from the plugin output (i.e. only
+                        display first line of the output)
+    --no-summary        Hide summary from plugin output
+    --get-metrics       Print all available metrics and exit (can be combined
+                        with --verbose)
+    --legacy            Deprecated, do not use
+
+```

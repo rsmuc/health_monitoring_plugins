@@ -50,6 +50,17 @@ def test_system_call(capsys):
     p=subprocess.Popen("python health_monitoring_plugins/check_snmp_procurve/check_snmp_procurve.py --help", shell=True, stdout=subprocess.PIPE)
     assert "Options:" in p.stdout.read()
 
+
+def test_snmpv3(capsys):
+    # not reachable
+
+    p = subprocess.Popen('python health_monitoring_plugins/check_snmp_procurve/check_snmp_procurve.py' + " -H 1.2.3.4 -V 3 "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - snmpwalk failed - no data for host" in p.stdout.read()
+
+
 def test_ok(capsys):    
     p=subprocess.Popen("python health_monitoring_plugins/check_snmp_procurve/check_snmp_procurve.py -H localhost:1234", shell=True, stdout=subprocess.PIPE)
     assert "OK - Power Supply Sensor: good. Fan Sensor: good" in p.stdout.read()

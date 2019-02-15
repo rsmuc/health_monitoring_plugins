@@ -24,8 +24,8 @@ def check_within_range(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
+
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "OK - " in a_plugin_return 
@@ -35,8 +35,7 @@ def check_within_range(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "OK - " in a_plugin_return 
@@ -46,8 +45,7 @@ def check_within_range(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "Warning - " in a_plugin_return 
@@ -57,8 +55,7 @@ def check_within_range(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "Warning - " in a_plugin_return 
@@ -68,8 +65,7 @@ def check_within_range(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "Critical - " in a_plugin_return 
@@ -79,8 +75,7 @@ def check_within_range(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "Critical - " in a_plugin_return 
@@ -108,8 +103,7 @@ def check_below_threshold(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "OK - " in a_plugin_return 
@@ -119,8 +113,7 @@ def check_below_threshold(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "Warning - " in a_plugin_return 
@@ -130,8 +123,7 @@ def check_below_threshold(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "Critical - " in a_plugin_return 
@@ -161,8 +153,7 @@ def check_above_threshold(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "OK - " in a_plugin_return 
@@ -172,8 +163,7 @@ def check_above_threshold(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "Warning - " in a_plugin_return 
@@ -183,8 +173,7 @@ def check_above_threshold(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert "Critical - " in a_plugin_return 
@@ -203,8 +192,7 @@ def check_performance_data(
     p=subprocess.Popen(
         the_plugin_path
         + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + critical_thres 
-        + " -w " + warning_thres
+        + " --threshold metric=" + the_check_type + ",warning=" + warning_thres + ",critical=" + critical_thres
         , shell=True, stdout=subprocess.PIPE)
     
     # check if plugin return value contains performance data
@@ -224,8 +212,7 @@ def check_value_without_thresholds(
 #    warning_thres, critical_thres = build_threshold_alert_above_strings(the_expected_value-1)
     p=subprocess.Popen(
         the_plugin_path
-        + " -H localhost:1234 -t '" + the_check_type + "'"
-        + " -c " + " -w "
+        + " -H localhost:1234 -t " + the_check_type
         , shell=True, stdout=subprocess.PIPE)
     a_plugin_return = p.stdout.read()
     assert the_expected_state in a_plugin_return 

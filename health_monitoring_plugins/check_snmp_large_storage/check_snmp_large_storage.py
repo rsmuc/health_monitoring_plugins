@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# check_snmp_large_storage.py - Check the used / free disk space of a device via SNMP (using the HOST-RESOURCES-MIB hrStorageSize).
+# check_snmp_large_storage.py - Check the used / free disk space of a device via SNMP
+# (using the HOST-RESOURCES-MIB hrStorageSize).
 # example command ./check_snmp_large_storage.py -H 192.168.2.1 -d "C:\" -u TB 
 # Copyright (C) 2016 rsmuc rsmuc@mailbox.org
 # 
@@ -21,20 +22,23 @@ import sys
 import os
 import netsnmp
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
-from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data
-from pynag.Plugins import PluginHelper,ok,unknown
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, get_data, walk_data, add_snmpv3_options
+from pynag.Plugins import PluginHelper, ok, unknown
 
 # Create an instance of PluginHelper()
 helper = PluginHelper()
 
 # Add command line parameters
 add_common_options(helper)
+add_snmpv3_options(helper)
 helper.parser.add_option('-p', '--partition',
                          dest='partition',
                          help='The disk / partition you want to monitor',
                          type='str')
 helper.parser.add_option('-u', '--unit', dest="targetunit", help="The unit you want to have (MB, GB, TB)", default="GB")
-helper.parser.add_option('-s', '--scan',   dest  = 'scan_flag', default   = False,    action = "store_true", help      = 'Show all available storages')
+helper.parser.add_option('-s', '--scan',   dest='scan_flag', default=False, action="store_true",
+                         help='Show all available storages')
+
 helper.parse_arguments()
 
 # get the options
@@ -42,6 +46,12 @@ disk = helper.options.partition
 scan = helper.options.scan_flag
 targetunit = helper.options.targetunit
 host, version, community = get_common_options(helper)
+secname, seclevel, authproto, authpass, privproto, privpass = helper.options.secname, \
+    helper.options.seclevel, \
+    helper.options.authproto, \
+    helper.options.authpass, \
+    helper.options.privproto, \
+    helper.options.privpass
 
 # The OIDs we need from HOST-RESOURCES-MIB
 oid_hrStorageIndex              = ".1.3.6.1.2.1.25.2.3.1.1"
@@ -49,6 +59,7 @@ oid_hrStorageDescr              = ".1.3.6.1.2.1.25.2.3.1.3"
 oid_hrStorageAllocationUnits    = ".1.3.6.1.2.1.25.2.3.1.4"
 oid_hrStorageUsed               = ".1.3.6.1.2.1.25.2.3.1.6"
 oid_hrStorageSize               = ".1.3.6.1.2.1.25.2.3.1.5"
+
 
 def calculate_real_size(value):
     # check if we have a 32 bit counter overrun
@@ -60,8 +71,9 @@ def calculate_real_size(value):
         real_size = -value + 2147483647
         return real_size
 
+
 def convert_to_XX(value, unit, targetunit):
-    #convert the value to the target unit (MB, GB or TB) dependend on the hrStorageAllocationUnits
+    # convert the value to the target unit (MB, GB or TB) dependend on the hrStorageAllocationUnits
     # value = the space
     # unit = the storageAllocationUnit
     # the target unit (MB, GB, TB)
@@ -88,6 +100,7 @@ def convert_to_XX(value, unit, targetunit):
 
     return result
 
+
 def run_scan():
     """
     show all available partitions
@@ -98,6 +111,7 @@ def run_scan():
     for disk in all_disks:        
         print "Disk: \t'" + disk + "'"
     quit()
+
 
 def partition_found(partition, description):
     """
@@ -116,7 +130,8 @@ def partition_found(partition, description):
         return True
     else:
         return False
-            
+
+
 def check_partition():
     """
     check the defined partition
@@ -174,6 +189,7 @@ def check_partition():
             # if the partition was not found in the data output, we return an error
             helper.exit(summary="Partition '%s' not found" % disk, exit_code=unknown, perfdata='')
 
+
 # The default return value should be always OK
 helper.status(ok)
 
@@ -182,7 +198,8 @@ if __name__ == "__main__":
     # verify that a hostname is set
     verify_host(host, helper)
 
-    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
+    sess = netsnmp.Session(Version=version, DestHost=host, SecLevel=seclevel, SecName=secname, AuthProto=authproto,
+                           AuthPass=authpass, PrivProto=privproto, PrivPass=privpass, Community=community)
 
     # if no partition / disk is set, we will do a scan
     if disk == "" or disk is None:

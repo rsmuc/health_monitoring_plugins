@@ -16,9 +16,6 @@ import snmpSessionBaseClass
 
 import pynag.Utils
 
-sys.path.append(r'/home/dausch/eclipse_opt/cpp-neon/eclipse/plugins/org.python.pydev_5.6.0.201703221358/pysrc/')
-# import pydevd
-# pydevd.settrace('172.29.153.190') # replace IP with address of Eclipse host machine
 
 eaton_ups_check_plugin_path = "health_monitoring_plugins/check_snmp_eaton_ups/check_snmp_eaton_ups.py"
 
@@ -35,37 +32,37 @@ a_plugin_helper = check_snmp_eaton_ups.setup_plugin_helper()
 
 
 check_configs_range = {
-    "INPUT_FREQUENCY"
+    "input_frequency"
         : {"value" : 50,
            "summary" : "Input Frequency is",
            "has_perfdata" : True
            },
-    "INPUT_VOLTAGE"
+    "input_voltage"
         : {"value" : 230,
            "summary" : "Input Voltage is",
            "has_perfdata" : True
            },
-    "OUTPUT_VOLTAGE"
+    "output_voltage"
         : {"value" : 229,
            "summary" : "Output Voltage is",
            "has_perfdata" : True
            },
-    "OUTPUT_CURRENT"
+    "output_current"
         : {"value" : 2,
            "summary" : "Output Current is ",
            "has_perfdata" : True
            },
-    "OUTPUT_POWER"
+    "output_power"
         : {"value" : 536,
            "summary" : "Output Power is",
            "has_perfdata" : True
            },
-    "ENVIRONMENT_TEMPERATURE"
+    "environment_temperature"
         : { "value" : 26,
             "summary" : "Environment Temperature is ",
             "has_perfdata" : True
             },
-    "EXTERNAL_ENVIRONMENT_TEMPERATURE"
+    "external_environment_temperature"
         : { "value" : 26,
             "summary" : "External Environment Temperature is ",
             "has_perfdata" : True
@@ -74,12 +71,12 @@ check_configs_range = {
 
 
 check_configs_below_threshold = {
-    "REMAINING_BATTERY_TIME"
+    "remaining_battery_time"
         : {"value" : 30,
            "summary" : "Remaining runtime on battery is",
            "has_perfdata" : True
            },
-    "BATTERY_CAPACITY"
+    "battery_capacity"
         : { "value" : 80,
             "summary" : "Remaining Battery Capacity",
             "has_perfdata" : True
@@ -87,12 +84,12 @@ check_configs_below_threshold = {
     }
 
 check_configs_above_threshold = {
-    "ON_BATTERY"                      
+    "on_battery"
         : {"value" : 60,
            "summary" : "seconds already running on battery",
            "has_perfdata" : True
            },
-    "OUTPUT_LOAD"
+    "output_load"
         : {"value" : 19,
            "summary" : "Output Load is",
            "has_perfdata" : True

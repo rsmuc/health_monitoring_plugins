@@ -1,4 +1,5 @@
 # health monitoring plugins:
+
 ---
 
 This is the main readme file for the health montiroing plugins project. In this project we pubish all our plugins we write for icinga / nagios.
@@ -6,9 +7,16 @@ The plugins are provided on pypi as python package.
 
 All plugins are released under the GPLv2.
 
-[![Code Health](https://landscape.io/github/rsmuc/health_monitoring_plugins/master/landscape.svg?style=flat)](https://landscape.io/github/rsmuc/health_monitoring_plugins/master)
-[![Code Climate](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/gpa.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
-[![Issue Count](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/badges/issue_count.svg)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins)
+
+
+The project is maintained at [Codeberg](https://codeberg.org/status_monitoring_tools/health_monitoring_plugins) and mirrored to Github. If possible please open Pull Requests and Issues at Codeberg.
+
+
+
+[![Maintainability](https://api.codeclimate.com/v1/badges/56d2e53efd76cc85fecb/maintainability)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/maintainability)
+
+[![CodeFactor](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/badge/0.1.0)](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/overview/0.1.0)
+
 [![PyPI version](https://badge.fury.io/py/health_monitoring_plugins.svg)](https://badge.fury.io/py/health_monitoring_plugins)
 
 ## Plugins
@@ -18,6 +26,10 @@ A detailed description can be found in the README in the doc folder.
 #### [check_jenkins_api](doc/check_jenkins_api/README.md)
 
 Monitor the jobs in the Jenkins job queue
+
+#### [check_local_cpu_temp](doc/check_local_cpu_temp/README.md)
+
+Check the local CPU temperature without the usage of "lm-sensors"
 
 #### [check_snmp_fortinet](doc/check_snmp_fortinet/README.md)
 
@@ -52,16 +64,13 @@ Tested with firmware version 5.30 and 6.18 (NG).
 Check the status of a Moxa NPORT 6000 RS232 to LAN converter.  
 You can check each port for the CTS, DSR, DTR and Error count.
 
-
 #### [check_snmp_ilo4](doc/check_snmp_ilo4/README.md)
 
 This plugin checks the health of HP servers with iLo 4 interface via SNMP.
 
-
 #### [check_snmp_janitza](doc/check_snmp_janitza/README.md)
+
 Check the status of a Janitza 604 device.
-
-
 
 #### [check_snmp_large_storage](doc/check_snmp_large_storage/README.md)
 
@@ -72,10 +81,10 @@ There are already script doing that like http://nagios.manubulon.com/snmp_storag
 
 Check the status of a tcp/udp port via SNMP. For TCP ports also the status is checked (e.g listen, established).
 
-
 #### [check_snmp_raritan](doc/check_snmp_raritan/README.md)
 
 Check a Raritan Dominition PX PDU (Power Distribution Unit):
+
 * outlets (On, Off)
 * inlet (Power, Current, Voltage)
 * connected sensors
@@ -83,7 +92,6 @@ Check a Raritan Dominition PX PDU (Power Distribution Unit):
 #### [check_snmp_service](doc/check_snmp_service/README.md)
 
 Icinga / Nagios plugin to check if a Windows service is in running state via SNMP.
-
 
 #### [check_snmp_time2](doc/check_snmp_time2/README.md)
 
@@ -93,19 +101,25 @@ This plugin compares the time of the icinga/nagios machine with the time of a re
 
 This plugin checks the health of Dell iDRAC.
 
-
 #### [check_snmp_teledyne](doc/check_snmp_teledyne/README.md)
 
 This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
-
 
 #### [check_snmp_ubiquiti](doc/check_snmp_ubiquiti/README.md)
 
 Check the status of a Ubiquiti airMax device.
 
+#### check_microwavemodem
+
+Check the status of a Microwave Modem
+
+#### check_newtecmodem
+
+Check the status of a Newtec Modem
+
 ## Installation
 
-###  pip (recommended)
+### pip (recommended)
 
 The complete plugin package is available at [PyPI](https://pypi.python.org/pypi/health_monitoring_plugins)
 
@@ -113,20 +127,20 @@ If your Linux machine is directly connected to the internet, you can use pip to 
 Just run:
 
     pip install health_monitoring_plugins
-    
+
 The plugins will be installed in your PATH. So the scripts can be executed directly.
 
 If you are behind a firewall or not connected to the internet, you can download the tar.hz from PyPI and install it with
 
     health_monitoring_plugins-<version>.tar.gz
-    
+
 To uninstall the package you can run:
 
     pip uninstall health_monitoring_plugins
 
 ### setup.py
 
-You can download the source package from [PyPI](https://pypi.python.org/pypi/health_monitoring_plugins)
+You can download the source package from [PyPI] (https://pypi.python.org/pypi/health_monitoring_plugins) or just clone this repository. To run setup.py you will need the python-setuptools.
 
 To install the package from source with setup.py, you can run
 
@@ -142,10 +156,44 @@ To run the unittests just execute:
 
 The unittests require pytest. For the unittests we use the testagent from [haxtibal](https://github.com/haxtibal).
 
+## Troubleshooting
+
+### When calling the plugin, I receive an error like "ImportError: No module named health_monitoring_plugins.raritan"
+
+Seems that you did not install the python package. The plugins can not be called directly. Check the Installation section.
+
+"Workaround:"
+
+```
+PYTHONPATH=~/PycharmProjects/health_monitoring_plugins/ health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py
+```
+
 ## Changelog
 
-###### Version 0.0.9
+###### Version 0.1.0
 
+* Added check_local_cpu_temp.py
+* check_snmp_ilo4: 
+  * Fixed snmp v2 community 4 (thanks to nb85)
+* Added SNMPv3 support to all plugins for devices supporting SNMPv3
+* Added common test for SNMPv3.
+* PEP8 & general code improvements
+* check_snmp_raritan:
+  * Fixed exception in check_snmp_raritan if sensor does not return a valid value.
+  * Moved units in metrics from UOM to label to avoid conflicts with Graphite
+* check_snmp_eaton:
+  * Added support of Eaton 9SX series
+  * Changed threshold options for check_snmp_eaton_ups
+* Refactored check_meinberg_ntp plugin
+* check_snmp_idrac:
+  * Refactoring
+  * Added noPowerRedundancy option (thanks to ironbishop)
+  * Fixed snmp v2 community
+* Added check_microwavemodem
+* Added check_newtecmodem
+* Migration from github to codeberg
+
+###### Version 0.0.9
 
 * Added check_snmp_instadios_csm
 * Added SNMPv3 support for check_snmp_idrac
@@ -163,7 +211,6 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 * Added check_snmp_eaton_ups
 * Added check_snmp_apc_ups
 * Several bugfixes and code improvements
-
 
 ###### Version 0.0.6
 
@@ -199,13 +246,3 @@ The unittests require pytest. For the unittests we use the testagent from [haxti
 ###### Version 0.0.1
 
 * The first testing release including all developed check plugins
-
-## TODO
-
-* Implement SNMPv3 support for all plugins
-
-Maybe:
-
-* add a default threshold to check_snmp_time2
-* check_snmp_raritan: It should be possible to monitor all outlets / sensors in one service
-* check_snmp_large_stroage: Check a list of storages

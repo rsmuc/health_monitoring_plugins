@@ -60,6 +60,16 @@ def test_system_test_moxa(capsys):
     p=subprocess.Popen("health_monitoring_plugins/check_moxa_6000/check_moxa_6000.py --help", shell=True, stdout=subprocess.PIPE)
     assert "Options:" in p.stdout.read()
 
+
+def test_snmpv3(capsys):
+    # not reachable
+    p = subprocess.Popen("health_monitoring_plugins/check_moxa_6000/check_moxa_6000.py -p 1 " + " -H 1.2.3.4 -V 3 "
+                                                     "-U nothinguseful -L authNoPriv -a MD5 "
+                                                     "-A nothinguseful -x DES -X nothinguseful",
+                         shell=True, stdout=subprocess.PIPE)
+    assert "Unknown - Can't connect to SNMP agent at application server or RS232 port does not exist" in p.stdout.read()
+
+
 def test_with_host_ok():
     # everything ok    
     p=subprocess.Popen("health_monitoring_plugins/check_moxa_6000/check_moxa_6000.py -H 127.0.0.1:1234 -p 1", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

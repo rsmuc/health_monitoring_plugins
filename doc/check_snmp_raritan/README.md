@@ -1,7 +1,9 @@
 # check_snmp_raritan.py
+
 ---
 
 Check a Raritan Dominition PX PDU (Power Distribution Unit):
+
 * outlets (On, Off)
 * inlet (Power, Current, Voltage)
 * connected sensors
@@ -14,12 +16,12 @@ Tested sensors: Temperature, Humidity, Contact Closure, Air Pressure
 #### Check the Inlet Power:
 
     ./check_snmp_raritan.py -H 172.29.1.2 -t inlet
- 
+
  => 
-    
+
     OK - Inlet. 5.1 A. 230.0 V. 1118.0 W. 1165.0 VA. 0.96. 6904491.0 Wh | 'A'=5.1A;10.4;12.8;; 'V'=230.0V;247.0;254.0;; 'W'=1118.0W;0.0;0.0;; 'VA'=1165.0VA;0.0;0.0;; ''=0.96;0.0;0.0;; 'Wh'=6904491.0Wh;0.0;0.0;;
 
-#### Monitor Sensor with ID 1:
+#### Monitor sensor with ID 1:
 
     ./check_snmp_raritan.py -H 172.29.1.2 -t sensor -i 1
 
@@ -31,8 +33,7 @@ Tested sensors: Temperature, Humidity, Contact Closure, Air Pressure
 
     OK - Sensor 4 - 'Humidity 1' 18.0% is: normal | 'Humidity 1'=18.0%;70.0;80.0;;
 
-
-#### Monitor Outlet with ID 3:
+#### Monitor outlet with ID 3:
 
      ./check_snmp_raritan.py -H 172.29.1.2 -t outlet -i 3
 
@@ -40,9 +41,23 @@ Tested sensors: Temperature, Humidity, Contact Closure, Air Pressure
 
     Critical - Outlet 3 - 'Switch HP' is: OFF
 
+#### Monitor outlet via SNMPv3:
+
+Enable SNMPv3 in SNMP settings of the Raritan device and configure a user that is allowed to login via SNMPv3 in the user management of the device.
+
+```
+ ./check_snmp_raritan.py -H 172.29.1.2 -t outlet -i 3 -V 3 -U snmpv3 -L authPriv -a MD5 -A snmpv3snmpv3 -x DES -X snmpv3snmpv3
+```
+
+=>
+
+```
+Critical - Outlet 3 - 'Switch HP' is: OFF
+```
 
 ## Parameters
- ```
+
+```
 Options:
   -h, --help            show this help message and exit
   -H HOSTNAME           Hostname or ip address
@@ -53,4 +68,4 @@ Options:
   -t TYP                The type you want to monitor (inlet, outlet, sensor)
   -i ID                 The id of the outlet / sensor you want to monitor
                         (1-99)
- ``` 
+```

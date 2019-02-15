@@ -26,7 +26,7 @@ import pynag
 # snmpSessionBaseClass module with some common snmp functions
 # reside under the plugins parent dir. So we have to add the plugin parent dir
 # to the module search path.  
-sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
+sys.path.insert(1, os.path.join(sys.path[0], os.pardir))
 import snmpSessionBaseClass
 
 # import add_common_options
@@ -62,6 +62,7 @@ def calc_minutes_from_ticks(the_ticks):
     """
     return float(the_ticks) / 6000.0
 
+
 def check_basic_battery_status(the_session, the_helper, the_snmp_value):
     """
     OID .1.3.6.1.4.1.318.1.1.1.2.1.1.0
@@ -79,7 +80,7 @@ def check_basic_battery_status(the_session, the_helper, the_snmp_value):
     batteryLow (3)
     batteryInFaultCondition (4)
     """
-    
+
     apc_battery_states = {
         '1' : 'unknown',
         '2' : 'batteryNormal',
@@ -87,23 +88,16 @@ def check_basic_battery_status(the_session, the_helper, the_snmp_value):
         '4' : 'batteryInFaultCondition'
         }
     a_state = apc_battery_states.get(the_snmp_value, 'unknown')
-    
+
     if the_snmp_value == '2':
         the_helper.add_status(pynag.Plugins.ok)
     elif the_snmp_value == '3':
         the_helper.add_status(pynag.Plugins.warning)
     else:
         the_helper.add_status(pynag.Plugins.critical)
-#     the_helper.add_metric(
-#         label=the_helper.options.type,
-#         value = the_snmp_value,
-#         warn = "2:2",
-#         crit = "2:3",
-#         min = "0", max = "3")
-# 
-#     the_helper.check_all_metrics()
+
     the_helper.set_summary("UPS batteries state is {}".format(a_state))
-    
+
 
 def check_time_on_battery(the_session, the_helper, the_snmp_value):
     """
@@ -119,7 +113,7 @@ def check_time_on_battery(the_session, the_helper, the_snmp_value):
         warn=the_helper.options.warning,
         crit=the_helper.options.critical,
         uom="Minutes")
-    
+
     the_helper.check_all_metrics()
     # if the_helper.status() is not pynag.Plugins.ok:
     the_helper.set_summary("{} minutes already running on battery".format(a_minute_value))
@@ -139,7 +133,7 @@ def check_battery_capacity(the_session, the_helper, the_snmp_value):
         warn=the_helper.options.warning,
         crit=the_helper.options.critical,
         uom='%')
-    
+
     the_helper.check_all_metrics()
     the_helper.set_summary("{} % remainig battery capacity ".format(the_snmp_value))
 
@@ -158,7 +152,7 @@ def check_internal_temperature(the_session, the_helper, the_snmp_value):
         warn=the_helper.options.warning,
         crit=the_helper.options.critical,
         uom='C')
-    
+
     the_helper.check_all_metrics()
     the_helper.set_summary("Current internal temperature is {} degree Celsius".format(the_snmp_value))
 
@@ -191,7 +185,7 @@ def check_battery_replace_indicator(the_session, the_helper, the_snmp_value):
     noBatteryNeedsReplacing (1)
     batteryNeedsReplacing (2)
     """
-    
+
     apc_states = {
         '1' : 'Battery does not need to be replaced',
         '2' : 'Battery needs to be replaced!'}
@@ -201,15 +195,6 @@ def check_battery_replace_indicator(the_session, the_helper, the_snmp_value):
         the_helper.add_status(pynag.Plugins.ok)
     else:
         the_helper.add_status(pynag.Plugins.critical)
-
-#     the_helper.add_metric(
-#         label=the_helper.options.type,
-#         value = the_snmp_value,
-#         warn = "1:1",
-#         crit = "1:1",
-#         min = "1", max = "2")
-#     
-#     the_helper.check_all_metrics()
 
     the_helper.set_summary(a_state)
 
@@ -331,14 +316,14 @@ def check_last_test_result(the_session, the_helper, the_snmp_value):
         '3' : 'invalid test',
         '4' : 'test in progress'
         }
-    
+
     a_test_result = snmp_test_result.get(the_snmp_value, 'unknown SNMP value')
 
     if (the_snmp_value == '1') or (the_snmp_value == '4'):
         the_helper.add_status(pynag.Plugins.ok)
     else:
         the_helper.add_status(pynag.Plugins.critical)
-    
+
     the_helper.set_summary("Result of last UPS diagnostic test was {}".format(a_test_result))
 
 
@@ -367,14 +352,14 @@ def check_environment_temperature(the_session, the_helper, the_snmp_value, the_u
         '2' : 'F'
         }
     a_unit = snmp_units.get(a_snmp_unit, 'UNKNOWN_UNIT')
-    
+
     the_helper.add_metric(
         label=the_helper.options.type,
         value=the_snmp_value,
         warn=the_helper.options.warning,
         crit=the_helper.options.critical,
         uom=a_unit)
-    
+
     the_helper.check_all_metrics()
     the_helper.set_summary("Current environmental temperature is {}{}".format(the_snmp_value, a_unit))
 
@@ -391,27 +376,27 @@ apc_check_configs = {
     "BATTERY_CAPACITY"          : {"oid" : apc_oid_battery_capacity,
                                    "check" : check_battery_capacity},
     "INTERNAL_TEMPERATURE"      : {"oid" : apc_oid_internal_temperature,
-                                   "check" : check_internal_temperature},      
+                                   "check" : check_internal_temperature},
     "RUNTIME_REMAINING"         : {"oid" : apc_oid_runtime_remaining,
-                                   "check" : check_runtime_remaining},         
+                                   "check" : check_runtime_remaining},
     "BATTERY_REPLACE_INDICATOR" : {"oid" : apc_oid_battery_replace_indicator,
-                                   "check" : check_battery_replace_indicator}, 
+                                   "check" : check_battery_replace_indicator},
     "INPUT_VOLTAGE"             : {"oid" : apc_oid_input_voltage,
-                                   "check" : check_input_voltage},             
+                                   "check" : check_input_voltage},
     "INPUT_FREQUENCY"           : {"oid" : apc_oid_input_frequency,
-                                   "check" : check_input_frequency},           
+                                   "check" : check_input_frequency},
     "OUTPUT_VOLTAGE"            : {"oid" : apc_oid_output_voltage,
-                                   "check" : check_output_voltage},            
+                                   "check" : check_output_voltage},
     "OUTPUT_LOAD"               : {"oid" : apc_oid_output_load,
-                                   "check" : check_output_load},               
+                                   "check" : check_output_load},
     "OUTPUT_CURRENT"            : {"oid" : apc_oid_output_current,
-                                   "check" : check_output_current},            
+                                   "check" : check_output_current},
     "OUTPUT_POWER"              : {"oid" : apc_oid_output_power,
-                                   "check" : check_output_power},              
+                                   "check" : check_output_power},
     "LAST_TEST_RESULT"          : {"oid" : apc_oid_last_test_result,
                                    "check" : check_last_test_result},
     "ENVIRONMENT_TEMPERATURE"   : {"oid" : apc_oid_environment_temperature,
-                                   "check" : check_environment_temperature}   
+                                   "check" : check_environment_temperature}
     }
 
 
@@ -426,12 +411,12 @@ def verify_type(the_type, the_helper):
             summary="Invalid check type {} specified".format(the_type),
             exit_code=pynag.Plugins.UNKNOWN,
             perfdata='')
-    
+
 
 def setup_plugin_helper():
     # Create an instance of PluginHelper()
     a_helper = pynag.Plugins.PluginHelper()
-    
+
     # define the command line options
     snmpSessionBaseClass.add_common_options(a_helper)
 
@@ -442,22 +427,30 @@ def setup_plugin_helper():
         type='str')
     a_helper.parser.add_option('-c', '--critical', dest='critical', help='Critical thresholds in Icinga range format.', type='str')
     a_helper.parser.add_option('-w', '--warning', dest='warning', help='Warning thresholds in Icinga range format.', type='str')
-    
+    snmpSessionBaseClass.add_snmpv3_options(a_helper)
+
     a_helper.parse_arguments()
-    
+
     return a_helper
-    
+
 
 if __name__ == "__main__":
     a_helper = setup_plugin_helper()
 
-    snmpSessionBaseClass.verify_host(a_helper.options.hostname, a_helper)     
+    secname, seclevel, authproto, authpass, privproto, privpass = a_helper.options.secname, \
+                                                                  a_helper.options.seclevel, \
+                                                                  a_helper.options.authproto, \
+                                                                  a_helper.options.authpass, \
+                                                                  a_helper.options.privproto, \
+                                                                  a_helper.options.privpass
+
+    host, version, community = snmpSessionBaseClass.get_common_options(a_helper)
+
+    snmpSessionBaseClass.verify_host(host, a_helper)
     verify_type(a_helper.options.type, a_helper)
 
-    snmp_session = netsnmp.Session(
-        Version=a_helper.options.version,
-        DestHost=a_helper.options.hostname,
-        Community=a_helper.options.community)
+    snmp_session = netsnmp.Session(Version=version, DestHost=host, SecLevel=seclevel, SecName=secname, AuthProto=authproto,
+                              AuthPass=authpass, PrivProto=privproto, PrivPass=privpass, Community=community)
 
     # The default return value should be always OK
     a_helper.status(pynag.Plugins.ok)
@@ -466,6 +459,6 @@ if __name__ == "__main__":
     apc_oid = apc_check_configs[a_helper.options.type]["oid"]
     a_snmp_value = snmpSessionBaseClass.get_data(snmp_session, apc_oid, a_helper)
     apc_check(snmp_session, a_helper, a_snmp_value)
-    
-    ## Print out plugin information and exit nagios-style
+
+    # Print out plugin information and exit nagios-style
     a_helper.exit()

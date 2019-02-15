@@ -21,8 +21,8 @@ import sys
 import os
 import netsnmp
 sys.path.insert(1, os.path.join(sys.path[0], os.pardir)) 
-from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, walk_data
-from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
+from snmpSessionBaseClass import add_common_options, get_common_options, verify_host, walk_data, add_snmpv3_options
+from pynag.Plugins import PluginHelper, ok, warning, critical, unknown
 
 
 # Create an instance of PluginHelper()
@@ -30,6 +30,7 @@ helper = PluginHelper()
 
 # Add command line parameters
 add_common_options(helper)
+add_snmpv3_options(helper)
 helper.parser.add_option('-p', '--port', dest='port', help='The port you want to monitor', type='str', default='')
 helper.parser.add_option('-s', '--scan',   dest  = 'scan_flag', default   = False,    action = "store_true", help      = 'Show all open ports')
 helper.parser.add_option('-t', '--type', dest="type", help="TCP or UDP", default="udp")
@@ -44,6 +45,13 @@ scan = helper.options.scan_flag
 host, version, community = get_common_options(helper)
 warning_param = helper.options.warning
 critical_param = helper.options.critical
+
+secname, seclevel, authproto, authpass, privproto, privpass = helper.options.secname, \
+    helper.options.seclevel, \
+    helper.options.authproto, \
+    helper.options.authpass, \
+    helper.options.privproto, \
+    helper.options.privpass
 
 def check_typ(helper, typ):
     """
@@ -146,7 +154,8 @@ if __name__ == "__main__":
     # verify that a hostname is set
     verify_host(host, helper)
 
-    sess = netsnmp.Session(Version=version, DestHost=host, Community=community)
+    sess = netsnmp.Session(Version=version, DestHost=host, SecLevel=seclevel, SecName=secname, AuthProto=authproto,
+                           AuthPass=authpass, PrivProto=privproto, PrivPass=privpass, Community=community)
 
     # if no port is set, we will do a scan
     if port == "" or port is None:
