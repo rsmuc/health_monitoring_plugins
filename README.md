@@ -8,9 +8,6 @@ The plugins are provided on pypi as python package.
 All plugins are released under the GPLv2.
 
 
-
-The project is maintained at [Codeberg](https://codeberg.org/status_monitoring_tools/health_monitoring_plugins) and mirrored to Github. If possible please open Pull Requests and Issues at Codeberg.
-
 [![PyPI version](https://badge.fury.io/py/health-monitoring-plugins.svg)](https://badge.fury.io/py/health_monitoring_plugins)
 
 [![CodeFactor](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/badge)](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins)
@@ -120,7 +117,7 @@ Check the status of a Newtec Modem
 
 Check the status of a Cambium PTP 700 radio
 
-#### ~~[check_snmp_eps_plus](doc/check_snmp_eps_plus/README.md)~~
+#### [check_snmp_eps_plus](doc/check_snmp_eps_plus/README.md)
 
 Check the status of a ePowerSwitches (8XM+).
 
