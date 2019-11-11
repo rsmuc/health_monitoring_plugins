@@ -4,6 +4,9 @@
 # bak files
 *.bak
 
+# sencere files
+*sencere*
+
 # Setuptools distribution folder.
 /dist/
 

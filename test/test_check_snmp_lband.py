@@ -2,7 +2,7 @@
 
 # test_check_snmp_lband.py - test Monitor a L-band redundancy controller via SNMP.
 
-# Copyright (C) 2017 rsmuc rsmuc@mailbox.org
+# Copyright (C) 2017 rsmuc rsmuc@sec-dev.de
 # 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

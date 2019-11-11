@@ -1,20 +1,22 @@
 #!/usr/bin/python
 # check_local_cpu_temperature.py - Check the local CPU temperature without the usage of "lm-sensors"
 
-# Copyright (C) 2018 rsmuc rsmuc@mailbox.org
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with check_local_cpu_temperature.py.  If not, see <http://www.gnu.org/licenses/>.
+#    Copyright (C) 2018-2019 rsmuc <rsmuc@sec-dev.de>
+
+#    This file is part of "Health Monitoring Plugins".
+
+#    "Health Monitoring Plugins" is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+
+#    "Health Monitoring Plugins" is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with "Health Monitoring Plugins".  If not, see <https://www.gnu.org/licenses/>.
 
 # Import PluginHelper and some utility constants from the Plugins module
 import sys

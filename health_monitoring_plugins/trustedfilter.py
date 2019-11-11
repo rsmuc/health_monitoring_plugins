@@ -1,4 +1,19 @@
-# Copyright (C) 2017 rsmuc <rsmuc@mailbox.org>
+#    Copyright (C) 2017-2019 rsmuc <rsmuc@sec-dev.de>
+
+#    This file is part of "Health Monitoring Plugins".
+
+#    "Health Monitoring Plugins" is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+
+#    "Health Monitoring Plugins" is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with "Health Monitoring Plugins".  If not, see <https://www.gnu.org/licenses/>.
 
 from pynag.Plugins import PluginHelper,ok,warning,critical,unknown
 import health_monitoring_plugins
@@ -12,9 +27,9 @@ states = {
 }
 
 activity = {
-    1 : 'standby',
-    2 : 'active',
-    3 : 'error'
+    1: 'standby',
+    2: 'active',
+    3: 'error'
 }
 
 # OIDs
@@ -27,6 +42,7 @@ fan2_oid       = '.1.3.6.1.4.1.2566.107.31.2.5.0' #   slIpStatusPowerFanUnit2
 bat_oid        = '.1.3.6.1.4.1.2566.107.31.2.7.0' #   slIpStatusInternalVoltage
 temp_oid       = '.1.3.6.1.4.1.2566.107.31.2.8.0' #   slIpStatusInternalTemperature
 activity_oid   = '.1.3.6.1.4.1.2566.107.41.1.0'   #   tfDeviceActivityState
+
 
 class TrustedFilter(object):
     def __init__(self, helper, snmp1, snmp2=None):

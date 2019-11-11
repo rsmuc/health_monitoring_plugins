@@ -11,13 +11,12 @@ All plugins are released under the GPLv2.
 
 The project is maintained at [Codeberg](https://codeberg.org/status_monitoring_tools/health_monitoring_plugins) and mirrored to Github. If possible please open Pull Requests and Issues at Codeberg.
 
+[![PyPI version](https://badge.fury.io/py/health-monitoring-plugins.svg)](https://badge.fury.io/py/health_monitoring_plugins)
 
+[![CodeFactor](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/badge)](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins)
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/56d2e53efd76cc85fecb/maintainability)](https://codeclimate.com/github/rsmuc/health_monitoring_plugins/maintainability)
 
-[![CodeFactor](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/badge/0.1.0)](https://www.codefactor.io/repository/github/rsmuc/health_monitoring_plugins/overview/0.1.0)
-
-[![PyPI version](https://badge.fury.io/py/health_monitoring_plugins.svg)](https://badge.fury.io/py/health_monitoring_plugins)
 
 ## Plugins
 
@@ -31,7 +30,7 @@ Monitor the jobs in the Jenkins job queue
 
 Check the local CPU temperature without the usage of "lm-sensors"
 
-#### [check_snmp_fortinet](doc/check_snmp_fortinet/README.md)
+#### ~~[check_snmp_fortinet](doc/check_snmp_fortinet/README.md)~~
 
 Monitor Fortinet Wifi Controllers via SNMP
 
@@ -47,7 +46,7 @@ Monitor an UPS from APC via SNMP.
 
 Monitor an UPS from Eaton via SNMP. Requires the built in Eaton network card.
 
-#### [check_snmp_lband](doc/check_snmp_lband/README.md)
+#### ~~[check_snmp_lband](doc/check_snmp_lband/README.md)~~
 
 Check the status of the CROSS TECHNOLOGIES redundancy controller 2082-141.
 Implemented against MIB 2082-141.mib
@@ -68,7 +67,7 @@ You can check each port for the CTS, DSR, DTR and Error count.
 
 This plugin checks the health of HP servers with iLo 4 interface via SNMP.
 
-#### [check_snmp_janitza](doc/check_snmp_janitza/README.md)
+#### ~~[check_snmp_janitza](doc/check_snmp_janitza/README.md)~~
 
 Check the status of a Janitza 604 device.
 
@@ -101,11 +100,11 @@ This plugin compares the time of the icinga/nagios machine with the time of a re
 
 This plugin checks the health of Dell iDRAC.
 
-#### [check_snmp_teledyne](doc/check_snmp_teledyne/README.md)
+#### ~~[check_snmp_teledyne](doc/check_snmp_teledyne/README.md)~~
 
 This plugin checks the health of Teledyn Paradise Datacom Sattelite Modem.
 
-#### [check_snmp_ubiquiti](doc/check_snmp_ubiquiti/README.md)
+#### ~~[check_snmp_ubiquiti](doc/check_snmp_ubiquiti/README.md)~~
 
 Check the status of a Ubiquiti airMax device.
 
@@ -116,6 +115,14 @@ Check the status of a Microwave Modem
 #### check_newtecmodem
 
 Check the status of a Newtec Modem
+
+#### check_snmp_cambium_ptp700
+
+Check the status of a Cambium PTP 700 radio
+
+#### ~~[check_snmp_eps_plus](doc/check_snmp_eps_plus/README.md)~~
+
+Check the status of a ePowerSwitches (8XM+).
 
 ## Installation
 
@@ -168,7 +175,41 @@ Seems that you did not install the python package. The plugins can not be called
 PYTHONPATH=~/PycharmProjects/health_monitoring_plugins/ health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py
 ```
 
+## Roadmap
+
+
+#### Version 0.3.0
+
+  * Refactoring of Moxa plugin
+  * Refactoring of APC plugin
+  * Migrate from netsnmp to pysnmp for plugins
+  * Remove obsolete plugins  
+
+#### Version 1.0.0
+
+* Python 3 support
+* Refactoring of tests (remove netsnmp)
+
 ## Changelog
+
+###### Version 0.2.0
+
+* Updated license notices according https://www.gnu.org/licenses/gpl-howto.html
+* Preparations for Python3:
+  * Refactored check_snmp_large_storage  
+  * Refactored check_snmp_service
+  * Refactored check_snmp_port
+  * Refactored check_snmp_time2
+  * Refactoring of iLo plugin
+  * Refactored check_snmp_procurve.py
+  * Refactored check_snmp_eaton_ups.py
+    * Removed check that are not compatible with 9SX series
+* Small fixes and PEP 8 improvements
+* Added check_snmp_eps_plus
+* Added check_snmp_cambium_ptp700
+* Improved snmp exception handling
+* Added --snmptimeout parameter
+* iDrac plugin shows now "warning" instead of "nonCritical"
 
 ###### Version 0.1.0
 

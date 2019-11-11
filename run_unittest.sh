@@ -1,4 +1,22 @@
 #/bin/bash
+
+#    Copyright (C) 2016-2019 rsmuc <rsmuc@sec-dev.de>
+
+#    This file is part of "Health Monitoring Plugins".
+
+#    "Health Monitoring Plugins" is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+
+#    "Health Monitoring Plugins" is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+
 # exit after error
 set -e
 set -x
@@ -42,9 +60,6 @@ py.test test/test_check_snmp_ubiquiti.py -v
 echo "Test check_snmp_lband"
 py.test test/test_check_snmp_lband.py -v
 
-echo "Test check_snmp_sencere"
-py.test test/test_check_snmp_sencere.py -v
-
 echo "Test check_snmp_apc_ups"
 py.test test/test_check_snmp_apc_ups.py -v
 
@@ -59,3 +74,15 @@ py.test test/test_check_snmp_fortinet.py -v
 
 echo "Test check_snmp_trusted_filter"
 py.test test/test_check_snmp_trusted_filter.py -v
+
+echo "Test check_snmp_eps_plus"
+py.test test/test_check_snmp_eps_plus.py -v
+
+echo "Test check_newtecmodem"
+py.test test/test_check_newtecmodem.py -v
+
+echo "Test check_microwavemodem"
+py.test test/test_check_microwavemodem.py -v
+
+echo "Test check_cambium_ptp700"
+py.test test/test_check_smmp_cambium_ptp700.py -v

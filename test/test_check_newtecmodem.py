@@ -9,9 +9,13 @@ testagent.start_server()
 def test_mib_not_reachable():
     p=subprocess.Popen("health_monitoring_plugins/check_newtecmodem/check_newtecmodem.py -H 127.0.0.1:1234 -m MDM6000",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
+    p.wait()
+    assert p.returncode == 3
     assert p.stdout.read() == "Unknown - SNMP response incomplete or invalid\n"
     p=subprocess.Popen("health_monitoring_plugins/check_newtecmodem/check_newtecmodem.py -H 127.0.0.1:1234 -m MDM6000",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
+    p.wait()
+    assert p.returncode == 3
     assert p.stdout.read() == "Unknown - SNMP response incomplete or invalid\n"
 
 def test_all_good():
@@ -37,10 +41,14 @@ def test_all_good():
     testagent.register_snmpwalk_ouput(walk)
     p=subprocess.Popen("health_monitoring_plugins/check_newtecmodem/check_newtecmodem.py -H 127.0.0.1:1234 -m MDM6000",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
-    assert p.stdout.read() == "Newtec MDM6000 | 'power_v'=251;;;; 'temp_deg_c'=21;;;;\n"
+    p.wait()
+    assert p.returncode == 0
+    assert p.stdout.read() == "Newtec MDM6000. Status: OK. | 'power_v'=2.51;;;; 'temp_deg_c'=21.0;;;;\n"
     p=subprocess.Popen("health_monitoring_plugins/check_newtecmodem/check_newtecmodem.py -H 127.0.0.1:1234 -m MDM9000",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
-    assert p.stdout.read() == "Newtec MDM9000 | 'power_v'=251;;;; 'temp_deg_c'=21;;;;\n"
+    p.wait()
+    assert p.returncode == 0
+    assert p.stdout.read() == "Newtec MDM9000. Status: OK. | 'power_v'=2.51;;;; 'temp_deg_c'=21.0;;;;\n"
 
 def test_some_alarms():
     testagent.unregister_all()
@@ -66,8 +74,10 @@ def test_some_alarms():
     testagent.register_snmpwalk_ouput(walk)
     p=subprocess.Popen("health_monitoring_plugins/check_newtecmodem/check_newtecmodem.py -H 127.0.0.1:1234 -m MDM6000",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
+    p.wait()
+    assert p.returncode == 2
     assert p.stdout.read() == (
-        "Newtec MDM6000. 7 alarms active | 'power_v'=251;;;; 'temp_deg_c'=21;;;;\n"
+        "Newtec MDM6000. Status: 7 alarms active. | 'power_v'=2.51;;;; 'temp_deg_c'=21.0;;;;\n"
         "Alarm: Antenna non-functional\n"
         "Alarm: Frontpanel communication failed\n"
         "Alarm: General device failure\n"
@@ -77,8 +87,10 @@ def test_some_alarms():
         "Alarm: Fan failure\n")
     p=subprocess.Popen("health_monitoring_plugins/check_newtecmodem/check_newtecmodem.py -H 127.0.0.1:1234 -m MDM9000",
                        shell=True, stdout=subprocess.PIPE, env=context.testenv)
+    p.wait()
+    assert p.returncode == 2
     assert p.stdout.read() == (
-        "Newtec MDM9000. 9 alarms active | 'power_v'=251;;;; 'temp_deg_c'=21;;;;\n"
+        "Newtec MDM9000. Status: 9 alarms active. | 'power_v'=2.51;;;; 'temp_deg_c'=21.0;;;;\n"
         "Alarm: Antenna non-functional\n"
         "Alarm: Hardware malfunction\n"
         "Alarm: Frontpanel communication failed\n"

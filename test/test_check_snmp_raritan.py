@@ -159,6 +159,7 @@ def test_start_snmp_simulation():
                 iso.3.6.1.4.1.13742.6.3.6.3.1.2.1.6 = INTEGER: 11
                 iso.3.6.1.4.1.13742.6.3.6.3.1.2.1.7 = INTEGER: 10
                 iso.3.6.1.4.1.13742.6.3.6.3.1.2.1.8 = INTEGER: 13
+                iso.3.6.1.4.1.13742.6.3.6.3.1.2.1.9 = INTEGER: 991
                 iso.3.6.1.4.1.13742.6.3.6.3.1.31.1.2 = INTEGER: 0
                 iso.3.6.1.4.1.13742.6.3.6.3.1.31.1.3 = INTEGER: 0
                 iso.3.6.1.4.1.13742.6.3.6.3.1.31.1.4 = INTEGER: 0
@@ -224,9 +225,9 @@ def test_snmpv3(capsys):
     p = subprocess.Popen('health_monitoring_plugins/check_snmp_raritan/check_snmp_raritan.py ' +
                          "-H 127.0.0.1:1234 -t outlet -i 1 -V 3 "
                          "-U nothinguseful -L authNoPriv -a MD5 "
-                         "-A nothinguseful -x DES -X nothinguseful",
+                         "-A nothinguseful -x DES -X nothinguseful --timeout 3",
                          shell=True, stdout=subprocess.PIPE)
-    assert "Unknown - SNMP get response incomplete" in p.stdout.read()
+    assert "Unknown - No response" in p.stdout.read()
 
 
 def test_outlet1_on():

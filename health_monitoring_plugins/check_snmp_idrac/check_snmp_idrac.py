@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2016 - 2018 rsmuc <rsmuc@mailbox.org>
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with check_snmp_idrac.py.  If not, see <http://www.gnu.org/licenses/>.
+#    Copyright (C) 2016-2019 rsmuc <rsmuc@sec-dev.de>
+
+#    This file is part of "Health Monitoring Plugins".
+
+#    "Health Monitoring Plugins" is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+
+#    "Health Monitoring Plugins" is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with "Health Monitoring Plugins".  If not, see <https://www.gnu.org/licenses/>.
 
 from pynag.Plugins import ok
 import health_monitoring_plugins.idrac
@@ -30,6 +32,8 @@ if __name__ == '__main__':
                              default=True, action='store_false', dest='storage')
     helper.parser.add_option('--no-disks', help='Do not check the disks',
                              default=True, action='store_false', dest='disks')
+    helper.parser.add_option('--no-predictive', help='Do not check the predictive status of the disks',
+                             default=True, action='store_false', dest='predictive')
     helper.parser.add_option('--no-lcd', help='Do not check the lcd status',
                              default=True, action='store_false', dest='lcd')
     helper.parser.add_option('--no-power_unit', help='Do not check the power unit',
@@ -44,9 +48,6 @@ if __name__ == '__main__':
                              default=True, action='store_false', dest='temperature')
 
     helper.parse_arguments()
-
-    # we need to increase the default timeout. the snmp session takes too long.
-    helper.options.timeout = max(helper.options.timeout, 2000)
 
     sess = health_monitoring_plugins.SnmpSession(**helper.get_snmp_args())
 
@@ -77,6 +78,10 @@ if __name__ == '__main__':
     # DISK STATES
     if helper.options.disks:
         idrac.process_states(helper, sess, "drive")
+
+    # PREDICTIVE SMART DISK STATUS
+    if helper.options.predictive:
+        idrac.process_states(helper, sess, "predictive_drive_status")
 
     # POWER UNIT Status
     if helper.options.power_unit:

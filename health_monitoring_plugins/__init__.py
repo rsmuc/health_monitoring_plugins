@@ -35,12 +35,13 @@ class HelperExtension(pynag.Plugins.PluginHelper):
 
 class SnmpHelper(pynag.Plugins.PluginHelper, HelperExtension):
     def __init__(self, *args, **kwargs):
-        pynag.Plugins.PluginHelper.__init__(self, *args, **kwargs)
+        pynag.Plugins.PluginHelper.__init__(self, *args, **kwargs)        
         self.parser.add_option('-H', '--hostname', help="Hostname or ip address")
         self.parser.add_option('-C', '--community', help='SNMP community of the SNMP service on target host.',
                                default='public')
         self.parser.add_option('-V', '--snmpversion', help='SNMP version. (1 or 2)', default=2, type='int')
         self.parser.add_option('--retries', help='Number of SNMP retries.', default=0, type='int')
+        self.parser.add_option('--snmptimeout', help='The timeout for one snmp get (Default: 5 seconds)', default=5, type='int')
         self.parser.add_option('-U', '--securityname', help="SNMPv3: security name (e.g. bert)", dest="secname")
         self.parser.add_option('-L', '--securitylevel',
                                help="SNMPv3: security level (noAuthNoPriv, authNoPriv, authPriv)", dest="seclevel")
@@ -69,39 +70,71 @@ class SnmpHelper(pynag.Plugins.PluginHelper, HelperExtension):
                 'Community': self.options.community,
                 'Retries': self.options.retries}
         if self.options.timeout:
-            args['Timeout'] = self.options.timeout * 1000
-
-        return args
+            args['Timeout'] = self.options.snmptimeout * 1000000
+        return {k: v for k, v in args.items() if v is not None}
 
     @staticmethod
-    def get_snmp_value(sess, helper, oid):
+    def get_snmp_value_or_exit(sess, helper, oid):
         """ return a snmp value or exits the plugin with unknown"""
-        snmp_result = sess.get_oids(oid)[0]
+        snmp_result = helper.get_snmp_values_or_exit(sess, helper, oid)[0]        
+        
         if snmp_result is None:
-            helper.exit(summary="No response from device for oid " + oid, exit_code=unknown, perfdata='')
+            helper.exit(summary="No response from device for oid {}".format(oid), exit_code=unknown, perfdata='')
 
         else:
             return snmp_result
+# TODO: anpassung timeouts in commands
 
     @staticmethod
-    def walk_snmp_values(sess, helper, oid, check):
-        """ return a snmp value or exits the plugin with unknown"""
+    def get_snmp_values_or_exit(sess, helper, *oids):
+        """ return a snmp value or exits the plugin with unknown after x retries"""
+
+        retries = helper.options.retries + 1
+        n = 0
         try:
-            snmp_walk = sess.walk_oid(oid)
+            while n < retries: 
+                n = n + 1            
+                snmp_result = sess.get_oids(*oids)
 
-            result_list = []
-            for x in range(len(snmp_walk)):
-                result_list.append(snmp_walk[x].val)
+                if snmp_result and None not in snmp_result and len(snmp_result) != 0:
+                    break
+            
+            if len(snmp_result) == 0 or None in snmp_result:
+                    raise SnmpException("No response")
 
-            if result_list != []:
-                return result_list
+        except SnmpException:
+            helper.exit(summary="No response from device for oid {}".format(', '.join(oids)),
+                        exit_code=unknown, perfdata='')
 
-            else:
+        return snmp_result
+
+    @staticmethod
+    def walk_snmp_values_or_exit(sess, helper, oid, check):
+        """ return a snmp value or exits the plugin with unknown"""
+        
+        retries = helper.options.retries + 1
+        n = 0
+        
+        try:
+            while n < retries:
+                n = n + 1
+                snmp_walk = sess.walk_oid(oid)
+
+                result_list = []
+                for x in range(len(snmp_walk)):
+                    result_list.append(snmp_walk[x].val)
+
+                if result_list != []:
+                    break
+
+            if len(result_list) == 0:
                 raise SnmpException("No content")
+        
         except SnmpException:
             helper.exit(summary="No response from device for {} ({})".format(check, oid),
                         exit_code=unknown, perfdata='')
-
+        
+        return result_list
 
 class SnmpSession(netsnmp.Session):
     """Wrap netsnmp.Session to workaround some shortcomings there"""
@@ -112,21 +145,30 @@ class SnmpSession(netsnmp.Session):
             raise SnmpException("DNS resolution for SNMP host failed")
 
     def get_oids(self, *oids):
+        
         varlist = netsnmp.VarList(*oids)
         response = self.get(varlist)
-        if not response or len(response) != len(oids):
+           
+        if response is None:
             raise SnmpException("SNMP get response incomplete")
+
         return response
 
     def walk_oid(self, oid):
         """Get a list of SNMP varbinds in response to a walk for oid.
         
-        Each varbind in response list has a tag, iid, val and type attribute."""
+        Each varbind in response list has a tag, iid, val and type attribute.
+        
+        To retry the request several times, increase the retries parameter
+        
+        """
         var = netsnmp.Varbind(oid)
         varlist = netsnmp.VarList(var)
         data = self.walk(varlist)
+
         if len(data) == 0:
             raise SnmpException("SNMP walk response incomplete")
+            
         return varlist
 
     def set(self, *args, **kwargs):

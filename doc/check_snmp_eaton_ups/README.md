@@ -14,8 +14,8 @@ Checkable values:
 * remaining runtime
 * remaining battery capacity
 * alarms
-* battery test summary and details (not available for Eaton 9SX)
-* battery state (low, replacement, fault) (not available for Eaton 9SX)
+* ~~battery test summary and details (not available for Eaton 9SX)~~
+* ~~battery state (low, replacement, fault) (not available for Eaton 9SX)~~
 * internal and environmental temperature
 
 ### Example:
@@ -49,13 +49,11 @@ OK - 0 active alarms
   -V VERSION, --snmpversion=VERSION
                         SNMP version. (1, 2 or 3)
   -t TYPE, --type=TYPE  Check type to execute. Available types are:
-                        input_frequency, output_power, on_battery,
-                        battery_test_detail, battery_fault_warning,
-                        battery_test_summary, battery_replacement_warning,
-                        battery_capacity, external_environment_temperature,
-                        remaining_battery_time, environment_temperature,
-                        alarms, output_load, output_voltage, output_current,
-                        battery_low_warning, input_voltage
+                        on_battery, remaining_battery_time, input_frequency,
+                        input_voltage, output_voltage, output_current,
+                        output_power, output_load, alarms, battery_capacity,
+                        environment_temperature,
+                        external_environment_temperature
   -U SECNAME, --securityname=SECNAME
                         SNMPv3: security name (e.g. bert)
   -L SECLEVEL, --securitylevel=SECLEVEL

@@ -1,10 +1,25 @@
 """
 Module for check_snmp_idrac
 """
-# Copyright (C) 2018 rsmuc <rsmuc@mailbox.org>
+
+#    Copyright (C) 2018-2019 rsmuc <rsmuc@sec-dev.de>
+
+#    This file is part of "Health Monitoring Plugins".
+
+#    "Health Monitoring Plugins" is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+
+#    "Health Monitoring Plugins" is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with "Health Monitoring Plugins".  If not, see <https://www.gnu.org/licenses/>.
 
 from pynag.Plugins import unknown, warning, critical, ok
-
 
 # required OIDS from IDRAC-MIB-SMIv2
 
@@ -27,7 +42,8 @@ DEVICE_NAMES_OIDS = {
     "oid_power_unit": '.1.3.6.1.4.1.674.10892.5.4.600.12.1.8',
     "oid_chassis_intrusion": '.1.3.6.1.4.1.674.10892.5.4.300.70.1.8',
     "oid_cooling_unit": '.1.3.6.1.4.1.674.10892.5.4.700.10.1.7',
-    "oid_drive": '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.2'
+    "oid_drive": '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.2',
+    "oid_predictive_drive_status": '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.2'
 
 }
 
@@ -37,7 +53,8 @@ DEVICE_STATES_OIDS = {
     "oid_power_unit": '.1.3.6.1.4.1.674.10892.5.4.600.12.1.5',
     "oid_chassis_intrusion": '.1.3.6.1.4.1.674.10892.5.4.300.70.1.5',
     "oid_cooling_unit": '.1.3.6.1.4.1.674.10892.5.4.700.10.1.8',
-    "oid_drive": '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.4'
+    "oid_drive": '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.4',
+    "oid_predictive_drive_status": '.1.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.31'
 
 }
 
@@ -160,6 +177,24 @@ DISK_STATES = {
 }
 
 
+
+PREDICTIVE_DISK_STATES = {
+    0: {
+        "result": "ok",
+        "icingastatus": ok
+    },
+
+    1: {
+        "result": "predictive failure - replace drive",
+        "icingastatus": warning
+    }
+
+}
+
+
+
+
+
 def normal_check(name, status, device_type):
     """if the status is "ok" in the NORMAL_STATE dict, return ok + string
     if the status is not "ok", return critical + string"""
@@ -170,6 +205,10 @@ def normal_check(name, status, device_type):
 
     elif status_string == "unknown":
         return unknown, "{} '{}': {}".format(device_type, name, status_string)
+
+    # nonCritical is confusing - so we want to return "warning" as string and status
+    elif status_string == "nonCritical":
+        return warning, "{} '{}': {}".format(device_type, name, "warning")
 
     return critical, "{} '{}': {}".format(device_type, name, status_string)
 
@@ -197,26 +236,29 @@ class Idrac(object):
     @staticmethod
     def add_device_information(helper, session):
         """ add general device information to summary """
-        host_name_data = helper.get_snmp_value(session, helper,
-                                               DEVICE_INFORMATION_OIDS['oid_host_name'])
+        host_name_data = helper.get_snmp_value_or_exit(session, helper,
+                                                       DEVICE_INFORMATION_OIDS['oid_host_name'])
 
-        product_type_data = helper.get_snmp_value(session, helper,
-                                                  DEVICE_INFORMATION_OIDS['oid_product_type'])
+        product_type_data = helper.get_snmp_value_or_exit(session, helper,
+                                                          DEVICE_INFORMATION_OIDS[
+                                                              'oid_product_type'])
 
-        service_tag_data = helper.get_snmp_value(session, helper,
-                                                 DEVICE_INFORMATION_OIDS['oid_service_tag'])
+        service_tag_data = helper.get_snmp_value_or_exit(session, helper,
+                                                         DEVICE_INFORMATION_OIDS['oid_service_tag'])
 
         helper.add_summary('Name: {} - Typ: {} - Service tag: {}'.format(
             host_name_data, product_type_data, service_tag_data))
 
     def process_status(self, helper, session, check):
         """"process a single status"""
-        snmp_result_status = helper.get_snmp_value(session, helper, DEVICE_GLOBAL_OIDS['oid_' + check])
+        snmp_result_status = helper.get_snmp_value_or_exit(session, helper,
+                                                           DEVICE_GLOBAL_OIDS['oid_' + check])
 
         if check == "system_lcd":
             helper.update_status(helper, normal_check("global", snmp_result_status, "LCD status"))
         elif check == "global_storage":
-            helper.update_status(helper, normal_check("global", snmp_result_status, "Storage status"))
+            helper.update_status(helper,
+                                 normal_check("global", snmp_result_status, "Storage status"))
         elif check == "system_power":
             helper.update_status(helper, self.check_system_power_status(snmp_result_status))
         elif check == "global_system":
@@ -225,13 +267,13 @@ class Idrac(object):
 
     def process_states(self, helper, session, check):
         """process status values from a table"""
-        snmp_result_status = helper.walk_snmp_values(session, helper,
-                                                     DEVICE_STATES_OIDS["oid_" + check],
-                                                     check)
+        snmp_result_status = helper.walk_snmp_values_or_exit(session, helper,
+                                                             DEVICE_STATES_OIDS["oid_" + check],
+                                                             check)
 
-        snmp_result_names = helper.walk_snmp_values(session, helper,
-                                                    DEVICE_NAMES_OIDS["oid_" + check],
-                                                    check)
+        snmp_result_names = helper.walk_snmp_values_or_exit(session, helper,
+                                                            DEVICE_NAMES_OIDS["oid_" + check],
+                                                            check)
 
         for i, _result in enumerate(snmp_result_status):
             if check == "power_unit":
@@ -242,6 +284,10 @@ class Idrac(object):
                 helper.update_status(
                     helper,
                     self.check_drives(snmp_result_names[i], snmp_result_status[i]))
+            elif check == "predictive_drive_status":
+                helper.update_status(
+                    helper,
+                    self.check_predictive_drive_status(snmp_result_names[i], snmp_result_status[i]))
             elif check == "power_unit_redundancy":
                 helper.update_status(
                     helper,
@@ -259,13 +305,13 @@ class Idrac(object):
     @staticmethod
     def process_temperature_sensors(helper, session):
         """process the temperature sensors"""
-        snmp_result_temp_sensor_names = helper.walk_snmp_values(
+        snmp_result_temp_sensor_names = helper.walk_snmp_values_or_exit(
             session, helper,
             DEVICE_TEMPERATURE_OIDS['oid_temperature_probe_location'], "temperature sensors")
-        snmp_result_temp_sensor_states = helper.walk_snmp_values(
+        snmp_result_temp_sensor_states = helper.walk_snmp_values_or_exit(
             session, helper,
             DEVICE_TEMPERATURE_OIDS['oid_temperature_probe_status'], "temperature sensors")
-        snmp_result_temp_sensor_values = helper.walk_snmp_values(
+        snmp_result_temp_sensor_values = helper.walk_snmp_values_or_exit(
             session, helper,
             DEVICE_TEMPERATURE_OIDS['oid_temperature_probe_reading'], "temperature sensors")
 
@@ -283,6 +329,13 @@ class Idrac(object):
         """ check the drive status """
         return DISK_STATES[int(drivestatus)]["icingastatus"], "Drive '{}': {}".format(
             drivename, DISK_STATES[int(drivestatus)]["result"])
+
+    @staticmethod
+    def check_predictive_drive_status(drivename, drivestatus):
+        """ check the predictive drive status """
+        return PREDICTIVE_DISK_STATES[int(drivestatus)]["icingastatus"], "Predictve Drive Status '{}': {}".format(
+            drivename, PREDICTIVE_DISK_STATES[int(drivestatus)]["result"])
+
 
     @staticmethod
     def check_system_power_status(power_state):

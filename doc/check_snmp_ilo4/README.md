@@ -33,34 +33,63 @@ The plugin requires [pynag] and python-netsnmp.
 
 ## Options for check_snmp_ilo4.py
 ```
+Options:
   -h, --help            show this help message and exit
-  -H HOSTNAME           Hostname or ip address
+  -H HOSTNAME, --hostname=HOSTNAME
+                        Hostname or ip address
   -C COMMUNITY, --community=COMMUNITY
                         SNMP community of the SNMP service on target host.
-  -V VERSION, --snmpversion=VERSION
+  -V SNMPVERSION, --snmpversion=SNMPVERSION
                         SNMP version. (1 or 2)
-  -c AMOUNT_DRVS, --drives=AMOUNT_DRVS
-                        Amount of physical drives. Requires an integer. (0 to
-                        disable the check)
-  -p AMOUNT_PWR_SPLY, --ps=AMOUNT_PWR_SPLY
-                        Amount of connected power supplies. Requires an
-                        integer. (0 to disable the check)
-  -f AMOUNT_FANS, --fan=AMOUNT_FANS
-                        Amount of fans. Requires an integer. (0 to disable the
-                        check)
-  --scan                Scan the server if you do not know what is build in
-                        (does not return a health status)
+  --retries=RETRIES     Number of SNMP retries.
+  -U SECNAME, --securityname=SECNAME
+                        SNMPv3: security name (e.g. bert)
+  -L SECLEVEL, --securitylevel=SECLEVEL
+                        SNMPv3: security level (noAuthNoPriv, authNoPriv,
+                        authPriv)
+  -a AUTHPROTO, --authprotocol=AUTHPROTO
+                        SNMPv3: authentication protocol (MD5|SHA)
+  -A AUTHPASS, --authpass=AUTHPASS
+                        SNMPv3: authentication protocol pass phrase
+  -x PRIVPROTO, --privproto=PRIVPROTO
+                        SNMPv3: privacy protocol (DES|AES)
+  -X PRIVPASS, --privpass=PRIVPASS
+                        SNMPv3: privacy protocol pass phrase
+  --drives=AMOUNT_DRVS  Amount of physical drives
+  --ps=AMOUNT_PWR_SPLY  Amount of connected power supplies
+  --fan=AMOUNT_FANS     Amount of fans
+  --scan                (obsolete)
   --noStorage           Do not check global storage condition
   --noSystem            Do not check global system state
   --noPowerSupply       Do not check global power supply condition
   --noPowerState        Do not check power state
-  --noTemp              Do not check global temperature condition
+  --noTemp              Do not check Overall thermal environment condition
   --noTempSens          Do not check temperature sensor condition
   --noDriveTemp         Do not check temperature sensor of the hard drives
   --noFan               Do not check global fan condition
   --noMemory            Do not check memory condition
   --noController        Do not check controller condition
-  --noPowerRedundancy   Ignore power supply redundancy
+  --noLogicalDrives     Do not check the logical drives
+  --noPowerRedundancy   Do not check powersupply redundancy
+
+  Generic Options:
+    --timeout=50        Exit plugin with unknown status after x seconds
+    --threshold=range   Thresholds in standard nagios threshold format
+    --th=range          Same as --threshold
+    --extra-opts=@file  Read options from an ini file. See
+                        http://nagiosplugins.org/extra-opts
+    -d, --debug         Print debug info
+
+  Display Options:
+    -v, --verbose       Print more verbose info
+    --no-perfdata       Dont show any performance data
+    --no-longoutput     Hide longoutput from the plugin output (i.e. only
+                        display first line of the output)
+    --no-summary        Hide summary from plugin output
+    --get-metrics       Print all available metrics and exit (can be combined
+                        with --verbose)
+    --legacy            Deprecated, do not use
+
       
 ```
 

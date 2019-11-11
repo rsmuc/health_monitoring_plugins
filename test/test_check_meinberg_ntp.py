@@ -101,7 +101,7 @@ def test_system_test_meinberg(capsys):
     assert "check_meinberg_ntp.py: error: Hostname must be specified" in p.stderr.read()
 
     # without -H 1.2.3.4 (unknown host)
-    p = subprocess.Popen("health_monitoring_plugins/check_meinberg_ntp/check_meinberg_ntp.py -H 1.2.3.4", shell=True,
+    p = subprocess.Popen("health_monitoring_plugins/check_meinberg_ntp/check_meinberg_ntp.py -H 1.2.3.4 --snmptimeout 3", shell=True,
                          stdout=subprocess.PIPE)
     assert "Unknown - No response from device for oid .1.3.6.1.4.1.5597.3.2.7.0" in p.stdout.read()
 
@@ -116,7 +116,7 @@ def test_snmpv3(capsys):
 
     p = subprocess.Popen("health_monitoring_plugins/check_meinberg_ntp/check_meinberg_ntp.py" + " -H 1.2.3.4 -V 3 "
                                                                                                 "-U nothinguseful -L authNoPriv -a MD5 "
-                                                                                                "-A nothinguseful -x DES -X nothinguseful",
+                                                                                                "-A nothinguseful -x DES -X nothinguseful --snmptimeout 3",
                          shell=True, stdout=subprocess.PIPE)
     assert "Unknown - No response from device for oid .1.3.6.1.4.1.5597.3.2.7.0" in p.stdout.read()
 

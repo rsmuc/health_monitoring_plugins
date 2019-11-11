@@ -21,7 +21,7 @@ if __name__ == '__main__':
         helper.parser.error("Modem type not specified or unknown.")
 
     snmp_session = netsnmp.Session(**helper.get_snmp_args())
-    newtecmodem_health = microwavemodem.MicrowaveModem(modem, snmp_session)
-    newtecmodem_health.check()
-    newtecmodem_health.feed_icinga_plugin(helper)
+    microwavemodem = microwavemodem.MicrowaveModem(modem, snmp_session)
+    microwavemodem.check()
+    microwavemodem.feed_icinga_plugin(helper)
     helper.exit()

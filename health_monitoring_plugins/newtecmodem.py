@@ -4,6 +4,9 @@ import pynag
 TYPE_MDM6000 = 0
 TYPE_MDM9000 = 1
 
+def scale100(snmp_value):
+    return float(snmp_value) / 100.
+
 alarms = {
     'ntcAntCtrlAntFailure': {'oid': '.1.3.6.1.4.1.5835.5.2.5700.1.3.3.0', 'text': "Antenna non-functional"},
     'ntcAntCtrlAntFailureStat': {'oid': '.1.3.6.1.4.1.5835.5.2.5700.1.3.1.1.3.1', 'text': "Antenna controller 1 non-functional"},
@@ -25,8 +28,8 @@ alarms = {
 }
 
 metrics = {
-    'ntcDevMonPowerSupply': {'oid': '.1.3.6.1.4.1.5835.5.2.100.1.9.2.0', 'label': 'power_v'},
-    'ntcDevMonTemperature': {'oid': '.1.3.6.1.4.1.5835.5.2.100.1.9.1.0', 'label': 'temp_deg_c'}
+    'ntcDevMonPowerSupply': {'oid': '.1.3.6.1.4.1.5835.5.2.100.1.9.2.0', 'label': 'power_v', 'conv': scale100},
+    'ntcDevMonTemperature': {'oid': '.1.3.6.1.4.1.5835.5.2.100.1.9.1.0', 'label': 'temp_deg_c', 'conv': float}
 }
 
 class NewtecModem(object):
@@ -83,8 +86,8 @@ class NewtecModem(object):
         self.metrics = {}
         for i in range(0, len(snmp_data)):
             metric_id = self.models[self.modem_type]['metrics'][i]
-            value = int(snmp_data[i])
-            self.metrics[metric_id] = value
+            conv = metrics[metric_id]['conv']
+            self.metrics[metric_id] = conv(snmp_data[i])
 
     def health_status(self):
         if self.active_alarms == None or self.metrics == None:
@@ -97,9 +100,11 @@ class NewtecModem(object):
     def model_summary(self):
         return self.models[self.modem_type]['name']
 
-    def alarm_summary(self):
+    def status_summary(self):
         if len(self.active_alarms) > 0:
-            return "{} alarms active".format(len(self.active_alarms))
+            return "Status: {} alarms active.".format(len(self.active_alarms))
+        else:
+            return "Status: OK."
 
     def alarm_info(self):
         return ["Alarm: " + alarms[alarm_id]['text'] for alarm_id in self.active_alarms]
@@ -121,9 +126,7 @@ class NewtecModem(object):
             return
         icinga_plugin.status(self.health_status())
         icinga_plugin.add_summary(self.model_summary())
-        alarm_summary = self.alarm_summary()
-        if alarm_summary is not None:
-            icinga_plugin.add_summary(alarm_summary)
+        icinga_plugin.add_summary(self.status_summary())
         for alarm_info in self.alarm_info():
             icinga_plugin.add_long_output(alarm_info)
         for perfdata in self.perfdata():

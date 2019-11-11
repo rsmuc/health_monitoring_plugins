@@ -1,100 +1,96 @@
 #!/usr/bin/env python
-import string
+import context
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_eaton_ups'))
- 
+
 import pytest
 import subprocess
 import netsnmp
 
 import test_util
 
-import testagent 
+import testagent
 import check_snmp_eaton_ups
-import snmpSessionBaseClass
-
-import pynag.Utils
-
 
 eaton_ups_check_plugin_path = "health_monitoring_plugins/check_snmp_eaton_ups/check_snmp_eaton_ups.py"
 
 # configuration of the testagent
 os.environ['MIBDIRS'] = os.path.dirname(os.path.abspath(__file__))
-testagent.configure(agent_address = "localhost:1234",
-    rocommunity='public', rwcommunity='private')
+testagent.configure(agent_address="localhost:1234",
+                    rocommunity='public', rwcommunity='private')
 
 # create netsnmp Sessions for test_get and test_walk
 session = netsnmp.Session(Version=2, DestHost='localhost', Community='public')
 failSession = netsnmp.Session(Version=2, DestHost='1.2.3.4', Community='public')
 
-a_plugin_helper = check_snmp_eaton_ups.setup_plugin_helper()
+# a_plugin_helper = check_snmp_eaton_ups.setup_plugin_helper()
 
 
 check_configs_range = {
     "input_frequency"
-        : {"value" : 50,
-           "summary" : "Input Frequency is",
-           "has_perfdata" : True
-           },
+    : {"value": 50,
+       "summary": "input frequency",
+       "has_perfdata": True
+       },
     "input_voltage"
-        : {"value" : 230,
-           "summary" : "Input Voltage is",
-           "has_perfdata" : True
-           },
+    : {"value": 230,
+       "summary": "input voltage",
+       "has_perfdata": True
+       },
     "output_voltage"
-        : {"value" : 229,
-           "summary" : "Output Voltage is",
-           "has_perfdata" : True
-           },
+    : {"value": 229,
+       "summary": "output voltage",
+       "has_perfdata": True
+       },
     "output_current"
-        : {"value" : 2,
-           "summary" : "Output Current is ",
-           "has_perfdata" : True
-           },
+    : {"value": 2,
+       "summary": "output current",
+       "has_perfdata": True
+       },
     "output_power"
-        : {"value" : 536,
-           "summary" : "Output Power is",
-           "has_perfdata" : True
-           },
+    : {"value": 536,
+       "summary": "output power",
+       "has_perfdata": True
+       },
     "environment_temperature"
-        : { "value" : 26,
-            "summary" : "Environment Temperature is ",
-            "has_perfdata" : True
-            },
+    : {"value": 26,
+       "summary": "environment temperature",
+       "has_perfdata": True
+       },
     "external_environment_temperature"
-        : { "value" : 26,
-            "summary" : "External Environment Temperature is ",
-            "has_perfdata" : True
-            },
-    }
-
+    : {"value": 26,
+       "summary": "external environment temperature",
+       "has_perfdata": True
+       },
+}
 
 check_configs_below_threshold = {
     "remaining_battery_time"
-        : {"value" : 30,
-           "summary" : "Remaining runtime on battery is",
-           "has_perfdata" : True
-           },
+    : {"value": 30,
+       "summary": "minutes remaining on battery",
+       "has_perfdata": True
+       },
     "battery_capacity"
-        : { "value" : 80,
-            "summary" : "Remaining Battery Capacity",
-            "has_perfdata" : True
-            }
-    }
+    : {"value": 80,
+       "summary": "remaining battery capacity",
+       "has_perfdata": True
+       }
+}
 
 check_configs_above_threshold = {
     "on_battery"
-        : {"value" : 60,
-           "summary" : "seconds already running on battery",
-           "has_perfdata" : True
-           },
+    : {"value": 60,
+       "summary": "seconds running on battery",
+       "has_perfdata": True
+       },
     "output_load"
-        : {"value" : 19,
-           "summary" : "Output Load is",
-           "has_perfdata" : True
-           }
-    }
+    : {"value": 19,
+       "summary": "output load",
+       "has_perfdata": True
+       }
+}
 
 
 def test_start_eaton_agent():
@@ -112,17 +108,35 @@ def test_start_eaton_agent():
     # upsEstimatedMinutesRemaining
     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.2.3.0 = INTEGER: 30''')
     # upsInputFrequency
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.3.3.1.2.1 = INTEGER: 500''')
+    testagent.register_snmpwalk_ouput(
+        '''iso.3.6.1.2.1.33.1.3.3.1.2.1 = INTEGER: 500
+        iso.3.6.1.2.1.33.1.3.3.1.2.2 = INTEGER: 500
+        iso.3.6.1.2.1.33.1.3.3.1.2.3 = INTEGER: 500''')
     # upsInputVoltage
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.3.3.1.3.1 = INTEGER: 230''')
+    testagent.register_snmpwalk_ouput(
+        '''iso.3.6.1.2.1.33.1.3.3.1.3.1 = INTEGER: 230
+        iso.3.6.1.2.1.33.1.3.3.1.3.2 = INTEGER: 230
+        iso.3.6.1.2.1.33.1.3.3.1.3.3 = INTEGER: 230''')
     # upsOutputVoltage
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.4.4.1.2.1 = INTEGER: 229''')
+    testagent.register_snmpwalk_ouput(
+        '''iso.3.6.1.2.1.33.1.4.4.1.2.1 = INTEGER: 229
+        iso.3.6.1.2.1.33.1.4.4.1.2.2 = INTEGER: 229
+        iso.3.6.1.2.1.33.1.4.4.1.2.3 = INTEGER: 229''')
     # upsOutputCurrent
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.4.4.1.3.1 = INTEGER: 20''')
+    testagent.register_snmpwalk_ouput(
+        '''iso.3.6.1.2.1.33.1.4.4.1.3.1 = INTEGER: 20
+        iso.3.6.1.2.1.33.1.4.4.1.3.2 = INTEGER: 20
+        iso.3.6.1.2.1.33.1.4.4.1.3.3 = INTEGER: 20''')
     # upsOutputPower
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.4.4.1.4.1 = INTEGER: 536''')
+    testagent.register_snmpwalk_ouput(
+        '''iso.3.6.1.2.1.33.1.4.4.1.4.1 = INTEGER: 536
+        iso.3.6.1.2.1.33.1.4.4.1.4.2 = INTEGER: 536
+        iso.3.6.1.2.1.33.1.4.4.1.4.3 = INTEGER: 536''')
     # upsOutputPercentLoad
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.4.4.1.5.1 = INTEGER: 19''')
+    testagent.register_snmpwalk_ouput(
+        '''iso.3.6.1.2.1.33.1.4.4.1.5.1 = INTEGER: 19
+        iso.3.6.1.2.1.33.1.4.4.1.5.2 = INTEGER: 19
+        iso.3.6.1.2.1.33.1.4.4.1.5.3 = INTEGER: 19''')
     # upsAlarmsPresent
     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.6.1.0 = INTEGER: 0''')
     # upsTestResultsSummary
@@ -141,7 +155,7 @@ def test_start_eaton_agent():
     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.11.0 = INTEGER: 2''')
     # upsmgBatteryLowBattery
     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.14.0 = INTEGER: 2''')
-    
+
     testagent.start_server()
 
 
@@ -157,7 +171,8 @@ def test_checks_within_range(capsys):
                 eaton_ups_check_plugin_path
                 , a_check_type
                 , a_expected_value["value"])
-        
+
+
 def test_checks_below_threshold(capsys):
     for a_check_type, a_expected_value in check_configs_below_threshold.items():
         test_util.check_below_threshold(
@@ -170,6 +185,7 @@ def test_checks_below_threshold(capsys):
                 eaton_ups_check_plugin_path
                 , a_check_type
                 , a_expected_value["value"])
+
 
 def test_checks_above_threshold(capsys):
     for a_check_type, a_expected_value in check_configs_above_threshold.items():
@@ -185,7 +201,6 @@ def test_checks_above_threshold(capsys):
                 , a_expected_value["value"])
 
 
-
 def test_alarms(capsys):
     a_check_type = "ALARMS"
     # upsAlarmsPresent
@@ -196,7 +211,7 @@ def test_alarms(capsys):
         , a_check_type
         , "OK"
         , "0 active alarms")
-    
+
     testagent.unregister_all()
     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.6.1.0 = INTEGER: 1''')
     test_util.check_value_without_thresholds(
@@ -206,184 +221,184 @@ def test_alarms(capsys):
         , "1 active alarms")
 
 
-def test_battery_test_summary(capsys):
-    a_check_type = "BATTERY_TEST_SUMMARY"
-
-    testagent.unregister_all()
-    # upsTestResultsSummary
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 1''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "OK"
-        , "pass")
-   
-    testagent.unregister_all()
-    # upsTestResultsSummary
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 5''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "OK"
-        , "in progress")
-
-    testagent.unregister_all()
-    # upsTestResultsSummary
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 6''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "OK"
-        , "no test initiated")
-    
-    testagent.unregister_all()
-    # upsTestResultsSummary
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 2''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Warning"
-        , "warning")
-    
-    testagent.unregister_all()
-    # upsTestResultsSummary
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 4''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Warning"
-        , "aborted")
-
-    testagent.unregister_all()
-    # upsTestResultsSummary
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 3''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Critical"
-        , "error")
-
-    testagent.unregister_all()
-    # upsTestResultsSummary
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 7''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Critical"
-        , "unknown SNMP value")
-
-
-def test_battery_test_detail(capsys):
-    a_check_type = "BATTERY_TEST_DETAIL"
-
-    testagent.unregister_all()
-    # upsTestResultsDetail
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.4.0 = STRING: "Testdetails"''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "OK"
-        , "Details of last UPS diagnostic test: Testdetails")
+#
+# def test_battery_test_summary(capsys):
+#     a_check_type = "BATTERY_TEST_SUMMARY"
+#
+#     testagent.unregister_all()
+#     # upsTestResultsSummary
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 1''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "OK"
+#         , "pass")
+#
+#     testagent.unregister_all()
+#     # upsTestResultsSummary
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 5''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "OK"
+#         , "in progress")
+#
+#     testagent.unregister_all()
+#     # upsTestResultsSummary
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 6''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "OK"
+#         , "no test initiated")
+#
+#     testagent.unregister_all()
+#     # upsTestResultsSummary
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 2''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Warning"
+#         , "warning")
+#
+#     testagent.unregister_all()
+#     # upsTestResultsSummary
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 4''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Warning"
+#         , "aborted")
+#
+#     testagent.unregister_all()
+#     # upsTestResultsSummary
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 3''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Critical"
+#         , "error")
+#
+#     testagent.unregister_all()
+#     # upsTestResultsSummary
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.3.0 = INTEGER: 7''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Critical"
+#         , "unknown SNMP value")
 
 
-#     "Battery Replacement Warning"
-#         : {"value" : ,
-#            "summary" : ""},
-def test_battery_replacement_warning(capsys):
-    a_check_type = "BATTERY_REPLACEMENT_WARNING"
-
-    testagent.unregister_all()
-    # upsmgBatteryReplacement
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.11.0 = INTEGER: 2''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "OK"
-        , "Battery does not need to be replaced")
-   
-    testagent.unregister_all()
-    # upsmgBatteryReplacement
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.11.0 = INTEGER: 1''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Critical"
-        , "Battery needs to be replaced")
-
-    testagent.unregister_all()
-    # upsmgBatteryReplacement
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.11.0 = INTEGER: 3''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Critical"
-        , "Unknown battery replacement state")
-
-
-def test_battery_low_warning(capsys):
-    a_check_type = "BATTERY_LOW_WARNING"
-
-    testagent.unregister_all()
-    # upsmgBatteryLowBattery
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.14.0 = INTEGER: 2''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "OK"
-        , "Battery is not in low state")
-   
-    testagent.unregister_all()
-    # upsmgBatteryLowBattery
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.14.0 = INTEGER: 1''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Critical"
-        , "Battery is in low state")
-
-    testagent.unregister_all()
-    # upsmgBatteryLowBattery
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.14.0 = INTEGER: 3''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Critical"
-        , "Unknown battery low state")
-
-
-def test_battery_fault_warning(capsys):
-    a_check_type = "BATTERY_FAULT_WARNING"
-
-    testagent.unregister_all()
-    # upsmgBatteryFaultBattery
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.9.0 = INTEGER: 2''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "OK"
-        , "Battery is not in fault state")
-   
-    testagent.unregister_all()
-    # upsmgBatteryFaultBattery
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.9.0 = INTEGER: 1''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Critical"
-        , "Battery is in fault state")
-
-    testagent.unregister_all()
-    # upsmgBatteryFaultBattery
-    testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.9.0 = INTEGER: 3''')
-    test_util.check_value_without_thresholds(
-        eaton_ups_check_plugin_path
-        , a_check_type
-        , "Critical"
-        , "Unknown battery state")
+# def test_battery_test_detail(capsys):
+#     a_check_type = "BATTERY_TEST_DETAIL"
+#
+#     testagent.unregister_all()
+#     # upsTestResultsDetail
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.7.4.0 = STRING: "Testdetails"''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "OK"
+#         , "Details of last UPS diagnostic test: Testdetails")
+#
+#
+# #     "Battery Replacement Warning"
+# #         : {"value" : ,
+# #            "summary" : ""},
+# def test_battery_replacement_warning(capsys):
+#     a_check_type = "BATTERY_REPLACEMENT_WARNING"
+#
+#     testagent.unregister_all()
+#     # upsmgBatteryReplacement
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.11.0 = INTEGER: 2''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "OK"
+#         , "Battery does not need to be replaced")
+#
+#     testagent.unregister_all()
+#     # upsmgBatteryReplacement
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.11.0 = INTEGER: 1''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Critical"
+#         , "Battery needs to be replaced")
+#
+#     testagent.unregister_all()
+#     # upsmgBatteryReplacement
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.11.0 = INTEGER: 3''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Critical"
+#         , "Unknown battery replacement state")
+#
+#
+# def test_battery_low_warning(capsys):
+#     a_check_type = "BATTERY_LOW_WARNING"
+#
+#     testagent.unregister_all()
+#     # upsmgBatteryLowBattery
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.14.0 = INTEGER: 2''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "OK"
+#         , "Battery is not in low state")
+#
+#     testagent.unregister_all()
+#     # upsmgBatteryLowBattery
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.14.0 = INTEGER: 1''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Critical"
+#         , "Battery is in low state")
+#
+#     testagent.unregister_all()
+#     # upsmgBatteryLowBattery
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.14.0 = INTEGER: 3''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Critical"
+#         , "Unknown battery low state")
+#
+#
+# def test_battery_fault_warning(capsys):
+#     a_check_type = "BATTERY_FAULT_WARNING"
+#
+#     testagent.unregister_all()
+#     # upsmgBatteryFaultBattery
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.9.0 = INTEGER: 2''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "OK"
+#         , "Battery is not in fault state")
+#
+#     testagent.unregister_all()
+#     # upsmgBatteryFaultBattery
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.9.0 = INTEGER: 1''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Critical"
+#         , "Battery is in fault state")
+#
+#     testagent.unregister_all()
+#     # upsmgBatteryFaultBattery
+#     testagent.register_snmpwalk_ouput('''iso.3.6.1.4.1.705.1.5.9.0 = INTEGER: 3''')
+#     test_util.check_value_without_thresholds(
+#         eaton_ups_check_plugin_path
+#         , a_check_type
+#         , "Critical"
+#         , "Unknown battery state")
 
 
 def test_stop():
     # stop the testagent
     testagent.unregister_all()
     testagent.stop_server()
-

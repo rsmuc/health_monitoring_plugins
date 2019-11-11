@@ -35,6 +35,7 @@ def test_everything_ok():
 
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.2.1 = STRING: "Physical Disk 0:1:0"''')  # device name
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.4.1 = STRING: "3"''')  ## device status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.31.1 = STRING: "0"''')  ## predictive status
 
 
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.4.300.10.1.7.1 = STRING: "Main System Chassis"''')# user assigned name of the system chassis
@@ -103,7 +104,7 @@ def test_snmpv3(capsys):
 
     p = subprocess.Popen('health_monitoring_plugins/check_snmp_idrac/check_snmp_idrac.py' + " -H 1.2.3.4 -V 3 "
                                                      "-U nothinguseful -L authNoPriv -a MD5 "
-                                                     "-A nothinguseful -x DES -X nothinguseful",
+                                                     "-A nothinguseful -x DES -X nothinguseful --snmptimeout 3",
                          shell=True, stdout=subprocess.PIPE)
     assert "Unknown - No response from device for oid .1.3.6.1.2.1.1.5.0" in p.stdout.read()
 
@@ -120,6 +121,7 @@ def test_everything_not_ok():
     register_snmpwalk_ouput('''iso.3.6.1.2.1.1.5.0 = STRING: "iDRAC NAME"''')  # name of the device
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.2.1 = STRING: "Physical Disk 0:1:0"''')  # device name
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.4.1 = STRING: "7"''')  ## device status
+    register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.5.1.20.130.4.1.31.1 = STRING: "1"''')  ## predictive status
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.4.600.12.1.5.1.1 = INTEGER: 5''')  # power  unit status 1
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.4.600.12.1.5.1.2 = INTEGER: 5''')  # power unit status 2
     register_snmpwalk_ouput('''iso.3.6.1.4.1.674.10892.5.4.600.12.1.8.1.1 = STRING: PS1 Status''')  # power unit location 1
@@ -162,12 +164,15 @@ def test_everything_not_ok():
     cmd_output = p.stdout.read()
     print cmd_output
     stop_server()
-    assert "Critical - Name: iDRAC NAME - Typ: PowerEdge R420xr - Service tag: ABCD123. Device status 'global': critical. System power status: 'off'. Storage status 'global': critical. LCD status 'global': critical. Drive 'Physical Disk 0:1:0': failed. Power unit 'PS1 Status': critical. Power unit 'PS2 Status': critical. Power unit 'PS1 Status' redundancy: lost. Chassis intrusion sensor 'System Board Intrusion': critical. Cooling unit 'System Board Fan Redundancy': critical. Temperature sensor 'System Board Inlet Temp': criticalUpper. Temperature sensor 'CPU 1': criticalUpper. Temperature sensor 'Inlet Temperature': criticalUppe" in cmd_output
+    assert "Critical - Name: iDRAC NAME - Typ: PowerEdge R420xr - Service tag: ABCD123. Device status 'global': critical. System power status: 'off'. Storage status 'global': critical. LCD status 'global': critical. Drive 'Physical Disk 0:1:0': failed. Predictve Drive Status 'Physical Disk 0:1:0': predictive failure - replace drive. Power unit 'PS1 Status': critical. Power unit 'PS2 Status': critical. Power unit 'PS1 Status' redundancy: lost. Chassis intrusion sensor 'System Board Intrusion': critical. Cooling unit 'System Board Fan Redundancy': critical. Temperature sensor 'System Board Inlet Temp': criticalUpper. Temperature sensor 'CPU 1': criticalUpper. Temperature sensor 'Inlet Temperature': criticalUpper | 'System Board Inlet Temp -Celsius-'=27.0;;;;" in cmd_output
 
 
 # Unittests
 def test_normal_check():
     assert normal_check("Test123", "1", "Testdevice") == (2, "Testdevice 'Test123': other")
+
+def test_normal_check_warning():
+    assert normal_check("Test123", "4", "Testdevice") == (1, "Testdevice 'Test123': warning")
 
 def test_probe_check():
     assert probe_check("Test123", "1", "Testdevice") == (2, "Testdevice 'Test123': other")

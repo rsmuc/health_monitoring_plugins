@@ -1,7 +1,22 @@
 """
 Module for check_meinberg_ntp
 """
-# Copyright (C) 2018 rsmuc <rsmuc@mailbox.org>
+#    Copyright (C) 2018-2019 rsmuc <rsmuc@sec-dev.de>
+
+#    This file is part of "Health Monitoring Plugins".
+
+#    "Health Monitoring Plugins" is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+
+#    "Health Monitoring Plugins" is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with "Health Monitoring Plugins".  If not, see <https://www.gnu.org/licenses/>.
 
 from pynag.Plugins import unknown, warning, critical
 
@@ -110,7 +125,7 @@ class Meinberg(object):
         just print the current GPS position
         """
 
-        gps_position = helper.get_snmp_value(sess, helper, self.oids['oid_gps_position'])
+        gps_position = helper.get_snmp_value_or_exit(sess, helper, self.oids['oid_gps_position'])
 
         if gps_position:
             helper.add_summary(gps_position)
@@ -122,10 +137,12 @@ class Meinberg(object):
         """ get the snmp value, check the status and update the helper"""
 
         if check == 'ntp_current_state':
-            ntp_status_int = helper.get_snmp_value(sess, helper, self.oids['oid_ntp_current_state_int'])
+            ntp_status_int = helper.get_snmp_value_or_exit(sess, helper,
+                                                           self.oids['oid_ntp_current_state_int'])
             result = self.check_ntp_status(ntp_status_int)
         elif check == 'gps_mode':
-            gps_status_int = helper.get_snmp_value(sess, helper, self.oids['oid_gps_mode_int'])
+            gps_status_int = helper.get_snmp_value_or_exit(sess, helper,
+                                                           self.oids['oid_gps_mode_int'])
             result = self.check_gps_status(gps_status_int)
         else:
             return
@@ -169,7 +186,8 @@ class Meinberg(object):
         """
         check and show the good satellites
         """
-        good_satellites = helper.get_snmp_value(sess, helper, self.oids['oid_gps_satellites_good'])
+        good_satellites = helper.get_snmp_value_or_exit(sess, helper,
+                                                        self.oids['oid_gps_satellites_good'])
 
         # Show the summary and add the metric and afterwards check the metric
         helper.add_summary("Good satellites: {}".format(good_satellites))

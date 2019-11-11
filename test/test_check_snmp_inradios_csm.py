@@ -164,7 +164,7 @@ def test_stop_server():
 
 def test_snmp_agent_offline():
     expected = ("Unknown - SNMP response incomplete or invalid\n")
-    p = subprocess.Popen("health_monitoring_plugins/check_snmp_inradios_csm/check_snmp_inradios_csm.py -H localhost:1234 -V 2 -C public -i 1 --timeout 100",
+    p = subprocess.Popen("health_monitoring_plugins/check_snmp_inradios_csm/check_snmp_inradios_csm.py -H localhost:1234 -V 2 -C public -i 1 --snmptimeout 100",
                          shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=context.testenv)
     plugin_out = p.stdout.read()
     assert(plugin_out == expected)
