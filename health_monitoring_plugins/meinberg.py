@@ -157,7 +157,7 @@ class Meinberg(object):
         ntp_status_string = self.ntp_status.get(ntp_status_int, "unknown")
 
         if ntp_status_string == "unknown":
-            return unknown, ("NTP status: " + ntp_status_string)
+            return warning, ("NTP status: " + ntp_status_string)
 
         # the ntp status should be synchronized (new MIB) or normalOperation (old mib)
         elif ntp_status_string != "synchronized" and ntp_status_string != "normalOperationPPS":
@@ -173,7 +173,7 @@ class Meinberg(object):
         gps_mode_string = self.gps_mode.get(gps_status_int, "unknown")
 
         if gps_mode_string == "unknown":
-            return unknown, ("GPS status: " + gps_mode_string)
+            return warning, ("GPS status: " + gps_mode_string)
 
         elif gps_mode_string != "normalOperation" \
                 and gps_mode_string != "gpsSync":

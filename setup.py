@@ -40,7 +40,7 @@ def read(fname):
 
 
 setup(name='health_monitoring_plugins',
-      version='0.2.0',
+      version='0.2.1',
       description='Health monitoring plugins for icinga/nagios',
       url='https://codeberg.org/status_monitoring_tools/health_monitoring_plugins',
       author='rsmuc',
@@ -70,6 +70,7 @@ setup(name='health_monitoring_plugins',
           'health_monitoring_plugins/check_snmp_ubiquiti/check_snmp_ubiquiti.py',
           'health_monitoring_plugins/check_snmp_teledyne/check_snmp_teledyne.py',
           'health_monitoring_plugins/check_snmp_lband/check_snmp_lband.py',
+          'health_monitoring_plugins/check_snmp_sencere/check_snmp_sencere.py',
           'health_monitoring_plugins/check_snmp_procurve/check_snmp_procurve.py',
           'health_monitoring_plugins/check_snmp_fortinet/check_snmp_fortinet.py',
           'health_monitoring_plugins/check_local_cpu_temperature/check_local_cpu_temperature.py',

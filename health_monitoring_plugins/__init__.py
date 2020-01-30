@@ -33,9 +33,9 @@ class HelperExtension(pynag.Plugins.PluginHelper):
                 self.add_summary(status[1])
 
 
-class SnmpHelper(pynag.Plugins.PluginHelper, HelperExtension):
+class SnmpHelper(HelperExtension):
     def __init__(self, *args, **kwargs):
-        pynag.Plugins.PluginHelper.__init__(self, *args, **kwargs)        
+        pynag.Plugins.PluginHelper.__init__(self, *args, **kwargs)
         self.parser.add_option('-H', '--hostname', help="Hostname or ip address")
         self.parser.add_option('-C', '--community', help='SNMP community of the SNMP service on target host.',
                                default='public')

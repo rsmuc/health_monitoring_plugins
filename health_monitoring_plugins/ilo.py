@@ -143,7 +143,7 @@ def normal_check(name, status, device_type):
         return ok, "{} '{}': {}".format(device_type, name, status_string)
 
     elif status_string == "unknown":
-        return unknown, "{} '{}': {}".format(device_type, name, status_string)
+        return warning, "{} '{}': {}".format(device_type, name, status_string)
 
     return critical, "{} '{}': {}".format(device_type, name, status_string)
 
@@ -157,7 +157,7 @@ def power_check(name, status, device_type):
         return ok, "{} '{}': {}".format(device_type, name, status_string)
 
     elif status_string == "unknown":
-        return unknown, "{} '{}': {}".format(device_type, name, status_string)
+        return warning, "{} '{}': {}".format(device_type, name, status_string)
 
     return critical, "{} '{}': {}".format(device_type, name, status_string)
 

@@ -24,62 +24,70 @@ from __future__ import division
 from pynag.Plugins import ok, unknown, critical, new_threshold_syntax
 
 INDEX_SCALAR = 0
-INDEX_TABLE = 1
+INDEX_INOUT_LINES = 1
+
+# Eaton puts both L-N and L-L values into their tables, so we can't apply one single threshold to the whole table.
+# Only consider first three rows (all L-N) for now.
+MAX_INOUT_LINES_ENTRIES = 3
+
 
 def available_types():
     return GENERIC_STATES.keys()
+
 
 def calc_frequency(the_snmp_value):
     """calculate the frequency"""
     return int(the_snmp_value) / 10
 
+
 def calc_output_current(the_snmp_value):
     """calculate the current"""
     return int(the_snmp_value) / 10
 
+
 GENERIC_STATES = {
 
     "on_battery": {"oid": ".1.3.6.1.2.1.33.1.2.2.0",
-                   "unit": "Seconds",
-                   "message": "seconds running on battery",
+                   "unit": "s",
+                   "message": "time running on battery",
                    "indexing": INDEX_SCALAR},
 
     "remaining_battery_time": {"oid": ".1.3.6.1.2.1.33.1.2.3.0",
-                               "unit": "Minutes",
-                               "message": "minutes remaining on battery",
+                               "unit": "min",
+                               "message": "time remaining on battery",
                                "indexing": INDEX_SCALAR},
 
     "input_frequency": {"oid": ".1.3.6.1.2.1.33.1.3.3.1.2",
                         "unit": "Hz",
-                        "message": "Hz input frequency",
-                        "indexing": INDEX_TABLE,
+                        "message": "input frequency",
+                        "indexing": INDEX_INOUT_LINES,
                         "converter": calc_frequency},
 
     "input_voltage": {"oid": ".1.3.6.1.2.1.33.1.3.3.1.3",
                       "unit": "VAC",
-                      "message": "VAC input voltage",
-                      "indexing": INDEX_TABLE},
+                      "message": "input voltage",
+                      "indexing": INDEX_INOUT_LINES},
 
     "output_voltage": {"oid": ".1.3.6.1.2.1.33.1.4.4.1.2",
                        "unit": "VAC",
-                       "message": "VAC output voltage",
-                       "indexing": INDEX_TABLE},
+                       "message": "output voltage",
+                       "indexing": INDEX_INOUT_LINES},
 
     "output_current": {"oid": ".1.3.6.1.2.1.33.1.4.4.1.3",
                        "unit": "A",
-                       "message": "A output current",
-                       "indexing": INDEX_TABLE,
+                       "message": "output current",
+                       "indexing": INDEX_INOUT_LINES,
                        "converter": calc_output_current},
 
     "output_power": {"oid": ".1.3.6.1.2.1.33.1.4.4.1.4",
                      "unit": "W",
-                     "message": "W output power",
-                     "indexing": INDEX_TABLE},
+                     "message": "output power",
+                     "indexing": INDEX_INOUT_LINES},
 
     "output_load": {"oid": ".1.3.6.1.2.1.33.1.4.4.1.5",
                     "unit": "%",
-                    "message": "% output load",
-                    "indexing": INDEX_TABLE},
+                    "message": "output load",
+                    "indexing": INDEX_INOUT_LINES},
 
     "alarms": {"oid": ".1.3.6.1.2.1.33.1.6.1.0",
                "unit": "",
@@ -88,22 +96,23 @@ GENERIC_STATES = {
 
     "battery_capacity": {"oid": ".1.3.6.1.4.1.534.1.2.4.0",
                          "unit": "%",
-                         "message": "% remaining battery capacity",
+                         "message": "remaining battery capacity",
                          "indexing": INDEX_SCALAR},
 
     "environment_temperature": {"oid": ".1.3.6.1.4.1.534.1.6.1.0",
-                                "unit": "degree celsius",
-                                "message": "deg C environment temperature",
+                                "unit": "deg C",
+                                "message": "environment temperature",
                                 "indexing": INDEX_SCALAR},
 
     "external_environment_temperature": {"oid": ".1.3.6.1.4.1.534.1.6.5.0",
-                                         "unit": "degree celsius",
-                                         "message": "deg C external environment temperature",
+                                         "unit": "deg C",
+                                         "message": "external environment temperature",
                                          "indexing": INDEX_SCALAR},
 }
 
+
 class EatonUPS(object):
-    """Class for check_snmp_time2"""
+    """Check logic for various Eaton UPS devices based on UPS-MIB and XUPS-MIB"""
 
     def __init__(self, session, helper):
         self.session = session
@@ -142,9 +151,9 @@ class EatonUPS(object):
             if self.helper.options.type == "alarms":
                 if value != "0":
                     self.helper.status(critical)
-            else:
+            elif threshold:
                 self.helper.check_metric(metric_name, threshold)
-            summaries.append("{} {}".format(value, metric_message))
+            summaries.append("{} = {} {}".format(metric_message, value, uom))
         for summary in summaries:
             self.helper.add_summary(summary)
 
@@ -157,10 +166,11 @@ class EatonUPS(object):
                 self.session, self.helper, GENERIC_STATES[self.helper.options.type]["oid"])
             if value:
                 values.append(value)
-        elif indexing == INDEX_TABLE:
+        elif indexing == INDEX_INOUT_LINES:
             values = self.helper.walk_snmp_values_or_exit(
                 self.session, self.helper, GENERIC_STATES[self.helper.options.type]["oid"],
                 GENERIC_STATES[self.helper.options.type]["message"])
+            values = values[:MAX_INOUT_LINES_ENTRIES]
         if not values:
             self.helper.exit(summary="No response from device ", exit_code=unknown,
                              perfdata='')

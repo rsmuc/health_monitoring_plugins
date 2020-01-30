@@ -70,7 +70,7 @@ class Procurve(object):
             except KeyError:
                 # if we receive an invalid value, we don't want to crash...
                 helper.exit(summary="received an undefined value from device: " + status,
-                            exit_code=unknown, perfdata='')
+                            exit_code=critical, perfdata='')
 
             # for each sensor the summary is added like: Fan Sensor: good
             helper.add_summary("%s: %s" % (description, status_string))

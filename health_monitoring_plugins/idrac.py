@@ -204,7 +204,7 @@ def normal_check(name, status, device_type):
         return ok, "{} '{}': {}".format(device_type, name, status_string)
 
     elif status_string == "unknown":
-        return unknown, "{} '{}': {}".format(device_type, name, status_string)
+        return warning, "{} '{}': {}".format(device_type, name, status_string)
 
     # nonCritical is confusing - so we want to return "warning" as string and status
     elif status_string == "nonCritical":

@@ -189,6 +189,11 @@ PYTHONPATH=~/PycharmProjects/health_monitoring_plugins/ health_monitoring_plugin
 
 ## Changelog
 
+##### Version 0.2.1
+
+* Fixed some exit codes for check_snmo_idrac, check_snmp_ilo, check_snmp_meinberg and check_snmp_procurve
+* Fixed issue with multiple inheritance (#20)
+
 ###### Version 0.2.0
 
 * Updated license notices according https://www.gnu.org/licenses/gpl-howto.html

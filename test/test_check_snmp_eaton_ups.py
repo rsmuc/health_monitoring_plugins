@@ -5,14 +5,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath('health_monitoring_plugins/check_snmp_eaton_ups'))
 
-import pytest
-import subprocess
 import netsnmp
-
 import test_util
-
 import testagent
-import check_snmp_eaton_ups
 
 eaton_ups_check_plugin_path = "health_monitoring_plugins/check_snmp_eaton_ups/check_snmp_eaton_ups.py"
 
@@ -24,9 +19,6 @@ testagent.configure(agent_address="localhost:1234",
 # create netsnmp Sessions for test_get and test_walk
 session = netsnmp.Session(Version=2, DestHost='localhost', Community='public')
 failSession = netsnmp.Session(Version=2, DestHost='1.2.3.4', Community='public')
-
-# a_plugin_helper = check_snmp_eaton_ups.setup_plugin_helper()
-
 
 check_configs_range = {
     "input_frequency"
@@ -69,7 +61,7 @@ check_configs_range = {
 check_configs_below_threshold = {
     "remaining_battery_time"
     : {"value": 30,
-       "summary": "minutes remaining on battery",
+       "summary": "time remaining on battery",
        "has_perfdata": True
        },
     "battery_capacity"
@@ -82,7 +74,7 @@ check_configs_below_threshold = {
 check_configs_above_threshold = {
     "on_battery"
     : {"value": 60,
-       "summary": "seconds running on battery",
+       "summary": "time running on battery",
        "has_perfdata": True
        },
     "output_load"
@@ -116,12 +108,20 @@ def test_start_eaton_agent():
     testagent.register_snmpwalk_ouput(
         '''iso.3.6.1.2.1.33.1.3.3.1.3.1 = INTEGER: 230
         iso.3.6.1.2.1.33.1.3.3.1.3.2 = INTEGER: 230
-        iso.3.6.1.2.1.33.1.3.3.1.3.3 = INTEGER: 230''')
+        iso.3.6.1.2.1.33.1.3.3.1.3.3 = INTEGER: 230
+        iso.3.6.1.2.1.33.1.3.3.1.3.4 = INTEGER: 400
+        iso.3.6.1.2.1.33.1.3.3.1.3.5 = INTEGER: 400
+        iso.3.6.1.2.1.33.1.3.3.1.3.6 = INTEGER: 400       
+        ''')
     # upsOutputVoltage
     testagent.register_snmpwalk_ouput(
         '''iso.3.6.1.2.1.33.1.4.4.1.2.1 = INTEGER: 229
         iso.3.6.1.2.1.33.1.4.4.1.2.2 = INTEGER: 229
-        iso.3.6.1.2.1.33.1.4.4.1.2.3 = INTEGER: 229''')
+        iso.3.6.1.2.1.33.1.4.4.1.2.3 = INTEGER: 229
+        iso.3.6.1.2.1.33.1.4.4.1.2.4 = INTEGER: 229
+        iso.3.6.1.2.1.33.1.4.4.1.2.5 = INTEGER: 229
+        iso.3.6.1.2.1.33.1.4.4.1.2.6 = INTEGER: 229
+        ''')
     # upsOutputCurrent
     testagent.register_snmpwalk_ouput(
         '''iso.3.6.1.2.1.33.1.4.4.1.3.1 = INTEGER: 20
@@ -210,7 +210,7 @@ def test_alarms(capsys):
         eaton_ups_check_plugin_path
         , a_check_type
         , "OK"
-        , "0 active alarms")
+        , "active alarms = 0")
 
     testagent.unregister_all()
     testagent.register_snmpwalk_ouput('''iso.3.6.1.2.1.33.1.6.1.0 = INTEGER: 1''')
@@ -218,7 +218,7 @@ def test_alarms(capsys):
         eaton_ups_check_plugin_path
         , a_check_type
         , "Critical"
-        , "1 active alarms")
+        , "active alarms = 1")
 
 
 #
