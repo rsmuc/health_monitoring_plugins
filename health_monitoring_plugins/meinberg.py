@@ -128,7 +128,7 @@ class Meinberg(object):
         gps_position = helper.get_snmp_value_or_exit(sess, helper, self.oids['oid_gps_position'])
 
         if gps_position:
-            helper.add_summary(gps_position)
+            helper.add_summary(str(gps_position))
         else:
             helper.add_summary("Could not retrieve GPS position")
             helper.status(unknown)
