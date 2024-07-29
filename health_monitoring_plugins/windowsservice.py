@@ -56,7 +56,7 @@ class Windowsservice(object):
         print("Running services at host: " + helper.options.hostname)
 
         for service in all_services:
-            print("Service: \t'" + service + "'")
+            print("Service: \t'" + service.decode("utf-8") + "'")
 
         # we don't want to return a icinga output, so we just end the script here
         quit()
